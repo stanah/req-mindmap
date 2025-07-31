@@ -182,6 +182,25 @@ export class MindmapRenderer {
    * レイアウトアルゴリズムの適用
    */
   private applyLayout(hierarchy: D3Node): D3Node {
+    // 既存の階層から元のデータを抽出して再構築
+    const rootData = this.extractNodeData(hierarchy);
+    const newHierarchy = d3.hierarchy(rootData);
+    
+    // ノードサイズの再計算
+    newHierarchy.each((node: any) => {
+      const nodeData = node.data;
+      const textLength = this.calculateTextWidth(nodeData.title);
+      const badgeHeight = this.calculateBadgeHeight(nodeData);
+      
+      node.width = Math.min(Math.max(textLength + this.NODE_PADDING * 2, this.NODE_WIDTH), this.settings.maxNodeWidth || 200);
+      node.height = this.NODE_HEIGHT + badgeHeight;
+      
+      // 折りたたみ状態の復元
+      if (nodeData.collapsed && node.children) {
+        node._children = node.children;
+        node.children = undefined;
+      }
+    });
     let layout: d3.TreeLayout<MindmapNode> | d3.ClusterLayout<MindmapNode>;
 
     switch (this.settings.layout) {
@@ -215,7 +234,7 @@ export class MindmapRenderer {
         break;
     }
 
-    const result = layout(hierarchy) as D3Node;
+    const result = layout(newHierarchy) as D3Node;
     
     // レイアウトごとの座標変換
     if (this.settings.layout === 'radial') {
@@ -242,6 +261,29 @@ export class MindmapRenderer {
     }
     
     return result;
+  }
+
+  /**
+   * 階層ノードから元のデータ構造を抽出
+   */
+  private extractNodeData(hierarchyNode: D3Node): MindmapNode {
+    const nodeData: MindmapNode = {
+      id: hierarchyNode.data.id,
+      title: hierarchyNode.data.title,
+      description: hierarchyNode.data.description,
+      metadata: hierarchyNode.data.metadata,
+      customFields: hierarchyNode.data.customFields,
+      collapsed: hierarchyNode.data.collapsed,
+      children: []
+    };
+
+    // 子ノードも再帰的に抽出（展開状態と折りたたみ状態両方を考慮）
+    const children = hierarchyNode.children || hierarchyNode._children;
+    if (children) {
+      nodeData.children = children.map(child => this.extractNodeData(child));
+    }
+
+    return nodeData;
   }
 
   /**
@@ -811,7 +853,19 @@ export class MindmapRenderer {
    * 設定の更新
    */
   public updateSettings(newSettings: Partial<MindmapSettings>): void {
+    const oldLayout = this.settings.layout;
     this.settings = { ...this.settings, ...newSettings };
+    
+    // レイアウトが変更された場合は再描画
+    if (newSettings.layout && newSettings.layout !== oldLayout && this.root) {
+      this.root = this.applyLayout(this.root);
+      this.draw();
+      
+      // ビューを中央に配置（少し遅延を入れて確実に描画完了を待つ）
+      setTimeout(() => {
+        this.centerView();
+      }, 100);
+    }
   }
 
   /**
