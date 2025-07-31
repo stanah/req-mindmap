@@ -773,23 +773,19 @@ export const useAppStore = create<AppStore>()(
           }));
 
           try {
-            // TODO: ParserServiceと連携してパース処理を実装
-            // 現在はプレースホルダー
-            console.log('Parsing content, length:', content.length);
+            // ParserServiceをインポート
+            const { parserService } = await import('../services');
             
-            // 簡単なJSONパースのテスト
+            // パース処理を実行
+            const result = await parserService.parse(content);
+            
             let parsedData: MindmapData | null = null;
             const parseErrors: ParseError[] = [];
             
-            try {
-              parsedData = JSON.parse(content) as MindmapData;
-            } catch (error) {
-              parseErrors.push({
-                line: 1,
-                column: 1,
-                message: error instanceof Error ? error.message : 'パースエラー',
-                severity: 'error',
-              });
+            if (result.success && result.data) {
+              parsedData = result.data;
+            } else if (result.errors) {
+              parseErrors.push(...result.errors);
             }
 
             set((state) => ({

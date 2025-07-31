@@ -7,8 +7,7 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const setFileContent = useAppStore(state => state.setFileContent);
-  const parseContent = useAppStore(state => state.parseContent);
+  const updateContent = useAppStore(state => state.updateContent);
 
   const handleLoadSample = () => {
     const sampleData = {
@@ -119,8 +118,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     };
 
     const jsonContent = JSON.stringify(sampleData, null, 2);
-    setFileContent(jsonContent, 'sample.json');
-    parseContent();
+    updateContent(jsonContent);
   };
 
   return (
