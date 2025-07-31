@@ -6,7 +6,7 @@
  */
 
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { devtools } from 'zustand/middleware';
 import type { 
   AppStore, 
   AppState, 
@@ -25,8 +25,8 @@ import type {
   MindmapData,
   ParseError
 } from '../types/mindmap';
-import { STORAGE_KEYS, DEBOUNCE_DELAY } from '../utils/constants';
-import { storage, generateId, detectFileFormat, deepClone, findNodeById } from '../utils/helpers';
+import { DEBOUNCE_DELAY } from '../utils/constants';
+import { generateId, detectFileFormat, deepClone, findNodeById } from '../utils/helpers';
 import { createNodeMapping, getNodeIdAtCursor, getEditorPositionForNode, type NodeMappingResult } from '../utils/nodeMapping';
 import { settingsService } from '../services/settingsService';
 
@@ -115,9 +115,8 @@ let currentNodeMapping: NodeMappingResult | null = null;
  */
 export const useAppStore = create<AppStore>()(
   devtools(
-    persist(
-      (set, get) => ({
-        ...initialState,
+    (set, get) => ({
+      ...initialState,
 
         // ===== ファイル操作 =====
         
@@ -424,9 +423,16 @@ export const useAppStore = create<AppStore>()(
             },
           }));
 
-          // ローカルストレージに保存
-          const newSettings = { ...get().ui.editorSettings, ...settings };
-          storage.set(STORAGE_KEYS.EDITOR_SETTINGS, newSettings);
+          // settingsServiceを使ってローカルストレージに保存
+          const currentSettings = get().settings;
+          const updatedSettings = {
+            ...currentSettings,
+            editor: {
+              ...currentSettings.editor,
+              ...settings,
+            },
+          };
+          settingsService.saveSettings(updatedSettings);
         },
 
         focusEditor: () => {
@@ -552,9 +558,16 @@ export const useAppStore = create<AppStore>()(
             },
           }));
 
-          // ローカルストレージに保存
-          const newSettings = { ...get().ui.mindmapSettings, ...settings };
-          storage.set(STORAGE_KEYS.MINDMAP_SETTINGS, newSettings);
+          // settingsServiceを使ってローカルストレージに保存
+          const currentSettings = get().settings;
+          const updatedSettings = {
+            ...currentSettings,
+            mindmap: {
+              ...currentSettings.mindmap,
+              ...settings,
+            },
+          };
+          settingsService.saveSettings(updatedSettings);
         },
 
         setZoom: (level: number) => {
@@ -875,10 +888,8 @@ export const useAppStore = create<AppStore>()(
         reset: () => {
           set(initialState);
           
-          // ローカルストレージもクリア
-          storage.remove(STORAGE_KEYS.EDITOR_SETTINGS);
-          storage.remove(STORAGE_KEYS.MINDMAP_SETTINGS);
-          storage.remove(STORAGE_KEYS.RECENT_FILES);
+          // settingsServiceを使ってローカルストレージをクリア
+          settingsService.clearAllData();
         },
 
         // ===== 内部ヘルパーメソッド =====
@@ -968,20 +979,6 @@ export const useAppStore = create<AppStore>()(
           }
         },
       }),
-      {
-        name: 'mindmap-app-store',
-        partialize: (state) => ({
-          settings: state.settings,
-          recentFiles: state.recentFiles,
-          ui: {
-            editorSettings: state.ui.editorSettings,
-            mindmapSettings: state.ui.mindmapSettings,
-            panelSizes: state.ui.panelSizes,
-            darkMode: state.ui.darkMode,
-          },
-        }),
-      }
-    ),
     {
       name: 'mindmap-app-store',
     }
