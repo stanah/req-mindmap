@@ -1,0 +1,120 @@
+/* アプリケーション全体のスタイル */
+.app-content {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.editor-section {
+  flex: 1;
+  min-width: 400px;
+  max-width: 60%;
+  resize: horizontal;
+  overflow: hidden;
+}
+
+.mindmap-section {
+  flex: 1;
+  min-width: 300px;
+  overflow: hidden;
+}
+
+/* CSS変数の定義 */
+:root {
+  --primary-color: #2563eb;
+  --secondary-color: #64748b;
+  --success-color: #059669;
+  --warning-color: #d97706;
+  --error-color: #dc2626;
+  --bg-color: #ffffff;
+  --text-color: #1f2937;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+  --header-bg: #f9fafb;
+  --footer-bg: #f9fafb;
+  --toolbar-bg: #f8fafc;
+  --btn-bg: #ffffff;
+  --btn-hover-bg: #f3f4f6;
+  --editor-bg: #ffffff;
+  --mindmap-bg: #fafafa;
+  --canvas-bg: #ffffff;
+  --node-bg: #ffffff;
+  --node-border: #e5e7eb;
+  --link-color: #94a3b8;
+  --error-panel-bg: #fef2f2;
+  --error-header-bg: #fee2e2;
+  --error-border: #fecaca;
+}
+
+/* ダークテーマ */
+[data-theme="dark"] {
+  --primary-color: #60a5fa;
+  --secondary-color: #94a3b8;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #f87171;
+  --bg-color: #1f2937;
+  --text-color: #f9fafb;
+  --text-secondary: #d1d5db;
+  --border-color: #374151;
+  --header-bg: #374151;
+  --footer-bg: #374151;
+  --toolbar-bg: #374151;
+  --btn-bg: #4b5563;
+  --btn-hover-bg: #6b7280;
+  --editor-bg: #1f2937;
+  --mindmap-bg: #111827;
+  --canvas-bg: #1f2937;
+  --node-bg: #374151;
+  --node-border: #4b5563;
+  --link-color: #6b7280;
+  --error-panel-bg: #2d1b1b;
+  --error-header-bg: #3d2626;
+  --error-border: #5c3333;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .app-content {
+    flex-direction: column;
+  }
+  
+  .editor-section {
+    max-width: none;
+    min-width: auto;
+    flex: 0 0 50%;
+  }
+  
+  .mindmap-section {
+    min-width: auto;
+    flex: 1;
+  }
+}
+
+/* スクロールバーのスタイル */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* フォーカス時のアウトライン */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}

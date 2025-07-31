@@ -1,0 +1,2 @@
+// ストアのエクスポート
+export * from './appStore';

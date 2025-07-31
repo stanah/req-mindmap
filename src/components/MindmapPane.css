@@ -1,0 +1,184 @@
+.mindmap-pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--mindmap-bg, #fafafa);
+  position: relative;
+}
+
+.mindmap-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: var(--toolbar-bg, #f8f9fa);
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+  min-height: 40px;
+}
+
+.zoom-controls,
+.layout-controls {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.toolbar-btn,
+.layout-btn {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border-color, #e0e0e0);
+  background-color: var(--btn-bg, #ffffff);
+  color: var(--text-color, #333333);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbar-btn:hover,
+.layout-btn:hover {
+  background-color: var(--btn-hover-bg, #f5f5f5);
+}
+
+.layout-btn.active {
+  background-color: var(--primary-color, #2563eb);
+  color: white;
+  border-color: var(--primary-color, #2563eb);
+}
+
+.mindmap-container {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.mindmap-svg {
+  display: block;
+  background-color: var(--canvas-bg, #ffffff);
+  cursor: grab;
+}
+
+.mindmap-svg:active {
+  cursor: grabbing;
+}
+
+.empty-state {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--canvas-bg, #ffffff);
+  z-index: 1;
+}
+
+.empty-state-content {
+  text-align: center;
+  max-width: 400px;
+  padding: 2rem;
+}
+
+.empty-state-content h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-color, #333333);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.empty-state-content p {
+  margin: 0;
+  color: var(--text-secondary, #666666);
+  line-height: 1.5;
+}
+
+/* マインドマップノードのスタイル（D3.jsで使用） */
+.mindmap-node {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mindmap-node:hover {
+  filter: brightness(1.1);
+}
+
+.mindmap-node.selected {
+  stroke: var(--primary-color, #2563eb);
+  stroke-width: 2px;
+}
+
+.mindmap-node-rect {
+  fill: var(--node-bg, #ffffff);
+  stroke: var(--node-border, #e0e0e0);
+  stroke-width: 1px;
+  rx: 8;
+  ry: 8;
+}
+
+.mindmap-node-text {
+  fill: var(--text-color, #333333);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+.mindmap-link {
+  fill: none;
+  stroke: var(--link-color, #94a3b8);
+  stroke-width: 2px;
+  transition: stroke 0.2s ease;
+}
+
+.mindmap-link:hover {
+  stroke: var(--primary-color, #2563eb);
+}
+
+/* ダークテーマ */
+.mindmap-pane[data-theme="dark"] {
+  --mindmap-bg: #1a1a1a;
+  --toolbar-bg: #2d2d2d;
+  --canvas-bg: #1e1e1e;
+  --btn-bg: #3c3c3c;
+  --btn-hover-bg: #4a4a4a;
+  --node-bg: #2d2d2d;
+  --node-border: #404040;
+  --link-color: #64748b;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .mindmap-toolbar {
+    padding: 0.25rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .toolbar-btn,
+  .layout-btn {
+    min-width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+    padding: 0.25rem;
+  }
+  
+  .empty-state-content {
+    padding: 1rem;
+  }
+  
+  .empty-state-content h3 {
+    font-size: 1.125rem;
+  }
+  
+  .empty-state-content p {
+    font-size: 0.875rem;
+  }
+}
