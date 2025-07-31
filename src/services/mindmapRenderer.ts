@@ -165,7 +165,7 @@ export class MindmapRenderer {
       
       case 'tree':
       default:
-        // ツリーレイアウト
+        // 横方向ツリーレイアウト（左から右）
         layout = d3.tree<MindmapNode>()
           .nodeSize([this.settings.nodeSpacing || this.NODE_SPACING, this.settings.levelSpacing || this.LEVEL_SPACING])
           .separation((a, b) => {
@@ -174,7 +174,20 @@ export class MindmapRenderer {
         break;
     }
 
-    return layout(hierarchy) as D3Node;
+    const result = layout(hierarchy) as D3Node;
+    
+    // 横方向レイアウトの場合、座標を回転（x <-> y を入れ替え）
+    if (this.settings.layout === 'tree') {
+      result.each((node: any) => {
+        const originalX = node.x;
+        const originalY = node.y;
+        // x と y を入れ替えて横方向にする
+        node.x = originalY;
+        node.y = originalX;
+      });
+    }
+    
+    return result;
   }
 
   /**
