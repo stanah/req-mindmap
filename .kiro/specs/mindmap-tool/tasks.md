@@ -1,18 +1,18 @@
 # 実装計画
 
-- [ ] 1. プロジェクト基盤の構築
+- [x] 1. プロジェクト基盤の構築
   - Vite + React + TypeScript環境をセットアップし、基本的なプロジェクト構造を作成する
   - 必要な依存関係（React、TypeScript、Vite、Zustand、js-yaml、Ajv、D3.js、Monaco Editor）をインストールする
   - 基本的なディレクトリ構造（src/components、src/services、src/types、src/utils）を作成する
   - _要件: 4.1, 4.2_
 
-- [ ] 2. 型定義とデータモデルの実装
-  - [ ] 2.1 コアデータ型の定義
+- [x] 2. 型定義とデータモデルの実装
+  - [x] 2.1 コアデータ型の定義
     - MindmapNode、MindmapData、CustomSchema、FieldDefinition、DisplayRuleのTypeScript型定義を作成する
     - 拡張可能なメタデータとカスタムフィールドに対応した型システムを実装する
     - _要件: 6.1, 6.3_
 
-  - [ ] 2.2 JSON Schemaの定義
+  - [x] 2.2 JSON Schemaの定義
     - 基本的なマインドマップデータ構造のJSON Schemaを作成する
     - カスタムスキーマ定義のためのJSON Schemaを作成する
     - スキーマバリデーション用のユーティリティ関数を実装する

@@ -1,0 +1,466 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mindmap-tool.example.com/schemas/custom-schema.json",
+  "title": "カスタムスキーマ定義",
+  "description": "マインドマップのカスタムフィールドとその表示ルールを定義するためのJSON Schema",
+  "type": "object",
+  "required": ["fields", "displayRules"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "スキーマのバージョン",
+      "pattern": "^\\d+\\.\\d+(\\.\\d+)?$",
+      "default": "1.0"
+    },
+    "name": {
+      "type": "string",
+      "description": "スキーマ名",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "スキーマの説明",
+      "maxLength": 500
+    },
+    "author": {
+      "type": "string",
+      "description": "スキーマ作成者",
+      "maxLength": 100
+    },
+    "createdAt": {
+      "type": "string",
+      "description": "作成日時",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "description": "更新日時",
+      "format": "date-time"
+    },
+    "fields": {
+      "type": "array",
+      "description": "カスタムフィールド定義の配列",
+      "items": {
+        "$ref": "#/definitions/FieldDefinition"
+      },
+      "minItems": 0,
+      "maxItems": 50,
+      "uniqueItems": true
+    },
+    "displayRules": {
+      "type": "array",
+      "description": "表示ルール定義の配列",
+      "items": {
+        "$ref": "#/definitions/DisplayRule"
+      },
+      "minItems": 0,
+      "maxItems": 100
+    },
+    "categories": {
+      "type": "array",
+      "description": "フィールドカテゴリ",
+      "items": {
+        "$ref": "#/definitions/FieldCategory"
+      },
+      "maxItems": 20
+    },
+    "templates": {
+      "type": "array",
+      "description": "ノードテンプレート",
+      "items": {
+        "$ref": "#/definitions/NodeTemplate"
+      },
+      "maxItems": 10
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "FieldDefinition": {
+      "type": "object",
+      "required": ["name", "type", "label"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "フィールド名（プログラム内で使用）",
+          "minLength": 1,
+          "maxLength": 50,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+        },
+        "type": {
+          "type": "string",
+          "description": "フィールドのデータ型",
+          "enum": ["string", "number", "boolean", "date", "select", "multiselect", "url", "email", "color", "file"]
+        },
+        "label": {
+          "type": "string",
+          "description": "ユーザー向け表示ラベル",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "description": "フィールドの詳細説明",
+          "maxLength": 300
+        },
+        "category": {
+          "type": "string",
+          "description": "フィールドカテゴリ",
+          "maxLength": 50
+        },
+        "required": {
+          "type": "boolean",
+          "description": "必須フィールドかどうか",
+          "default": false
+        },
+        "defaultValue": {
+          "description": "デフォルト値（型に応じて異なる）"
+        },
+        "placeholder": {
+          "type": "string",
+          "description": "入力フィールドのプレースホルダー",
+          "maxLength": 100
+        },
+        "helpText": {
+          "type": "string",
+          "description": "ヘルプテキスト",
+          "maxLength": 200
+        },
+        "options": {
+          "type": "array",
+          "description": "select/multiselect用の選択肢",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "object",
+                "required": ["value", "label"],
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "label": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "color": {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  },
+                  "icon": {
+                    "type": "string",
+                    "maxLength": 50
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 100
+        },
+        "validation": {
+          "type": "array",
+          "description": "バリデーションルール",
+          "items": {
+            "$ref": "#/definitions/ValidationRule"
+          },
+          "maxItems": 10
+        },
+        "conditional": {
+          "$ref": "#/definitions/ConditionalRule",
+          "description": "条件付き表示ルール"
+        },
+        "order": {
+          "type": "number",
+          "description": "表示順序",
+          "minimum": 0
+        },
+        "readonly": {
+          "type": "boolean",
+          "description": "読み取り専用かどうか",
+          "default": false
+        },
+        "hidden": {
+          "type": "boolean",
+          "description": "非表示かどうか",
+          "default": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "ValidationRule": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "バリデーションの種類",
+          "enum": [
+            "required",
+            "minLength",
+            "maxLength",
+            "pattern",
+            "min",
+            "max",
+            "email",
+            "url",
+            "date",
+            "custom"
+          ]
+        },
+        "value": {
+          "description": "バリデーション値（型に応じて異なる）"
+        },
+        "message": {
+          "type": "string",
+          "description": "カスタムエラーメッセージ",
+          "maxLength": 200
+        },
+        "severity": {
+          "type": "string",
+          "description": "エラーの重要度",
+          "enum": ["error", "warning", "info"],
+          "default": "error"
+        },
+        "condition": {
+          "type": "string",
+          "description": "バリデーション実行条件",
+          "maxLength": 200
+        }
+      },
+      "additionalProperties": false
+    },
+    "DisplayRule": {
+      "type": "object",
+      "required": ["field", "displayType"],
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "対象フィールド名",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "displayType": {
+          "type": "string",
+          "description": "表示タイプ",
+          "enum": ["badge", "icon", "color", "text", "progress", "chart", "link"]
+        },
+        "condition": {
+          "type": "string",
+          "description": "表示条件（JavaScript式）",
+          "maxLength": 300
+        },
+        "position": {
+          "type": "string",
+          "description": "表示位置",
+          "enum": ["inline", "tooltip", "sidebar", "header", "footer"],
+          "default": "inline"
+        },
+        "priority": {
+          "type": "number",
+          "description": "表示優先度",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 50
+        },
+        "style": {
+          "type": "object",
+          "description": "スタイル設定",
+          "properties": {
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$|^[a-zA-Z]+$"
+            },
+            "backgroundColor": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$|^[a-zA-Z]+$"
+            },
+            "fontSize": {
+              "type": "string",
+              "pattern": "^\\d+px$|^\\d+em$|^\\d+rem$"
+            },
+            "fontWeight": {
+              "type": "string",
+              "enum": ["normal", "bold", "lighter", "bolder"]
+            },
+            "borderColor": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$|^[a-zA-Z]+$"
+            },
+            "borderWidth": {
+              "type": "string",
+              "pattern": "^\\d+px$"
+            },
+            "borderRadius": {
+              "type": "string",
+              "pattern": "^\\d+px$"
+            },
+            "padding": {
+              "type": "string",
+              "pattern": "^\\d+px(\\s+\\d+px){0,3}$"
+            },
+            "margin": {
+              "type": "string",
+              "pattern": "^\\d+px(\\s+\\d+px){0,3}$"
+            }
+          },
+          "additionalProperties": true
+        },
+        "template": {
+          "type": "string",
+          "description": "表示テンプレート（Handlebars形式）",
+          "maxLength": 500
+        },
+        "icon": {
+          "type": "object",
+          "description": "アイコン設定",
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 50
+            },
+            "library": {
+              "type": "string",
+              "enum": ["fontawesome", "material", "feather", "custom"]
+            },
+            "size": {
+              "type": "string",
+              "pattern": "^\\d+px$|^small$|^medium$|^large$"
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$|^[a-zA-Z]+$"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "ConditionalRule": {
+      "type": "object",
+      "description": "条件付きルール",
+      "properties": {
+        "condition": {
+          "type": "string",
+          "description": "条件式（JavaScript）",
+          "maxLength": 300
+        },
+        "dependsOn": {
+          "type": "array",
+          "description": "依存するフィールド名",
+          "items": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "maxItems": 10
+        },
+        "action": {
+          "type": "string",
+          "description": "条件が満たされた時のアクション",
+          "enum": ["show", "hide", "enable", "disable", "require", "optional"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "FieldCategory": {
+      "type": "object",
+      "required": ["name", "label"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "カテゴリ名",
+          "minLength": 1,
+          "maxLength": 50,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+        },
+        "label": {
+          "type": "string",
+          "description": "表示ラベル",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "description": "カテゴリの説明",
+          "maxLength": 200
+        },
+        "color": {
+          "type": "string",
+          "description": "カテゴリの色",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "icon": {
+          "type": "string",
+          "description": "カテゴリのアイコン",
+          "maxLength": 50
+        },
+        "order": {
+          "type": "number",
+          "description": "表示順序",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "NodeTemplate": {
+      "type": "object",
+      "required": ["name", "label", "fields"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "テンプレート名",
+          "minLength": 1,
+          "maxLength": 50,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+        },
+        "label": {
+          "type": "string",
+          "description": "表示ラベル",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "description": "テンプレートの説明",
+          "maxLength": 200
+        },
+        "icon": {
+          "type": "string",
+          "description": "テンプレートのアイコン",
+          "maxLength": 50
+        },
+        "color": {
+          "type": "string",
+          "description": "テンプレートの色",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "fields": {
+          "type": "array",
+          "description": "テンプレートに含まれるフィールド",
+          "items": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "defaultValues": {
+          "type": "object",
+          "description": "フィールドのデフォルト値",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

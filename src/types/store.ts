@@ -1,63 +1,322 @@
-import type { MindmapData, ParseError, EditorSettings, MindmapSettings } from './mindmap';
+/**
+ * 状態管理の型定義
+ * 
+ * このファイルは、Zustandを使用した状態管理で使用される
+ * 型とインターフェースを定義します。
+ */
 
-// アプリケーション全体の状態
-export interface AppState {
-  // ファイル状態
+import { 
+  MindmapData, 
+  ParseError, 
+  NodeSelection, 
+  NodeEvent, 
+  EditorSettings, 
+  MindmapSettings,
+  AppSettings,
+  ValidationResult
+} from './mindmap';
+
+/**
+ * ファイル状態
+ */
+export interface FileState {
+  /** 現在開いているファイルのパス */
   currentFile: string | null;
+  /** ファイルの内容 */
   fileContent: string;
+  /** 変更されているかどうか */
   isDirty: boolean;
-  
-  // パース状態
+  /** 最後に保存された時刻 */
+  lastSaved: number | null;
+  /** ファイル形式 */
+  fileFormat: 'json' | 'yaml' | null;
+  /** ファイルサイズ */
+  fileSize: number;
+  /** ファイルの文字エンコーディング */
+  encoding: string;
+}
+
+/**
+ * パース状態
+ */
+export interface ParseState {
+  /** 解析されたマインドマップデータ */
   parsedData: MindmapData | null;
+  /** パースエラーの配列 */
   parseErrors: ParseError[];
-  isValidData: boolean;
-  
-  // UI状態
+  /** バリデーション結果 */
+  validationResult: ValidationResult | null;
+  /** パース中かどうか */
+  isParsing: boolean;
+  /** 最後にパースした時刻 */
+  lastParsed: number | null;
+  /** パースの成功回数 */
+  parseSuccessCount: number;
+  /** パースの失敗回数 */
+  parseErrorCount: number;
+}
+
+/**
+ * UI状態
+ */
+export interface UIState {
+  /** エディタ設定 */
   editorSettings: EditorSettings;
+  /** マインドマップ設定 */
   mindmapSettings: MindmapSettings;
+  /** 選択されたノードID */
   selectedNodeId: string | null;
+  /** ノード選択情報 */
+  nodeSelection: NodeSelection | null;
+  /** サイドバーが開いているかどうか */
+  sidebarOpen: boolean;
+  /** 設定パネルが開いているかどうか */
+  settingsPanelOpen: boolean;
+  /** エラーパネルが開いているかどうか */
+  errorPanelOpen: boolean;
+  /** ローディング状態 */
   isLoading: boolean;
-  
-  // アクション
+  /** ローディングメッセージ */
+  loadingMessage: string;
+  /** 通知メッセージ */
+  notifications: Notification[];
+  /** モーダルダイアログの状態 */
+  modal: ModalState | null;
+  /** パネルのサイズ */
+  panelSizes: {
+    editor: number;
+    mindmap: number;
+  };
+  /** フルスクリーンモード */
+  fullscreen: boolean;
+  /** ダークモード */
+  darkMode: boolean;
+}
+
+/**
+ * 通知メッセージ
+ */
+export interface Notification {
+  /** 通知ID */
+  id: string;
+  /** メッセージ */
+  message: string;
+  /** 通知タイプ */
+  type: 'info' | 'success' | 'warning' | 'error';
+  /** 表示時刻 */
+  timestamp: number;
+  /** 自動で消えるかどうか */
+  autoHide: boolean;
+  /** 表示時間（ミリ秒） */
+  duration?: number;
+  /** アクションボタン */
+  actions?: Array<{
+    label: string;
+    action: () => void;
+  }>;
+}
+
+/**
+ * モーダルダイアログの状態
+ */
+export interface ModalState {
+  /** モーダルタイプ */
+  type: 'confirm' | 'prompt' | 'alert' | 'custom';
+  /** タイトル */
+  title: string;
+  /** メッセージ */
+  message: string;
+  /** 入力値（promptタイプの場合） */
+  inputValue?: string;
+  /** 確認コールバック */
+  onConfirm?: (value?: string) => void;
+  /** キャンセルコールバック */
+  onCancel?: () => void;
+  /** カスタムコンテンツ */
+  customContent?: React.ReactNode;
+}
+
+/**
+ * アプリケーション状態
+ */
+export interface AppState {
+  /** ファイル状態 */
+  file: FileState;
+  /** パース状態 */
+  parse: ParseState;
+  /** UI状態 */
+  ui: UIState;
+  /** アプリケーション設定 */
+  settings: AppSettings;
+  /** 最近開いたファイル */
+  recentFiles: string[];
+  /** アプリケーションの初期化状態 */
+  initialized: boolean;
+  /** デバッグモード */
+  debugMode: boolean;
+}
+
+/**
+ * アクション型定義
+ */
+export interface AppActions {
+  // ファイル操作
+  /** ファイルを読み込む */
   loadFile: (path: string) => Promise<void>;
+  /** ファイルを保存する */
   saveFile: () => Promise<void>;
+  /** 名前を付けて保存 */
   saveFileAs: (path: string) => Promise<void>;
+  /** 新規ファイルを作成 */
+  newFile: () => void;
+  /** ファイルを閉じる */
+  closeFile: () => void;
+  /** 最近のファイルを開く */
+  openRecentFile: (path: string) => Promise<void>;
+
+  // エディタ操作
+  /** エディタの内容を更新 */
   updateContent: (content: string) => void;
-  selectNode: (nodeId: string) => void;
-  toggleNodeCollapse: (nodeId: string) => void;
+  /** エディタ設定を更新 */
   updateEditorSettings: (settings: Partial<EditorSettings>) => void;
-  updateMindmapSettings: (settings: Partial<MindmapSettings>) => void;
-  clearErrors: () => void;
-  setLoading: (loading: boolean) => void;
-}
+  /** エディタにフォーカス */
+  focusEditor: () => void;
+  /** 指定行にジャンプ */
+  goToLine: (line: number) => void;
 
-// エディタ専用の状態
-export interface EditorState {
-  content: string;
-  language: 'json' | 'yaml';
-  errors: ParseError[];
-  cursorPosition: { line: number; column: number };
-  
-  // アクション
-  setContent: (content: string) => void;
-  setLanguage: (language: 'json' | 'yaml') => void;
-  setErrors: (errors: ParseError[]) => void;
-  setCursorPosition: (position: { line: number; column: number }) => void;
-}
-
-// マインドマップ専用の状態
-export interface MindmapState {
-  data: MindmapData | null;
-  selectedNodeId: string | null;
-  collapsedNodes: Set<string>;
-  zoomLevel: number;
-  panOffset: { x: number; y: number };
-  
-  // アクション
-  setData: (data: MindmapData | null) => void;
-  selectNode: (nodeId: string | null) => void;
+  // マインドマップ操作
+  /** ノードを選択 */
+  selectNode: (nodeId: string) => void;
+  /** ノードの折りたたみ状態を切り替え */
   toggleNodeCollapse: (nodeId: string) => void;
+  /** マインドマップ設定を更新 */
+  updateMindmapSettings: (settings: Partial<MindmapSettings>) => void;
+  /** ズームレベルを設定 */
   setZoom: (level: number) => void;
-  setPan: (offset: { x: number; y: number }) => void;
-  resetView: () => void;
+  /** 中心位置を設定 */
+  setCenter: (x: number, y: number) => void;
+  /** レイアウトをリセット */
+  resetLayout: () => void;
+
+  // UI操作
+  /** サイドバーの表示/非表示を切り替え */
+  toggleSidebar: () => void;
+  /** 設定パネルの表示/非表示を切り替え */
+  toggleSettingsPanel: () => void;
+  /** エラーパネルの表示/非表示を切り替え */
+  toggleErrorPanel: () => void;
+  /** パネルサイズを更新 */
+  updatePanelSizes: (sizes: { editor: number; mindmap: number }) => void;
+  /** フルスクリーンモードを切り替え */
+  toggleFullscreen: () => void;
+  /** ダークモードを切り替え */
+  toggleDarkMode: () => void;
+
+  // 通知操作
+  /** 通知を追加 */
+  addNotification: (notification: Omit<Notification, 'id' | 'timestamp'>) => void;
+  /** 通知を削除 */
+  removeNotification: (id: string) => void;
+  /** 全ての通知をクリア */
+  clearNotifications: () => void;
+
+  // モーダル操作
+  /** モーダルを表示 */
+  showModal: (modal: ModalState) => void;
+  /** モーダルを閉じる */
+  closeModal: () => void;
+
+  // 設定操作
+  /** 設定を更新 */
+  updateSettings: (settings: Partial<AppSettings>) => void;
+  /** 設定をリセット */
+  resetSettings: () => void;
+  /** 設定をエクスポート */
+  exportSettings: () => Record<string, any>;
+  /** 設定をインポート */
+  importSettings: (settings: Record<string, any>) => void;
+
+  // アプリケーション操作
+  /** アプリケーションを初期化 */
+  initialize: () => Promise<void>;
+  /** デバッグモードを切り替え */
+  toggleDebugMode: () => void;
+  /** アプリケーションをリセット */
+  reset: () => void;
 }
+
+/**
+ * ストアの型定義
+ */
+export type AppStore = AppState & AppActions;
+
+/**
+ * ストアセレクター
+ */
+export interface StoreSelectors {
+  /** ファイルが開かれているかどうか */
+  hasOpenFile: (state: AppState) => boolean;
+  /** ファイルが変更されているかどうか */
+  isFileDirty: (state: AppState) => boolean;
+  /** パースエラーがあるかどうか */
+  hasParseErrors: (state: AppState) => boolean;
+  /** ノードが選択されているかどうか */
+  hasSelectedNode: (state: AppState) => boolean;
+  /** ローディング中かどうか */
+  isLoading: (state: AppState) => boolean;
+  /** 通知があるかどうか */
+  hasNotifications: (state: AppState) => boolean;
+  /** モーダルが開いているかどうか */
+  isModalOpen: (state: AppState) => boolean;
+  /** 現在のファイル名を取得 */
+  getCurrentFileName: (state: AppState) => string | null;
+  /** 現在のファイル拡張子を取得 */
+  getCurrentFileExtension: (state: AppState) => string | null;
+  /** エラー数を取得 */
+  getErrorCount: (state: AppState) => number;
+  /** 警告数を取得 */
+  getWarningCount: (state: AppState) => number;
+}
+
+/**
+ * ストアミドルウェア
+ */
+export interface StoreMiddleware {
+  /** アクション実行前の処理 */
+  beforeAction?: (actionName: string, args: any[]) => void;
+  /** アクション実行後の処理 */
+  afterAction?: (actionName: string, args: any[], result: any) => void;
+  /** エラー処理 */
+  onError?: (error: Error, actionName: string, args: any[]) => void;
+}
+
+/**
+ * ストア設定
+ */
+export interface StoreConfig {
+  /** 永続化するかどうか */
+  persist: boolean;
+  /** 永続化キー */
+  persistKey: string;
+  /** デバッグモード */
+  debug: boolean;
+  /** ミドルウェア */
+  middleware: StoreMiddleware[];
+}
+
+/**
+ * ストアイベント
+ */
+export interface StoreEvent {
+  /** イベントタイプ */
+  type: string;
+  /** イベントデータ */
+  data: any;
+  /** イベント発生時刻 */
+  timestamp: number;
+}
+
+/**
+ * ストアリスナー
+ */
+export type StoreListener<T = any> = (event: StoreEvent, state: AppState) => void;
