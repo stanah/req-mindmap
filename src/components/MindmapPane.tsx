@@ -1,60 +1,151 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { useAppStore } from '../stores';
 import { useMindmapSync } from '../hooks';
+import { MindmapRenderer, D3Node, RendererEventHandlers } from '../services/mindmapRenderer';
+import { NodeDetailsPanel } from './NodeDetailsPanel';
 import './MindmapPane.css';
 
 export const MindmapPane: React.FC = () => {
   const svgRef = useRef<SVGSVGElement>(null);
+  const rendererRef = useRef<MindmapRenderer | null>(null);
   
   // 新しいZustandストアからの状態取得
   const parsedData = useAppStore(state => state.parse.parsedData);
   const mindmapSettings = useAppStore(state => state.ui.mindmapSettings);
-
+  const selectedNodeId = useAppStore(state => state.ui.selectedNodeId);
+  const selectNode = useAppStore(state => state.selectNode);
   
   // マインドマップ同期フックの使用
   const { updateMindmapSettings: syncUpdateSettings } = useMindmapSync();
 
+  // イベントハンドラーの定義
+  const eventHandlers: RendererEventHandlers = useCallback(() => ({
+    onNodeClick: (node: D3Node, event: MouseEvent) => {
+      console.log('ノードクリック:', node.data.title);
+      selectNode(node.data.id);
+      
+      // ダブルクリックでフォーカス
+      if (event.detail === 2 && rendererRef.current) {
+        rendererRef.current.focusNode(node.data.id);
+      }
+    },
+    onNodeHover: (node: D3Node, event: MouseEvent) => {
+      // ホバー時の処理
+      const target = event.target as SVGElement;
+      if (target) {
+        target.style.cursor = 'pointer';
+      }
+    },
+    onNodeLeave: (node: D3Node, event: MouseEvent) => {
+      // ホバー終了時の処理
+      const target = event.target as SVGElement;
+      if (target) {
+        target.style.cursor = 'default';
+      }
+    },
+    onBackgroundClick: (event: MouseEvent) => {
+      // 背景クリック時の処理
+      selectNode(null);
+    },
+  }), [selectNode]);
+
+  // レンダラーの初期化
   useEffect(() => {
-    if (!svgRef.current || !parsedData) {
+    if (!svgRef.current) return;
+
+    // 既存のレンダラーをクリーンアップ
+    if (rendererRef.current) {
+      rendererRef.current.destroy();
+    }
+
+    // 新しいレンダラーを作成
+    rendererRef.current = new MindmapRenderer(
+      svgRef.current,
+      mindmapSettings,
+      eventHandlers()
+    );
+
+    return () => {
+      if (rendererRef.current) {
+        rendererRef.current.destroy();
+        rendererRef.current = null;
+      }
+    };
+  }, [mindmapSettings, eventHandlers]);
+
+  // データの描画
+  useEffect(() => {
+    if (!rendererRef.current || !parsedData) {
       return;
     }
 
-    // TODO: D3.jsを使用したマインドマップの描画処理を実装
-    // 現在はプレースホルダー
-    console.log('Rendering mindmap with data:', parsedData);
-    
-    // SVGをクリア
-    const svg = svgRef.current;
-    while (svg.firstChild) {
-      svg.removeChild(svg.firstChild);
+    console.log('マインドマップを描画中:', parsedData.title);
+    rendererRef.current.render(parsedData);
+  }, [parsedData]);
+
+  // 設定の更新
+  useEffect(() => {
+    if (rendererRef.current) {
+      rendererRef.current.updateSettings(mindmapSettings);
     }
+  }, [mindmapSettings]);
 
-    // プレースホルダーテキストを表示
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('x', '50%');
-    text.setAttribute('y', '50%');
-    text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('dominant-baseline', 'middle');
-    text.setAttribute('fill', '#666');
-    text.setAttribute('font-size', '16');
-    text.textContent = 'マインドマップがここに表示されます';
-    svg.appendChild(text);
+  // 選択ノードの更新
+  useEffect(() => {
+    if (rendererRef.current) {
+      rendererRef.current.selectNode(selectedNodeId);
+    }
+  }, [selectedNodeId]);
 
-  }, [parsedData, mindmapSettings]);
+  // キーボードショートカット
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!rendererRef.current) return;
+
+      // Ctrl/Cmd + 0: ビューをリセット
+      if ((event.ctrlKey || event.metaKey) && event.key === '0') {
+        event.preventDefault();
+        rendererRef.current.resetView();
+      }
+      // Ctrl/Cmd + +: ズームイン
+      else if ((event.ctrlKey || event.metaKey) && (event.key === '+' || event.key === '=')) {
+        event.preventDefault();
+        rendererRef.current.zoomIn();
+      }
+      // Ctrl/Cmd + -: ズームアウト
+      else if ((event.ctrlKey || event.metaKey) && event.key === '-') {
+        event.preventDefault();
+        rendererRef.current.zoomOut();
+      }
+      // スペースキー: 選択ノードの折りたたみ切り替え
+      else if (event.key === ' ' && selectedNodeId) {
+        event.preventDefault();
+        rendererRef.current.toggleNode(selectedNodeId);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedNodeId]);
 
   const handleZoomIn = () => {
-    // TODO: ズームイン処理を実装
-    console.log('Zoom in');
+    if (rendererRef.current) {
+      rendererRef.current.zoomIn();
+    }
   };
 
   const handleZoomOut = () => {
-    // TODO: ズームアウト処理を実装
-    console.log('Zoom out');
+    if (rendererRef.current) {
+      rendererRef.current.zoomOut();
+    }
   };
 
   const handleResetView = () => {
-    // TODO: ビューリセット処理を実装
-    console.log('Reset view');
+    if (rendererRef.current) {
+      rendererRef.current.resetView();
+    }
   };
 
   const handleLayoutChange = (layout: 'tree' | 'radial') => {
@@ -85,6 +176,25 @@ export const MindmapPane: React.FC = () => {
             title="ビューをリセット"
           >
             ⌂
+          </button>
+        </div>
+        
+        <div className="node-controls">
+          <button
+            className="toolbar-btn"
+            onClick={() => selectedNodeId && rendererRef.current?.toggleNode(selectedNodeId)}
+            disabled={!selectedNodeId}
+            title="選択ノードの折りたたみ切り替え (Space)"
+          >
+            ⌄
+          </button>
+          <button
+            className="toolbar-btn"
+            onClick={() => selectedNodeId && rendererRef.current?.focusNode(selectedNodeId)}
+            disabled={!selectedNodeId}
+            title="選択ノードにフォーカス"
+          >
+            ⊙
           </button>
         </div>
         
@@ -123,6 +233,16 @@ export const MindmapPane: React.FC = () => {
             <h3>マインドマップを表示するには</h3>
             <p>左側のエディタでJSON/YAMLファイルを編集するか、ファイルを読み込んでください。</p>
           </div>
+        </div>
+      )}
+      
+      {selectedNodeId && parsedData && (
+        <div className="node-details-panel">
+          <NodeDetailsPanel 
+            nodeId={selectedNodeId}
+            data={parsedData}
+            onClose={() => selectNode(null)}
+          />
         </div>
       )}
     </div>
