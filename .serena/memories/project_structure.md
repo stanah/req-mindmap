@@ -2,7 +2,7 @@
 
 ## ルートディレクトリ
 ```
-requirements-mindmap/
+req-mindmap/
 ├── .kiro/                # プロジェクト仕様・設計ドキュメント
 │   ├── specs/           # 仕様書
 │   │   └── mindmap-tool/
