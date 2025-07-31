@@ -29,6 +29,31 @@
   align-items: center;
 }
 
+.header-btn {
+  background-color: var(--primary-color, #2563eb);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header-btn:hover {
+  background-color: var(--primary-hover, #1d4ed8);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-btn:active {
+  transform: translateY(0);
+}
+
 .layout-main {
   flex: 1;
   display: flex;
