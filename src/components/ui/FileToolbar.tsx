@@ -71,32 +71,9 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
    * ファイル保存ハンドラー
    */
   const handleSaveFile = async () => {
-    if (!file.currentFile) {
-      // 新規ファイルの場合は「名前を付けて保存」
-      await handleSaveAsFile();
-      return;
-    }
-
     try {
-      await saveFile();
-    } catch (error) {
-      addNotification({
-        message: `保存エラー: ${error instanceof Error ? error.message : '不明なエラー'}`,
-        type: 'error',
-        autoHide: true,
-        duration: 5000,
-      });
-    }
-  };
-
-  /**
-   * 名前を付けて保存ハンドラー
-   */
-  const handleSaveAsFile = async () => {
-    try {
-      const suggestedName = file.currentFile 
-        ? file.currentFile.split('/').pop()
-        : 'mindmap.json';
+      // 常にmindmap.jsonとして保存
+      const suggestedName = 'mindmap.json';
       
       // BrowserFileServiceにキャストしてsaveFileWithOptionsメソッドを呼び出し
       const browserService = fileService as BrowserFileService;
@@ -210,18 +187,9 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
           className="file-toolbar__button"
           onClick={handleSaveFile}
           disabled={!file.fileContent}
-          title={file.currentFile ? 'ファイルを保存' : '名前を付けて保存'}
+          title="ファイルを保存"
         >
           💾 保存
-        </button>
-        
-        <button
-          className="file-toolbar__button"
-          onClick={handleSaveAsFile}
-          disabled={!file.fileContent}
-          title="名前を付けて保存"
-        >
-          📄 名前を付けて保存
         </button>
       </div>
 
