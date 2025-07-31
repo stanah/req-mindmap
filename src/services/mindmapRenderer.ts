@@ -49,6 +49,7 @@ export class MindmapRenderer {
   private settings: MindmapSettings;
   private eventHandlers: RendererEventHandlers = {};
   private customSchema: CustomSchema | null = null;
+  private resizeObserver: ResizeObserver | null = null;
 
   // レイアウト設定
   private readonly NODE_WIDTH = 160;
@@ -76,6 +77,26 @@ export class MindmapRenderer {
     this.eventHandlers = eventHandlers;
 
     this.initializeSVG(svgElement);
+    this.setupResizeObserver(svgElement);
+  }
+
+  /**
+   * リサイズ監視のセットアップ
+   */
+  private setupResizeObserver(svgElement: SVGSVGElement): void {
+    if (!window.ResizeObserver) return;
+
+    this.resizeObserver = new ResizeObserver(() => {
+      // レイアウトを再計算してビューを調整
+      if (this.root) {
+        setTimeout(() => {
+          this.centerView();
+        }, 100); // 少し遅延を入れて確実にリサイズが完了してから実行
+      }
+    });
+
+    // SVG要素のリサイズを監視
+    this.resizeObserver.observe(svgElement);
   }
 
   /**
@@ -86,6 +107,12 @@ export class MindmapRenderer {
     
     // 既存の内容をクリア
     this.svg.selectAll('*').remove();
+
+    // SVGのサイズを100%に設定
+    this.svg
+      .attr('width', '100%')
+      .attr('height', '100%')
+      .style('display', 'block');
 
     // ズーム機能の設定
     this.zoom = d3.zoom<SVGSVGElement, unknown>()
@@ -145,8 +172,10 @@ export class MindmapRenderer {
     // 描画の実行
     this.draw();
 
-    // 初期ビューの設定
-    this.centerView();
+    // 初期ビューの設定（少し遅延を入れて確実に描画完了を待つ）
+    setTimeout(() => {
+      this.centerView();
+    }, 50);
   }
 
   /**
@@ -166,28 +195,77 @@ export class MindmapRenderer {
       case 'tree':
       default:
         // 横方向ツリーレイアウト（左から右）
+        // nodeSizeを使って固定サイズから開始し、後で調整
         layout = d3.tree<MindmapNode>()
-          .nodeSize([this.settings.nodeSpacing || this.NODE_SPACING, this.settings.levelSpacing || this.LEVEL_SPACING])
-          .separation((a, b) => {
-            return a.parent === b.parent ? 1 : 1.2;
+          .nodeSize([this.NODE_SPACING * 1.5, this.LEVEL_SPACING])
+          .separation((a: any, b: any) => {
+            // 実際のノードサイズに基づいた分離距離を計算
+            const aNode = a as D3Node;
+            const bNode = b as D3Node;
+            
+            // ノードの高さに基づく間隔計算
+            const maxHeight = Math.max(aNode.height || this.NODE_HEIGHT, bNode.height || this.NODE_HEIGHT);
+            const baseSpacing = maxHeight / this.NODE_SPACING;
+            
+            // 同じ親の子ノード間は基本間隔、異なる親の子ノード間は1.5倍
+            const separationMultiplier = a.parent === b.parent ? 1.2 : 1.8;
+            
+            return baseSpacing * separationMultiplier;
           });
         break;
     }
 
     const result = layout(hierarchy) as D3Node;
     
-    // 横方向レイアウトの場合、座標を回転（x <-> y を入れ替え）
+    // 横方向レイアウトの場合の座標変換
     if (this.settings.layout === 'tree') {
+      // x <-> y を入れ替えて横方向にする
       result.each((node: any) => {
         const originalX = node.x;
         const originalY = node.y;
-        // x と y を入れ替えて横方向にする
-        node.x = originalY;
-        node.y = originalX;
+        node.x = originalY; // 水平位置（左から右）
+        node.y = originalX; // 垂直位置（上から下）
       });
+      
+      // ノード間の重なりを防ぐ調整
+      this.preventNodeOverlaps(result);
     }
     
     return result;
+  }
+
+  /**
+   * ノードの重なりを防ぐ（シンプルなアプローチ）
+   */
+  private preventNodeOverlaps(root: D3Node): void {
+    // 同じレベルの兄弟ノード間の重なりをチェック・修正
+    root.each((node: D3Node) => {
+      if (!node.parent || !node.parent.children) return;
+      
+      const siblings = node.parent.children as D3Node[];
+      if (siblings.length <= 1) return;
+      
+      // Y座標順にソート
+      const sortedSiblings = [...siblings].sort((a, b) => a.y - b.y);
+      
+      // 各ノードペアの間隔をチェック
+      for (let i = 1; i < sortedSiblings.length; i++) {
+        const prevNode = sortedSiblings[i - 1];
+        const currentNode = sortedSiblings[i];
+        
+        // 必要な最小間隔を計算（各ノードの高さの半分 + マージン）
+        const minDistance = (prevNode.height + currentNode.height) / 2 + 40;
+        const actualDistance = currentNode.y - prevNode.y;
+        
+        if (actualDistance < minDistance) {
+          // 重なりがある場合、現在のノードとそれ以降を下に移動
+          const adjustment = minDistance - actualDistance;
+          for (let j = i; j < sortedSiblings.length; j++) {
+            sortedSiblings[j].y += adjustment;
+          }
+        }
+      }
+    });
   }
 
   /**
@@ -431,8 +509,35 @@ export class MindmapRenderer {
    * テキスト幅の計算
    */
   private calculateTextWidth(text: string): number {
-    // 簡易的な計算（実際のフォントメトリクスを使用する場合はより正確）
-    return text.length * 8 + 20;
+    // より正確な文字幅計算（日本語と英語を考慮）
+    let width = 0;
+    for (let i = 0; i < text.length; i++) {
+      const char = text.charAt(i);
+      // 日本語文字（ひらがな、カタカナ、漢字）は幅広
+      if (char.match(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/)) {
+        width += 14; // 日本語文字の幅
+      } else {
+        width += 8; // 英数字の幅
+      }
+    }
+    return Math.max(width + 40, this.NODE_WIDTH * 0.8); // 最小幅を保証
+  }
+
+  /**
+   * バッジ用テキスト幅の計算
+   */
+  private calculateBadgeTextWidth(text: string): number {
+    let width = 0;
+    for (let i = 0; i < text.length; i++) {
+      const char = text.charAt(i);
+      // 小さいフォント用の幅計算
+      if (char.match(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/)) {
+        width += 10; // 日本語文字の幅（10pxフォント）
+      } else {
+        width += 6; // 英数字の幅（10pxフォント）
+      }
+    }
+    return Math.max(width, 20); // 最小幅20px
   }
 
   /**
@@ -579,25 +684,31 @@ export class MindmapRenderer {
           .attr('fill', badge.style.backgroundColor || '#e5e7eb')
           .attr('stroke', badge.style.borderColor || 'none');
 
+        // バッジの幅を計算（日本語対応）
+        const textWidth = this.calculateBadgeTextWidth(badge.text) + 12; // パディング追加
+
         // バッジのテキスト
         const badgeText = badgeGroup
           .append('text')
           .attr('class', 'mindmap-badge-text')
           .attr('text-anchor', 'middle')
-          .attr('dominant-baseline', 'middle')
+          .attr('dominant-baseline', 'central')
           .attr('font-size', '10px')
           .attr('font-weight', '500')
           .attr('fill', badge.style.color || '#374151')
           .attr('pointer-events', 'none')
+          .attr('x', 0) // バッジグループの中央
+          .attr('y', this.BADGE_HEIGHT / 2) // バッジの垂直中央
           .text(badge.text);
 
-        // バッジの幅を計算
-        const textWidth = badge.text.length * 6 + 8;
-        badgeRect.attr('width', textWidth);
+        // バッジ背景のサイズと位置
+        badgeRect
+          .attr('width', textWidth)
+          .attr('x', -textWidth / 2)
+          .attr('y', 0);
 
-        // バッジの位置を設定
-        badgeGroup.attr('transform', `translate(${xOffset + textWidth / 2}, ${d.height / 2 - this.BADGE_HEIGHT / 2 - 2})`);
-        badgeRect.attr('x', -textWidth / 2);
+        // バッジグループの位置を設定
+        badgeGroup.attr('transform', `translate(${xOffset + textWidth / 2}, ${d.height / 2 - this.BADGE_HEIGHT - 4})`);
 
         xOffset += textWidth + 4;
       });
@@ -610,23 +721,35 @@ export class MindmapRenderer {
   public centerView(): void {
     if (!this.root) return;
 
-    const svgRect = (this.svg.node() as SVGSVGElement).getBoundingClientRect();
-    const bounds = this.container.node()?.getBBox();
+    const svgElement = this.svg.node() as SVGSVGElement;
+    const svgRect = svgElement.getBoundingClientRect();
     
-    if (!bounds) return;
+    // SVGのサイズが0の場合は少し待ってから再試行
+    if (svgRect.width === 0 || svgRect.height === 0) {
+      setTimeout(() => this.centerView(), 100);
+      return;
+    }
+
+    const bounds = this.container.node()?.getBBox();
+    if (!bounds || bounds.width === 0) return;
 
     const centerX = svgRect.width / 2;
     const centerY = svgRect.height / 2;
     
+    // より適切なスケーリング計算
+    const padding = 50;
     const scale = Math.min(
-      svgRect.width / (bounds.width + 100),
-      svgRect.height / (bounds.height + 100),
+      (svgRect.width - padding) / bounds.width,
+      (svgRect.height - padding) / bounds.height,
       1
     );
 
+    // ルートノードを左側に配置（横レイアウト用）
+    const rootX = bounds.x + bounds.width / 2;
+    const rootY = bounds.y + bounds.height / 2;
+    
     const transform = d3.zoomIdentity
-      .translate(centerX - bounds.x * scale - bounds.width * scale / 2, 
-                centerY - bounds.y * scale - bounds.height * scale / 2)
+      .translate(centerX - rootX * scale, centerY - rootY * scale)
       .scale(scale);
 
     if (this.settings.enableAnimation) {
@@ -774,6 +897,12 @@ export class MindmapRenderer {
    * リソースのクリーンアップ
    */
   public destroy(): void {
+    // リサイズ監視を停止
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
+    }
+    
     this.svg.selectAll('*').remove();
     this.svg.on('.zoom', null);
   }
