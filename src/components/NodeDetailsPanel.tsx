@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { MindmapData, MindmapNode } from '../types/mindmap';
+import type { MindmapData, MindmapNode } from '../types/mindmap';
 
 interface NodeDetailsPanelProps {
   nodeId: string;

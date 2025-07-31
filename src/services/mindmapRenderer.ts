@@ -6,7 +6,7 @@
  */
 
 import * as d3 from 'd3';
-import { MindmapData, MindmapNode, MindmapSettings, CustomSchema, DisplayRule } from '../types/mindmap';
+import type { MindmapData, MindmapNode, MindmapSettings, CustomSchema, DisplayRule } from '../types/mindmap';
 
 /**
  * D3.js用の拡張ノードデータ
@@ -42,9 +42,9 @@ export interface RendererEventHandlers {
  * マインドマップレンダラークラス
  */
 export class MindmapRenderer {
-  private svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
-  private container: d3.Selection<SVGGElement, unknown, null, undefined>;
-  private zoom: d3.ZoomBehavior<SVGSVGElement, unknown>;
+  private svg!: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+  private container!: d3.Selection<SVGGElement, unknown, null, undefined>;
+  private zoom!: d3.ZoomBehavior<SVGSVGElement, unknown>;
   private root: D3Node | null = null;
   private settings: MindmapSettings;
   private eventHandlers: RendererEventHandlers = {};
@@ -124,7 +124,7 @@ export class MindmapRenderer {
     const hierarchy = d3.hierarchy(data.root);
     
     // ノードサイズの計算
-    hierarchy.each((node: D3Node) => {
+    hierarchy.each((node: any) => {
       const nodeData = node.data;
       const textLength = this.calculateTextWidth(nodeData.title);
       const badgeHeight = this.calculateBadgeHeight(nodeData);
@@ -135,7 +135,7 @@ export class MindmapRenderer {
       // 折りたたみ状態の初期化
       if (nodeData.collapsed && node.children) {
         node._children = node.children;
-        node.children = null;
+        node.children = null as any;
       }
     });
 
@@ -337,7 +337,7 @@ export class MindmapRenderer {
 
     // 折りたたみインジケーター（子ノードがある場合）
     const collapseGroup = nodeEnter
-      .filter(d => (d.children && d.children.length > 0) || (d._children && d._children.length > 0))
+      .filter((d: D3Node) => (d.children && d.children.length > 0) || (d._children && d._children.length > 0))
       .append('g')
       .attr('class', 'mindmap-collapse-group')
       .attr('cursor', 'pointer')

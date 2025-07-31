@@ -1,7 +1,8 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import { useAppStore } from '../stores';
 import { useMindmapSync } from '../hooks';
-import { MindmapRenderer, D3Node, RendererEventHandlers } from '../services/mindmapRenderer';
+import { MindmapRenderer } from '../services/mindmapRenderer';
+import type { D3Node, RendererEventHandlers } from '../services/mindmapRenderer';
 import { NodeDetailsPanel } from './NodeDetailsPanel';
 import './MindmapPane.css';
 
@@ -19,7 +20,7 @@ export const MindmapPane: React.FC = () => {
   const { updateMindmapSettings: syncUpdateSettings } = useMindmapSync();
 
   // イベントハンドラーの定義
-  const eventHandlers: RendererEventHandlers = useCallback(() => ({
+  const eventHandlers: RendererEventHandlers = useMemo(() => ({
     onNodeClick: (node: D3Node, event: MouseEvent) => {
       console.log('ノードクリック:', node.data.title);
       selectNode(node.data.id);
@@ -45,7 +46,7 @@ export const MindmapPane: React.FC = () => {
     },
     onBackgroundClick: (event: MouseEvent) => {
       // 背景クリック時の処理
-      selectNode(null);
+      selectNode(null as any);
     },
   }), [selectNode]);
 
@@ -62,7 +63,7 @@ export const MindmapPane: React.FC = () => {
     rendererRef.current = new MindmapRenderer(
       svgRef.current,
       mindmapSettings,
-      eventHandlers()
+      eventHandlers
     );
 
     return () => {
