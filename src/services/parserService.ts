@@ -1,188 +1,158 @@
+/**
+ * パーサーサービス実装
+ * 
+ * JSON/YAMLファイルの解析、バリデーション、エラー検出を担当するサービスクラス
+ */
+
 import * as yaml from 'js-yaml';
-import Ajv from 'ajv';
-import type { ParserService, MindmapData, ParseError, ValidationResult } from '../types';
-import { ERROR_MESSAGES } from '../utils';
+import type { 
+  ParserService, 
+  MindmapData, 
+  ParseError, 
+  ValidationResult, 
+  CustomSchema 
+} from '../types';
+import { schemaValidator } from '../utils/schemaValidator';
 
-// マインドマップデータのJSONスキーマ
-const mindmapSchema = {
-  type: 'object',
-  required: ['version', 'title', 'root'],
-  properties: {
-    version: { type: 'string' },
-    title: { type: 'string' },
-    root: {
-      type: 'object',
-      required: ['id', 'title'],
-      properties: {
-        id: { type: 'string' },
-        title: { type: 'string' },
-        description: { type: 'string' },
-        children: {
-          type: 'array',
-          items: { $ref: '#/properties/root' }
-        },
-        metadata: { type: 'object' },
-        position: {
-          type: 'object',
-          properties: {
-            x: { type: 'number' },
-            y: { type: 'number' }
-          }
-        },
-        collapsed: { type: 'boolean' },
-        customFields: { type: 'object' }
-      }
-    },
-    schema: {
-      type: 'object',
-      properties: {
-        fields: {
-          type: 'array',
-          items: {
-            type: 'object',
-            required: ['name', 'type', 'label'],
-            properties: {
-              name: { type: 'string' },
-              type: { 
-                type: 'string',
-                enum: ['string', 'number', 'boolean', 'date', 'select', 'multiselect']
-              },
-              label: { type: 'string' },
-              required: { type: 'boolean' },
-              options: {
-                type: 'array',
-                items: { type: 'string' }
-              }
-            }
-          }
-        },
-        displayRules: {
-          type: 'array',
-          items: {
-            type: 'object',
-            required: ['field', 'displayType'],
-            properties: {
-              field: { type: 'string' },
-              displayType: {
-                type: 'string',
-                enum: ['badge', 'icon', 'color', 'text']
-              },
-              condition: { type: 'string' },
-              style: { type: 'object' }
-            }
-          }
-        }
-      }
-    },
-    settings: {
-      type: 'object',
-      properties: {
-        theme: {
-          type: 'string',
-          enum: ['light', 'dark']
-        },
-        layout: {
-          type: 'string',
-          enum: ['tree', 'radial']
-        }
-      }
-    }
-  }
-};
-
+/**
+ * パーサーサービスの実装クラス
+ */
 export class ParserServiceImpl implements ParserService {
-  private ajv: Ajv;
-
-  constructor() {
-    this.ajv = new Ajv({ allErrors: true });
-    this.ajv.addSchema(mindmapSchema, 'mindmap');
-  }
-
+  
+  /**
+   * JSON文字列を解析してマインドマップデータに変換
+   */
   async parseJSON(content: string): Promise<MindmapData> {
     try {
-      const data = JSON.parse(content);
-      const validationResult = this.validateData(data);
-      
-      if (!validationResult.valid) {
-        throw new Error(`${ERROR_MESSAGES.SCHEMA_VALIDATION_FAILED}: ${validationResult.errors[0]?.message}`);
+      // 空文字列チェック
+      if (!content.trim()) {
+        throw new Error('ファイル内容が空です');
       }
+
+      // JSON解析
+      const data = JSON.parse(content);
       
+      // 基本的なバリデーション
+      const validationResult = this.validateData(data);
+      if (!validationResult.valid) {
+        const errorMessages = validationResult.errors.map(e => e.message).join(', ');
+        throw new Error(`データ構造が正しくありません: ${errorMessages}`);
+      }
+
       return data as MindmapData;
     } catch (error) {
       if (error instanceof SyntaxError) {
-        throw new Error(`${ERROR_MESSAGES.INVALID_JSON}: ${error.message}`);
+        throw new Error(`JSON構文エラー: ${error.message}`);
       }
       throw error;
     }
   }
 
+  /**
+   * YAML文字列を解析してマインドマップデータに変換
+   */
   async parseYAML(content: string): Promise<MindmapData> {
     try {
-      const data = yaml.load(content);
-      const validationResult = this.validateData(data);
-      
-      if (!validationResult.valid) {
-        throw new Error(`${ERROR_MESSAGES.SCHEMA_VALIDATION_FAILED}: ${validationResult.errors[0]?.message}`);
+      // 空文字列チェック
+      if (!content.trim()) {
+        throw new Error('ファイル内容が空です');
       }
-      
+
+      // YAML解析
+      const data = yaml.load(content, {
+        // セキュリティのため、安全なタイプのみ許可
+        schema: yaml.SAFE_SCHEMA,
+        // 重複キーを許可しない
+        json: true
+      });
+
+      if (data === null || data === undefined) {
+        throw new Error('YAMLファイルが空または無効です');
+      }
+
+      // 基本的なバリデーション
+      const validationResult = this.validateData(data);
+      if (!validationResult.valid) {
+        const errorMessages = validationResult.errors.map(e => e.message).join(', ');
+        throw new Error(`データ構造が正しくありません: ${errorMessages}`);
+      }
+
       return data as MindmapData;
     } catch (error) {
       if (error instanceof yaml.YAMLException) {
-        throw new Error(`${ERROR_MESSAGES.INVALID_YAML}: ${error.message}`);
+        throw new Error(`YAML構文エラー: ${error.message}`);
       }
       throw error;
     }
   }
 
+  /**
+   * データの基本的なバリデーション
+   */
   validateData(data: any): ValidationResult {
-    const validate = this.ajv.getSchema('mindmap');
-    if (!validate) {
+    // null/undefinedチェック
+    if (data === null || data === undefined) {
       return {
         valid: false,
-        errors: [{ path: '', message: 'スキーマが見つかりません', value: data }]
+        errors: [{
+          path: 'root',
+          message: 'データが存在しません',
+          value: data,
+          code: 'NULL_DATA'
+        }]
       };
     }
 
-    const valid = validate(data);
-    
-    if (!valid && validate.errors) {
+    // オブジェクトチェック
+    if (typeof data !== 'object') {
       return {
         valid: false,
-        errors: validate.errors.map(error => ({
-          path: error.instancePath || error.schemaPath || '',
-          message: error.message || '不明なエラー',
-          value: error.data
-        }))
+        errors: [{
+          path: 'root',
+          message: 'データはオブジェクトである必要があります',
+          value: data,
+          expected: 'object',
+          code: 'INVALID_TYPE'
+        }]
       };
     }
 
-    return { valid: true, errors: [] };
-  }
+    // 必須フィールドの存在チェック
+    const requiredFields = ['version', 'title', 'root'];
+    const errors = [];
 
-  validateSchema(data: any): ValidationResult {
-    // 基本的なスキーマ検証
-    return this.validateData(data);
-  }
-
-  validateCustomSchema(data: MindmapData): ValidationResult {
-    if (!data.schema) {
-      return { valid: true, errors: [] };
+    for (const field of requiredFields) {
+      if (!(field in data) || data[field] === null || data[field] === undefined) {
+        errors.push({
+          path: field,
+          message: `必須フィールド '${field}' が存在しません`,
+          value: data[field],
+          code: 'REQUIRED_FIELD_MISSING'
+        });
+      }
     }
 
-    // カスタムスキーマの検証ロジック
-    const errors: any[] = [];
-    
-    // フィールド定義の検証
-    if (data.schema.fields) {
-      data.schema.fields.forEach((field, index) => {
-        if (!field.name || !field.type || !field.label) {
-          errors.push({
-            path: `schema.fields[${index}]`,
-            message: 'フィールド定義に必須項目が不足しています',
-            value: field
-          });
-        }
-      });
+    // rootノードの基本チェック
+    if (data.root && typeof data.root === 'object') {
+      if (!data.root.id || typeof data.root.id !== 'string') {
+        errors.push({
+          path: 'root.id',
+          message: 'ルートノードにはid（文字列）が必要です',
+          value: data.root.id,
+          expected: 'string',
+          code: 'INVALID_ROOT_ID'
+        });
+      }
+
+      if (!data.root.title || typeof data.root.title !== 'string') {
+        errors.push({
+          path: 'root.title',
+          message: 'ルートノードにはtitle（文字列）が必要です',
+          value: data.root.title,
+          expected: 'string',
+          code: 'INVALID_ROOT_TITLE'
+        });
+      }
     }
 
     return {
@@ -191,74 +161,522 @@ export class ParserServiceImpl implements ParserService {
     };
   }
 
-  getParseErrors(content: string, format: 'json' | 'yaml'): ParseError[] {
+  /**
+   * JSON Schemaに基づくバリデーション
+   */
+  validateSchema(data: any): ValidationResult {
+    return schemaValidator.validateMindmapData(data);
+  }
+
+  /**
+   * カスタムスキーマに基づくバリデーション
+   */
+  validateCustomSchema(data: MindmapData): ValidationResult {
+    if (!data.schema) {
+      // カスタムスキーマが定義されていない場合は基本バリデーションのみ
+      return this.validateSchema(data);
+    }
+
+    // カスタムスキーマ自体のバリデーション
+    const schemaValidation = schemaValidator.validateCustomSchema(data.schema);
+    if (!schemaValidation.valid) {
+      return schemaValidation;
+    }
+
+    // カスタムスキーマに基づくデータバリデーション
+    return schemaValidator.validateWithCustomSchema(data, data.schema);
+  }
+
+  /**
+   * パースエラーを取得
+   */
+  getParseErrors(content: string): ParseError[] {
     const errors: ParseError[] = [];
 
+    if (!content.trim()) {
+      errors.push({
+        line: 1,
+        column: 1,
+        message: 'ファイル内容が空です',
+        severity: 'error',
+        code: 'EMPTY_CONTENT'
+      });
+      return errors;
+    }
+
+    // まずJSONとして解析を試行
     try {
-      if (format === 'json') {
-        JSON.parse(content);
-      } else {
-        yaml.load(content);
-      }
-    } catch (error) {
-      if (error instanceof SyntaxError) {
-        // JSON構文エラーの解析
-        const match = error.message.match(/at position (\d+)/);
-        const position = match ? parseInt(match[1]) : 0;
-        const lines = content.substring(0, position).split('\n');
-        
-        errors.push({
-          line: lines.length,
-          column: lines[lines.length - 1].length + 1,
-          message: error.message,
-          severity: 'error'
-        });
-      } else if (error instanceof yaml.YAMLException) {
-        // YAML構文エラーの解析
-        errors.push({
-          line: error.mark?.line || 1,
-          column: error.mark?.column || 1,
-          message: error.message,
-          severity: 'error'
-        });
+      JSON.parse(content);
+      return errors; // 成功した場合はエラーなし
+    } catch (jsonError) {
+      if (jsonError instanceof SyntaxError) {
+        // JSON構文エラーの場合、YAMLも試行する前にJSONエラーを記録
+        const match = jsonError.message.match(/at position (\d+)/);
+        if (match) {
+          const position = parseInt(match[1]);
+          const { line, column } = this.getLineColumnFromPosition(content, position);
+          errors.push({
+            line,
+            column,
+            message: `JSON構文エラー: ${jsonError.message}`,
+            severity: 'error',
+            code: 'JSON_SYNTAX_ERROR',
+            details: jsonError.message
+          });
+        } else {
+          errors.push({
+            line: 1,
+            column: 1,
+            message: `JSON構文エラー: ${jsonError.message}`,
+            severity: 'error',
+            code: 'JSON_SYNTAX_ERROR',
+            details: jsonError.message
+          });
+        }
       }
     }
 
-    return errors;
+    // 次にYAMLとして解析を試行
+    try {
+      yaml.load(content, { schema: yaml.SAFE_SCHEMA });
+      // YAMLとして成功した場合、JSONエラーをクリアしてYAMLとして扱う
+      return [];
+    } catch (yamlError) {
+      if (yamlError instanceof yaml.YAMLException) {
+        // JSONもYAMLも失敗した場合、より具体的なエラーを返す
+        return [{
+          line: yamlError.mark?.line ? yamlError.mark.line + 1 : 1,
+          column: yamlError.mark?.column ? yamlError.mark.column + 1 : 1,
+          message: `YAML構文エラー: ${yamlError.reason || yamlError.message}`,
+          severity: 'error',
+          code: 'YAML_SYNTAX_ERROR',
+          details: yamlError.message
+        }];
+      }
+    }
+
+    // JSONエラーが既に記録されている場合はそれを返す
+    if (errors.length > 0) {
+      return errors;
+    }
+
+    // どちらの形式でも解析できない場合
+    return [{
+      line: 1,
+      column: 1,
+      message: 'サポートされていないファイル形式です（JSON/YAMLのみサポート）',
+      severity: 'error',
+      code: 'UNSUPPORTED_FORMAT'
+    }];
   }
 
-  generateSchema(data: MindmapData): any {
-    // 既存データからスキーマを生成する基本的な実装
-    const fields: any[] = [];
-    const displayRules: any[] = [];
+  /**
+   * 既存データからスキーマを自動生成
+   */
+  async generateSchema(data: MindmapData): Promise<CustomSchema> {
+    const fields = new Map<string, any[]>();
+    const fieldTypes = new Map<string, Set<string>>();
+    const fieldStats = new Map<string, { count: number; nullCount: number }>();
 
-    // ルートノードからカスタムフィールドを抽出
-    const extractFields = (node: any) => {
-      if (node.customFields) {
-        Object.entries(node.customFields).forEach(([key, value]) => {
-          const existingField = fields.find(f => f.name === key);
-          if (!existingField) {
-            fields.push({
-              name: key,
-              type: typeof value === 'number' ? 'number' : 
-                    typeof value === 'boolean' ? 'boolean' : 'string',
-              label: key.charAt(0).toUpperCase() + key.slice(1),
-              required: false
-            });
-          }
-        });
-      }
+    // ノードを再帰的に解析してカスタムフィールドを収集
+    this.collectCustomFields(data.root, fields, fieldTypes, fieldStats);
 
-      if (node.children) {
-        node.children.forEach(extractFields);
-      }
-    };
+    // フィールド定義を生成
+    const fieldDefinitions = Array.from(fields.entries()).map(([name, examples]) => {
+      const types = fieldTypes.get(name) || new Set();
+      const stats = fieldStats.get(name) || { count: 0, nullCount: 0 };
+      const primaryType = this.determinePrimaryType(types, examples);
+      
+      const fieldDef = {
+        name,
+        type: primaryType,
+        label: this.generateFieldLabel(name),
+        description: `自動生成されたフィールド: ${name} (使用率: ${Math.round((stats.count - stats.nullCount) / stats.count * 100)}%)`,
+        required: stats.nullCount === 0 && stats.count > 1, // 全てのノードで値が設定されている場合は必須
+        ...(primaryType === 'select' && this.generateSelectOptions(examples)),
+        ...(primaryType === 'date' && { validation: [{ type: 'date' as const }] }),
+        ...(primaryType === 'number' && this.generateNumberValidation(examples))
+      };
 
-    extractFields(data.root);
+      return fieldDef;
+    });
+
+    // 表示ルールを生成
+    const displayRules = fieldDefinitions.map(field => ({
+      field: field.name,
+      displayType: this.getDefaultDisplayType(field.type),
+      position: 'inline' as const,
+      ...(field.type === 'select' && this.generateSelectDisplayStyle(field.options || []))
+    }));
 
     return {
-      fields,
-      displayRules
+      version: '1.0',
+      description: `${data.title}から自動生成されたスキーマ`,
+      fields: fieldDefinitions,
+      displayRules,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
   }
+
+  /**
+   * スキーマの拡張とマイグレーション
+   */
+  async migrateSchema(
+    oldSchema: CustomSchema, 
+    newSchema: CustomSchema
+  ): Promise<{ migratedSchema: CustomSchema; migrationLog: string[] }> {
+    const migrationLog: string[] = [];
+    const migratedFields = [...oldSchema.fields];
+    const migratedDisplayRules = [...oldSchema.displayRules];
+
+    // 新しいフィールドを追加
+    for (const newField of newSchema.fields) {
+      const existingField = migratedFields.find(f => f.name === newField.name);
+      
+      if (!existingField) {
+        migratedFields.push(newField);
+        migrationLog.push(`新しいフィールドを追加: ${newField.name} (${newField.type})`);
+      } else if (existingField.type !== newField.type) {
+        // 型が変更された場合の処理
+        const compatibleMigration = this.isCompatibleTypeMigration(existingField.type, newField.type);
+        if (compatibleMigration) {
+          existingField.type = newField.type;
+          migrationLog.push(`フィールド型を更新: ${newField.name} (${existingField.type} → ${newField.type})`);
+        } else {
+          migrationLog.push(`警告: フィールド ${newField.name} の型変更は互換性がありません (${existingField.type} → ${newField.type})`);
+        }
+      }
+    }
+
+    // 新しい表示ルールを追加
+    for (const newRule of newSchema.displayRules) {
+      const existingRule = migratedDisplayRules.find(r => r.field === newRule.field);
+      
+      if (!existingRule) {
+        migratedDisplayRules.push(newRule);
+        migrationLog.push(`新しい表示ルールを追加: ${newRule.field}`);
+      }
+    }
+
+    const migratedSchema: CustomSchema = {
+      ...oldSchema,
+      version: newSchema.version || oldSchema.version,
+      fields: migratedFields,
+      displayRules: migratedDisplayRules,
+      updatedAt: new Date().toISOString()
+    };
+
+    return { migratedSchema, migrationLog };
+  }
+
+  /**
+   * スキーマの差分を取得
+   */
+  getSchemaChanges(oldSchema: CustomSchema, newSchema: CustomSchema): {
+    addedFields: string[];
+    removedFields: string[];
+    modifiedFields: string[];
+    addedRules: string[];
+    removedRules: string[];
+  } {
+    const oldFieldNames = new Set(oldSchema.fields.map(f => f.name));
+    const newFieldNames = new Set(newSchema.fields.map(f => f.name));
+    const oldRuleFields = new Set(oldSchema.displayRules.map(r => r.field));
+    const newRuleFields = new Set(newSchema.displayRules.map(r => r.field));
+
+    const addedFields = newSchema.fields
+      .filter(f => !oldFieldNames.has(f.name))
+      .map(f => f.name);
+
+    const removedFields = oldSchema.fields
+      .filter(f => !newFieldNames.has(f.name))
+      .map(f => f.name);
+
+    const modifiedFields = newSchema.fields
+      .filter(newField => {
+        const oldField = oldSchema.fields.find(f => f.name === newField.name);
+        return oldField && !this.areFieldsEqual(oldField, newField);
+      })
+      .map(f => f.name);
+
+    const addedRules = newSchema.displayRules
+      .filter(r => !oldRuleFields.has(r.field))
+      .map(r => r.field);
+
+    const removedRules = oldSchema.displayRules
+      .filter(r => !newRuleFields.has(r.field))
+      .map(r => r.field);
+
+    return {
+      addedFields,
+      removedFields,
+      modifiedFields,
+      addedRules,
+      removedRules
+    };
+  }
+
+  /**
+   * ファイル形式を自動判定
+   */
+  detectFormat(content: string): 'json' | 'yaml' | 'unknown' {
+    const trimmed = content.trim();
+    
+    if (!trimmed) {
+      return 'unknown';
+    }
+
+    // JSONの判定（{ または [ で始まる）
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        JSON.parse(trimmed);
+        return 'json';
+      } catch {
+        // JSON解析に失敗した場合はYAMLかもしれない
+      }
+    }
+
+    // YAMLの判定を試行
+    try {
+      const parsed = yaml.load(trimmed, { schema: yaml.SAFE_SCHEMA });
+      if (parsed !== null && typeof parsed === 'object') {
+        return 'yaml';
+      }
+    } catch {
+      // YAML解析に失敗
+    }
+
+    // JSONの再試行（厳密でない形式の場合）
+    try {
+      JSON.parse(trimmed);
+      return 'json';
+    } catch {
+      // 最終的に判定できない
+    }
+
+    return 'unknown';
+  }
+
+  /**
+   * データを指定形式にシリアライズ
+   */
+  async serialize(data: MindmapData, format: 'json' | 'yaml'): Promise<string> {
+    try {
+      if (format === 'json') {
+        return JSON.stringify(data, null, 2);
+      } else if (format === 'yaml') {
+        return yaml.dump(data, {
+          indent: 2,
+          lineWidth: 120,
+          noRefs: true,
+          sortKeys: false,
+          quotingType: '"',
+          forceQuotes: false
+        });
+      } else {
+        throw new Error(`サポートされていない形式: ${format}`);
+      }
+    } catch (error) {
+      throw new Error(`シリアライズエラー: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  // プライベートヘルパーメソッド
+
+  /**
+   * 文字列内の位置から行・列番号を取得
+   */
+  private getLineColumnFromPosition(content: string, position: number): { line: number; column: number } {
+    const lines = content.substring(0, position).split('\n');
+    return {
+      line: lines.length,
+      column: lines[lines.length - 1].length + 1
+    };
+  }
+
+  /**
+   * ノードからカスタムフィールドを再帰的に収集
+   */
+  private collectCustomFields(
+    node: any, 
+    fields: Map<string, any[]>, 
+    fieldTypes: Map<string, Set<string>>,
+    fieldStats?: Map<string, { count: number; nullCount: number }>
+  ): void {
+    if (node.customFields && typeof node.customFields === 'object') {
+      for (const [key, value] of Object.entries(node.customFields)) {
+        if (!fields.has(key)) {
+          fields.set(key, []);
+          fieldTypes.set(key, new Set());
+          if (fieldStats) {
+            fieldStats.set(key, { count: 0, nullCount: 0 });
+          }
+        }
+        
+        fields.get(key)!.push(value);
+        fieldTypes.get(key)!.add(typeof value);
+        
+        if (fieldStats) {
+          const stats = fieldStats.get(key)!;
+          stats.count++;
+          if (value === null || value === undefined || value === '') {
+            stats.nullCount++;
+          }
+        }
+      }
+    }
+
+    // 子ノードを再帰的に処理
+    if (node.children && Array.isArray(node.children)) {
+      for (const child of node.children) {
+        this.collectCustomFields(child, fields, fieldTypes, fieldStats);
+      }
+    }
+  }
+
+  /**
+   * 主要な型を決定
+   */
+  private determinePrimaryType(types: Set<string>, examples: any[]): string {
+    if (types.has('boolean')) return 'boolean';
+    if (types.has('number')) return 'number';
+    
+    // 文字列の場合、値の種類を分析
+    if (types.has('string')) {
+      const uniqueValues = new Set(examples.filter(v => typeof v === 'string'));
+      
+      // 選択肢が少ない場合はselect型
+      if (uniqueValues.size <= 10 && uniqueValues.size > 1) {
+        return 'select';
+      }
+      
+      // 日付形式の判定
+      const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+      if (examples.some(v => typeof v === 'string' && datePattern.test(v))) {
+        return 'date';
+      }
+    }
+    
+    return 'string';
+  }
+
+  /**
+   * フィールドラベルを生成
+   */
+  private generateFieldLabel(name: string): string {
+    // キャメルケースやスネークケースを読みやすい形に変換
+    return name
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/_/g, ' ')
+      .replace(/^\w/, c => c.toUpperCase())
+      .trim();
+  }
+
+  /**
+   * select型のオプションを生成
+   */
+  private generateSelectOptions(examples: any[]): { options: string[] } {
+    const uniqueValues = new Set(
+      examples
+        .filter(v => typeof v === 'string')
+        .map(v => String(v))
+    );
+    
+    return {
+      options: Array.from(uniqueValues).sort()
+    };
+  }
+
+  /**
+   * デフォルトの表示タイプを取得
+   */
+  private getDefaultDisplayType(fieldType: string): 'badge' | 'icon' | 'color' | 'text' {
+    switch (fieldType) {
+      case 'boolean':
+        return 'icon';
+      case 'select':
+        return 'badge';
+      case 'number':
+        return 'text';
+      default:
+        return 'text';
+    }
+  }
+
+  /**
+   * 数値フィールドのバリデーションを生成
+   */
+  private generateNumberValidation(examples: any[]): { validation: Array<{ type: string; value?: number }> } {
+    const numbers = examples.filter(v => typeof v === 'number');
+    if (numbers.length === 0) return { validation: [] };
+
+    const min = Math.min(...numbers);
+    const max = Math.max(...numbers);
+    const validation = [];
+
+    if (min >= 0) {
+      validation.push({ type: 'min', value: 0 });
+    }
+    
+    if (max <= 100 && min >= 0) {
+      validation.push({ type: 'max', value: 100 });
+    }
+
+    return { validation };
+  }
+
+  /**
+   * select型の表示スタイルを生成
+   */
+  private generateSelectDisplayStyle(options: string[]): { style: Record<string, any> } {
+    const colors = ['#e3f2fd', '#f3e5f5', '#e8f5e8', '#fff3e0', '#ffebee'];
+    const style: Record<string, any> = {};
+
+    options.forEach((option, index) => {
+      style[option] = {
+        backgroundColor: colors[index % colors.length],
+        color: '#333',
+        borderRadius: '4px',
+        padding: '2px 6px'
+      };
+    });
+
+    return { style };
+  }
+
+  /**
+   * 型の互換性をチェック
+   */
+  private isCompatibleTypeMigration(oldType: string, newType: string): boolean {
+    const compatibleMigrations = [
+      ['string', 'select'],
+      ['number', 'string'],
+      ['boolean', 'string'],
+      ['date', 'string']
+    ];
+
+    return compatibleMigrations.some(([from, to]) => 
+      oldType === from && newType === to
+    );
+  }
+
+  /**
+   * フィールドの等価性をチェック
+   */
+  private areFieldsEqual(field1: any, field2: any): boolean {
+    return (
+      field1.type === field2.type &&
+      field1.label === field2.label &&
+      field1.required === field2.required &&
+      JSON.stringify(field1.options || []) === JSON.stringify(field2.options || []) &&
+      JSON.stringify(field1.validation || []) === JSON.stringify(field2.validation || [])
+    );
+  }
 }
+
+// シングルトンインスタンス
+export const parserService = new ParserServiceImpl();
+
+// デフォルトエクスポート
+export default parserService;

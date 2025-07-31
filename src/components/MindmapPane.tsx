@@ -1,13 +1,18 @@
 import React, { useRef, useEffect } from 'react';
 import { useAppStore } from '../stores';
+import { useMindmapSync } from '../hooks';
 import './MindmapPane.css';
 
 export const MindmapPane: React.FC = () => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const {
-    parsedData,
-    mindmapSettings,
-  } = useAppStore();
+  
+  // 新しいZustandストアからの状態取得
+  const parsedData = useAppStore(state => state.parse.parsedData);
+  const mindmapSettings = useAppStore(state => state.ui.mindmapSettings);
+  const updateMindmapSettings = useAppStore(state => state.updateMindmapSettings);
+  
+  // マインドマップ同期フックの使用
+  const { updateMindmapSettings: syncUpdateSettings } = useMindmapSync();
 
   useEffect(() => {
     if (!svgRef.current || !parsedData) {
@@ -53,8 +58,7 @@ export const MindmapPane: React.FC = () => {
   };
 
   const handleLayoutChange = (layout: 'tree' | 'radial') => {
-    // TODO: レイアウト変更処理を実装
-    console.log('Change layout to:', layout);
+    syncUpdateSettings({ layout });
   };
 
   return (

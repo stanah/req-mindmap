@@ -1,26 +1,21 @@
 import React, { useCallback } from 'react';
 import Editor from '@monaco-editor/react';
 import { useAppStore } from '../stores';
-import { debounce } from '../utils';
+import { useEditorSync } from '../hooks';
+import { debounce } from '../utils/helpers';
 import { DEBOUNCE_DELAY } from '../utils/constants';
 import './EditorPane.css';
 
 export const EditorPane: React.FC = () => {
-  const {
-    fileContent,
-    editorSettings,
-    parseErrors,
-    updateContent,
-    updateEditorSettings,
-  } = useAppStore();
-
-  // デバウンスされたコンテンツ更新
-  const debouncedUpdateContent = useCallback(
-    debounce((value: string) => {
-      updateContent(value);
-    }, DEBOUNCE_DELAY.EDITOR_CHANGE),
-    [updateContent]
-  );
+  // 新しいZustandストアからの状態取得
+  const fileContent = useAppStore(state => state.file.fileContent);
+  const editorSettings = useAppStore(state => state.ui.editorSettings);
+  const parseErrors = useAppStore(state => state.parse.parseErrors);
+  const updateContent = useAppStore(state => state.updateContent);
+  const updateEditorSettings = useAppStore(state => state.updateEditorSettings);
+  
+  // エディタ同期フックの使用
+  const { debouncedUpdateContent } = useEditorSync();
 
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
