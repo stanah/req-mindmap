@@ -7,6 +7,7 @@
 import React, { useRef } from 'react';
 import { useAppStore } from '../../stores/appStore';
 import { fileService, BrowserFileService } from '../../services/fileService';
+import { projectManagementSample, sampleYAML } from '../../data/samples';
 import type { FileLoadResult } from '../../services/fileService';
 
 interface FileToolbarProps {
@@ -21,6 +22,7 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
     updateContent,
     addNotification,
     closeFile,
+    ui: { editorSettings },
   } = useAppStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -164,6 +166,31 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
     });
   };
 
+  /**
+   * サンプルデータを読み込む
+   */
+  const handleLoadSample = () => {
+    const language = editorSettings.language;
+    let content: string;
+    
+    // エディター言語に応じてサンプルを選択
+    if (language === 'yaml') {
+      content = sampleYAML;
+    } else {
+      // デフォルトはJSON（projectManagementSample）
+      content = JSON.stringify(projectManagementSample, null, 2);
+    }
+    
+    updateContent(content);
+
+    addNotification({
+      message: `サンプルデータを読み込みました (${language === 'yaml' ? 'YAML' : 'JSON'}形式)`,
+      type: 'info',
+      autoHide: true,
+      duration: 3000,
+    });
+  };
+
   return (
     <div className={`file-toolbar ${className}`}>
       {/* ファイル操作ボタン */}
@@ -233,6 +260,17 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* サンプルデータ読み込み */}
+      <div className="file-toolbar__group">
+        <button
+          className="file-toolbar__button file-toolbar__button--sample"
+          onClick={handleLoadSample}
+          title="サンプルデータを読み込む"
+        >
+          📝 サンプル読み込み
+        </button>
       </div>
 
       {/* ファイル情報表示 */}

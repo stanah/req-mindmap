@@ -93,6 +93,23 @@
   background: #047857;
 }
 
+/* サンプル読み込みボタン */
+.file-toolbar__button--sample {
+  background: #8b5cf6;
+  color: #ffffff;
+  border-color: #8b5cf6;
+}
+
+.file-toolbar__button--sample:hover {
+  background: #7c3aed;
+  border-color: #7c3aed;
+  color: #ffffff;
+}
+
+.file-toolbar__button--sample:active {
+  background: #6d28d9;
+}
+
 /* 閉じるボタン */
 .file-toolbar__button--close {
   padding: 4px 8px;
