@@ -1,7 +1,11 @@
 import React from 'react';
 import { useAppStore } from '../stores';
 import { projectManagementSample, sampleYAML } from '../data/samples';
+import { FileToolbar } from './ui/FileToolbar';
+import { FileDropZone } from './ui/FileDropZone';
 import './Layout.css';
+import './ui/FileToolbar.css';
+import './ui/FileDropZone.css';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -29,7 +33,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="layout">
+    <FileDropZone className="layout">
       <header className="layout-header">
         <h1>Requirements Mindmap Tool</h1>
         <div className="header-actions">
@@ -42,6 +46,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </button>
         </div>
       </header>
+      
+      {/* ファイル操作ツールバー */}
+      <FileToolbar className="layout-toolbar" />
+      
       <main className="layout-main">
         {children}
       </main>
@@ -51,6 +59,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <span>準備完了</span>
         </div>
       </footer>
-    </div>
+    </FileDropZone>
   );
 };

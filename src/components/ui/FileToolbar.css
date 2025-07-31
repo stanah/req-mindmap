@@ -1,0 +1,350 @@
+/**
+ * ファイル操作ツールバーのスタイル
+ */
+
+.file-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  min-height: 48px;
+}
+
+.file-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-toolbar__button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.file-toolbar__button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #111827;
+}
+
+.file-toolbar__button:active {
+  background: #f3f4f6;
+  transform: translateY(1px);
+}
+
+.file-toolbar__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f9fafb;
+  color: #9ca3af;
+}
+
+.file-toolbar__button:disabled:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  transform: none;
+}
+
+/* プライマリボタン */
+.file-toolbar__button--primary {
+  background: #3b82f6;
+  color: #ffffff;
+  border-color: #3b82f6;
+}
+
+.file-toolbar__button--primary:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.file-toolbar__button--primary:active {
+  background: #1d4ed8;
+}
+
+/* 新規作成ボタン */
+.file-toolbar__button--new {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
+}
+
+.file-toolbar__button--new:hover {
+  background: #059669;
+  border-color: #059669;
+  color: #ffffff;
+}
+
+.file-toolbar__button--new:active {
+  background: #047857;
+}
+
+/* 閉じるボタン */
+.file-toolbar__button--close {
+  padding: 4px 8px;
+  min-width: auto;
+  color: #ef4444;
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.file-toolbar__button--close:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+/* ドロップダウン */
+.file-toolbar__dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.file-toolbar__button--dropdown {
+  padding-right: 8px;
+}
+
+.file-toolbar__dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  display: none;
+  min-width: 200px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 4px 0;
+  margin-top: 4px;
+}
+
+.file-toolbar__dropdown:hover .file-toolbar__dropdown-menu {
+  display: block;
+}
+
+.file-toolbar__dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  color: #374151;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.file-toolbar__dropdown-item:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.file-toolbar__dropdown-item:active {
+  background: #e5e7eb;
+}
+
+/* ファイル情報表示 */
+.file-toolbar__info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  font-size: 14px;
+}
+
+.file-toolbar__filename {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.file-toolbar__dirty {
+  color: #ef4444;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.file-toolbar__format {
+  padding: 2px 8px;
+  background: #e5e7eb;
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .file-toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+  
+  .file-toolbar__group {
+    gap: 6px;
+  }
+  
+  .file-toolbar__button {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  
+  .file-toolbar__info {
+    order: -1;
+    width: 100%;
+    margin-left: 0;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .file-toolbar__filename {
+    font-size: 13px;
+  }
+  
+  .file-toolbar__format {
+    font-size: 11px;
+  }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .file-toolbar {
+    background: #1f2937;
+    border-bottom-color: #374151;
+  }
+  
+  .file-toolbar__button {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+  
+  .file-toolbar__button:hover {
+    background: #4b5563;
+    border-color: #6b7280;
+    color: #ffffff;
+  }
+  
+  .file-toolbar__button:active {
+    background: #6b7280;
+  }
+  
+  .file-toolbar__button:disabled {
+    background: #374151;
+    color: #6b7280;
+    border-color: #4b5563;
+  }
+  
+  .file-toolbar__button--close {
+    background: #7f1d1d;
+    border-color: #991b1b;
+    color: #fca5a5;
+  }
+  
+  .file-toolbar__button--close:hover {
+    background: #991b1b;
+    border-color: #b91c1c;
+    color: #f87171;
+  }
+  
+  .file-toolbar__dropdown-menu {
+    background: #374151;
+    border-color: #4b5563;
+  }
+  
+  .file-toolbar__dropdown-item {
+    color: #f9fafb;
+  }
+  
+  .file-toolbar__dropdown-item:hover {
+    background: #4b5563;
+    color: #ffffff;
+  }
+  
+  .file-toolbar__dropdown-item:active {
+    background: #6b7280;
+  }
+  
+  .file-toolbar__filename {
+    color: #f9fafb;
+  }
+  
+  .file-toolbar__format {
+    background: #4b5563;
+    color: #d1d5db;
+  }
+}
+
+/* アニメーション */
+.file-toolbar__dropdown-menu {
+  animation: dropdownFadeIn 0.15s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* フォーカス対応 */
+.file-toolbar__button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.file-toolbar__dropdown-item:focus {
+  outline: none;
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+/* 読み込み中状態 */
+.file-toolbar__button--loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.file-toolbar__button--loading::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

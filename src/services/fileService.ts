@@ -729,3 +729,6 @@ export function createFileService(): FileService {
   // 現在はブラウザ環境のみサポート
   return new BrowserFileService();
 }
+
+// デフォルトのファイルサービスインスタンス
+export const fileService = createFileService();
