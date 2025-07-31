@@ -162,7 +162,7 @@ export class MindmapRenderer {
       // 折りたたみ状態の初期化
       if (nodeData.collapsed && node.children) {
         node._children = node.children;
-        node.children = null as any;
+        node.children = undefined;
       }
     });
 
@@ -394,7 +394,7 @@ export class MindmapRenderer {
       .attr('pointer-events', 'none');
 
     // バッジコンテナ
-    const badgeContainer = nodeEnter
+    nodeEnter
       .filter(d => this.getNodeBadges(d.data).length > 0)
       .append('g')
       .attr('class', 'mindmap-badges');
@@ -428,7 +428,7 @@ export class MindmapRenderer {
 
     // 折りたたみインジケーター（子ノードがある場合）
     const collapseGroup = nodeEnter
-      .filter((d: D3Node) => (d.children && d.children.length > 0) || (d._children && d._children.length > 0))
+      .filter((d: D3Node) => !!(d.children && d.children.length > 0) || !!(d._children && d._children.length > 0))
       .append('g')
       .attr('class', 'mindmap-collapse-group')
       .attr('cursor', 'pointer')
@@ -478,13 +478,13 @@ export class MindmapRenderer {
     // アイコンの位置更新
     nodeUpdate.select('.mindmap-node-icon')
       .attr('x', d => -d.width / 2 + 16)
-      .attr('y', d => -8)
+      .attr('y', -8)
       .attr('fill', d => this.getNodeTextColor(d.data));
 
     // テキストの更新と位置調整
     nodeUpdate.select('.mindmap-node-text')
       .attr('x', d => this.getNodeIcon(d.data) ? 8 : 0)
-      .attr('y', d => -8)
+      .attr('y', -8)
       .attr('fill', d => this.getNodeTextColor(d.data))
       .text(d => {
         const availableWidth = d.width - this.NODE_PADDING * 2 - (this.getNodeIcon(d.data) ? 24 : 0);
@@ -670,7 +670,7 @@ export class MindmapRenderer {
       const badgeContainer = node.select('.mindmap-badges');
       let xOffset = -d.width / 2 + this.NODE_PADDING;
 
-      badges.forEach((badge, index) => {
+      badges.forEach((badge) => {
         const badgeGroup = badgeContainer
           .append('g')
           .attr('class', 'mindmap-badge');
@@ -688,7 +688,7 @@ export class MindmapRenderer {
         const textWidth = this.calculateBadgeTextWidth(badge.text) + 12; // パディング追加
 
         // バッジのテキスト
-        const badgeText = badgeGroup
+        badgeGroup
           .append('text')
           .attr('class', 'mindmap-badge-text')
           .attr('text-anchor', 'middle')
@@ -808,12 +808,12 @@ export class MindmapRenderer {
     if (targetNode.children) {
       // 展開状態 → 折りたたみ
       targetNode._children = targetNode.children;
-      targetNode.children = null;
+      targetNode.children = undefined;
       targetNode.data.collapsed = true;
     } else if (targetNode._children) {
       // 折りたたみ状態 → 展開
       targetNode.children = targetNode._children;
-      targetNode._children = null;
+      targetNode._children = undefined;
       targetNode.data.collapsed = false;
     }
 
@@ -860,6 +860,22 @@ export class MindmapRenderer {
         .selectAll('.mindmap-node')
         .filter((d: any) => d.data.id === nodeId)
         .classed('selected', true);
+    }
+  }
+
+  /**
+   * カーソル対応ノードの強調表示
+   */
+  public highlightCursorNode(nodeId: string | null): void {
+    this.container
+      .selectAll('.mindmap-node')
+      .classed('cursor-highlight', false);
+
+    if (nodeId) {
+      this.container
+        .selectAll('.mindmap-node')
+        .filter((d: any) => d.data.id === nodeId)
+        .classed('cursor-highlight', true);
     }
   }
 

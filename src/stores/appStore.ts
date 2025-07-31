@@ -14,7 +14,9 @@ import type {
   ParseState, 
   UIState,
   Notification,
-  ModalState
+  ModalState,
+  EditorCursorPosition,
+  EditorHighlightRange
 } from '../types/store';
 import type { 
   EditorSettings, 
@@ -26,6 +28,7 @@ import type {
 } from '../types/mindmap';
 import { APP_CONFIG, STORAGE_KEYS, DEBOUNCE_DELAY } from '../utils/constants';
 import { storage, debounce, generateId, detectFileFormat, deepClone, findNodeById } from '../utils/helpers';
+import { createNodeMapping, getNodeIdAtCursor, getEditorPositionForNode, type NodeMappingResult } from '../utils/nodeMapping';
 
 /**
  * 初期ファイル状態
@@ -81,6 +84,9 @@ const initialUIState: UIState = {
   }),
   selectedNodeId: null,
   nodeSelection: null,
+  editorCursorPosition: null,
+  editorHighlightRange: null,
+  cursorCorrespondingNodeId: null,
   sidebarOpen: true,
   settingsPanelOpen: false,
   errorPanelOpen: false,
@@ -126,6 +132,11 @@ const initialState: AppState = {
  */
 let contentUpdateTimer: NodeJS.Timeout | null = null;
 let parseTimer: NodeJS.Timeout | null = null;
+
+/**
+ * ノードマッピング情報のグローバル管理
+ */
+let currentNodeMapping: NodeMappingResult | null = null;
 
 /**
  * アプリケーションストアの作成
@@ -410,8 +421,8 @@ export const useAppStore = create<AppStore>()(
             clearTimeout(contentUpdateTimer);
           }
           
-          contentUpdateTimer = setTimeout(() => {
-            get().parseContent(content);
+          contentUpdateTimer = setTimeout(async () => {
+            await get().parseContent(content);
           }, DEBOUNCE_DELAY.EDITOR_CHANGE);
         },
 
@@ -448,9 +459,50 @@ export const useAppStore = create<AppStore>()(
           console.log('Go to line:', line);
         },
 
+        updateEditorCursorPosition: (position: EditorCursorPosition) => {
+          set((state) => ({
+            ui: {
+              ...state.ui,
+              editorCursorPosition: position,
+            },
+          }));
+
+          // カーソル位置に対応するノードIDを取得して設定
+          if (currentNodeMapping) {
+            const nodeId = getNodeIdAtCursor(position, currentNodeMapping);
+            set((state) => ({
+              ui: {
+                ...state.ui,
+                cursorCorrespondingNodeId: nodeId,
+              },
+            }));
+          }
+        },
+
+        setEditorHighlight: (range: EditorHighlightRange | null) => {
+          set((state) => ({
+            ui: {
+              ...state.ui,
+              editorHighlightRange: range,
+            },
+          }));
+        },
+
+        highlightEditorRange: (startLine: number, startColumn: number, endLine: number, endColumn: number, reason: 'node-selection' | 'search' | 'error' = 'node-selection') => {
+          const range: EditorHighlightRange = {
+            startLine,
+            startColumn,
+            endLine,
+            endColumn,
+            reason,
+          };
+          
+          get().setEditorHighlight(range);
+        },
+
         // ===== マインドマップ操作 =====
 
-        selectNode: (nodeId: string) => {
+        selectNode: (nodeId: string | null) => {
           set((state) => ({
             ui: {
               ...state.ui,
@@ -462,6 +514,20 @@ export const useAppStore = create<AppStore>()(
               },
             },
           }));
+
+          // ノードに対応するエディタ位置をハイライト
+          if (currentNodeMapping && nodeId) {
+            const position = getEditorPositionForNode(nodeId, currentNodeMapping);
+            if (position) {
+              get().highlightEditorRange(
+                position.startLine,
+                position.startColumn,
+                position.endLine,
+                position.endColumn,
+                'node-selection'
+              );
+            }
+          }
         },
 
         toggleNodeCollapse: (nodeId: string) => {
@@ -762,6 +828,7 @@ export const useAppStore = create<AppStore>()(
                 isParsing: false,
               },
             }));
+            currentNodeMapping = null;
             return;
           }
 
@@ -784,8 +851,14 @@ export const useAppStore = create<AppStore>()(
             
             if (result.success && result.data) {
               parsedData = result.data;
+              
+              // ノードマッピングを作成
+              const { file } = get();
+              const format = file.fileFormat || 'json';
+              currentNodeMapping = createNodeMapping(content, format);
             } else if (result.errors) {
               parseErrors.push(...result.errors);
+              currentNodeMapping = null;
             }
 
             set((state) => ({
@@ -806,6 +879,7 @@ export const useAppStore = create<AppStore>()(
 
           } catch (error) {
             console.error('Parse error:', error);
+            currentNodeMapping = null;
             
             set((state) => ({
               parse: {

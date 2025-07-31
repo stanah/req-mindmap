@@ -1,0 +1,314 @@
+/**
+ * ノードとエディタ位置のマッピング機能
+ * 
+ * JSON/YAMLの解析結果からノードIDとエディタ内の位置情報を対応付ける
+ */
+
+import type { MindmapData, MindmapNode } from '../types/mindmap';
+import type { EditorCursorPosition } from '../types/store';
+
+/**
+ * ノード位置情報
+ */
+export interface NodePosition {
+  /** ノードID */
+  nodeId: string;
+  /** 開始行（1-based） */
+  startLine: number;
+  /** 開始列（1-based） */
+  startColumn: number;
+  /** 終了行（1-based） */
+  endLine: number;
+  /** 終了列（1-based） */
+  endColumn: number;
+  /** JSON path（例: "root.children[0].title"） */
+  jsonPath: string;
+}
+
+/**
+ * パース結果とノード位置のマッピング
+ */
+export interface NodeMappingResult {
+  /** ノード位置のマップ */
+  nodePositions: Map<string, NodePosition>;
+  /** 行とノードIDのマップ */
+  lineToNodeId: Map<number, string>;
+  /** マインドマップデータ */
+  mindmapData: MindmapData | null;
+}
+
+/**
+ * JSON/YAMLコンテンツからノード位置マッピングを生成
+ */
+export function createNodeMapping(content: string, format: 'json' | 'yaml'): NodeMappingResult {
+  const result: NodeMappingResult = {
+    nodePositions: new Map(),
+    lineToNodeId: new Map(),
+    mindmapData: null,
+  };
+
+  try {
+    if (format === 'json') {
+      return createJsonNodeMapping(content);
+    } else {
+      return createYamlNodeMapping(content);
+    }
+  } catch (error) {
+    console.error('ノードマッピング作成エラー:', error);
+    return result;
+  }
+}
+
+/**
+ * JSONコンテンツのノードマッピング作成
+ */
+function createJsonNodeMapping(content: string): NodeMappingResult {
+  const result: NodeMappingResult = {
+    nodePositions: new Map(),
+    lineToNodeId: new Map(),
+    mindmapData: null,
+  };
+
+  try {
+    // JSONをパース
+    const data = JSON.parse(content) as MindmapData;
+    result.mindmapData = data;
+
+    // 行ごとにコンテンツを分割
+    const lines = content.split('\n');
+    
+    // ノードを再帰的に解析してマッピングを作成
+    mapJsonNode(data.root, lines, 'root', result);
+
+    return result;
+  } catch (error) {
+    console.error('JSON ノードマッピング作成エラー:', error);
+    return result;
+  }
+}
+
+/**
+ * YAMLコンテンツのノードマッピング作成
+ */
+function createYamlNodeMapping(content: string): NodeMappingResult {
+  const result: NodeMappingResult = {
+    nodePositions: new Map(),
+    lineToNodeId: new Map(),
+    mindmapData: null,
+  };
+
+  try {
+    // YAML解析（簡易実装）
+    const yaml = require('js-yaml');
+    const data = yaml.load(content) as MindmapData;
+    result.mindmapData = data;
+
+    // 行ごとにコンテンツを分割
+    const lines = content.split('\n');
+    
+    // YAMLのノードマッピング（簡易実装）
+    mapYamlNode(data.root, lines, 'root', result);
+
+    return result;
+  } catch (error) {
+    console.error('YAML ノードマッピング作成エラー:', error);
+    return result;
+  }
+}
+
+/**
+ * JSONノードの位置を再帰的にマッピング
+ */
+function mapJsonNode(
+  node: MindmapNode,
+  lines: string[],
+  jsonPath: string,
+  result: NodeMappingResult,
+  level: number = 0
+): void {
+  if (!node.id) return;
+
+  // ノードIDに関連する行を検索
+  const nodeLines = findJsonNodeLines(node, lines);
+  
+  if (nodeLines.length > 0) {
+    const startLine = Math.min(...nodeLines) + 1; // 1-based
+    const endLine = Math.max(...nodeLines) + 1; // 1-based
+    
+    const position: NodePosition = {
+      nodeId: node.id,
+      startLine,
+      startColumn: 1,
+      endLine,
+      endColumn: lines[endLine - 1]?.length || 1,
+      jsonPath,
+    };
+
+    result.nodePositions.set(node.id, position);
+    
+    // 行とノードIDのマッピング
+    for (let line = startLine; line <= endLine; line++) {
+      result.lineToNodeId.set(line, node.id);
+    }
+  }
+
+  // 子ノードを再帰的に処理
+  if (node.children) {
+    node.children.forEach((child, index) => {
+      const childPath = `${jsonPath}.children[${index}]`;
+      mapJsonNode(child, lines, childPath, result, level + 1);
+    });
+  }
+}
+
+/**
+ * YAMLノードの位置を再帰的にマッピング
+ */
+function mapYamlNode(
+  node: MindmapNode,
+  lines: string[],
+  yamlPath: string,
+  result: NodeMappingResult,
+  level: number = 0
+): void {
+  if (!node.id) return;
+
+  // ノードIDに関連する行を検索（YAML形式）
+  const nodeLines = findYamlNodeLines(node, lines);
+  
+  if (nodeLines.length > 0) {
+    const startLine = Math.min(...nodeLines) + 1; // 1-based
+    const endLine = Math.max(...nodeLines) + 1; // 1-based
+    
+    const position: NodePosition = {
+      nodeId: node.id,
+      startLine,
+      startColumn: 1,
+      endLine,
+      endColumn: lines[endLine - 1]?.length || 1,
+      jsonPath: yamlPath,
+    };
+
+    result.nodePositions.set(node.id, position);
+    
+    // 行とノードIDのマッピング
+    for (let line = startLine; line <= endLine; line++) {
+      result.lineToNodeId.set(line, node.id);
+    }
+  }
+
+  // 子ノードを再帰的に処理
+  if (node.children) {
+    node.children.forEach((child, index) => {
+      const childPath = `${yamlPath}.children[${index}]`;
+      mapYamlNode(child, lines, childPath, result, level + 1);
+    });
+  }
+}
+
+/**
+ * JSONノードに関連する行番号を検索
+ */
+function findJsonNodeLines(node: MindmapNode, lines: string[]): number[] {
+  const foundLines: number[] = [];
+  
+  // ノードIDを含む行を検索
+  lines.forEach((line, index) => {
+    // idフィールドを含む行
+    if (line.includes(`"id": "${node.id}"`) || line.includes(`"id":"${node.id}"`)) {
+      foundLines.push(index);
+    }
+    // titleフィールドを含む行（同じオブジェクト内）
+    if (line.includes(`"title": "${node.title}"`) || line.includes(`"title":"${node.title}"`)) {
+      foundLines.push(index);
+    }
+  });
+
+  return foundLines;
+}
+
+/**
+ * YAMLノードに関連する行番号を検索
+ */
+function findYamlNodeLines(node: MindmapNode, lines: string[]): number[] {
+  const foundLines: number[] = [];
+  
+  // ノードIDを含む行を検索
+  lines.forEach((line, index) => {
+    // idフィールドを含む行
+    if (line.includes(`id: ${node.id}`) || line.includes(`id: "${node.id}"`)) {
+      foundLines.push(index);
+    }
+    // titleフィールドを含む行（同じオブジェクト内）
+    if (line.includes(`title: ${node.title}`) || line.includes(`title: "${node.title}"`)) {
+      foundLines.push(index);
+    }
+  });
+
+  return foundLines;
+}
+
+/**
+ * カーソル位置に対応するノードIDを取得
+ */
+export function getNodeIdAtCursor(
+  cursor: EditorCursorPosition,
+  nodeMapping: NodeMappingResult
+): string | null {
+  // 行番号からノードIDを直接取得
+  return nodeMapping.lineToNodeId.get(cursor.line) || null;
+}
+
+/**
+ * ノードIDに対応するエディタ位置を取得
+ */
+export function getEditorPositionForNode(
+  nodeId: string,
+  nodeMapping: NodeMappingResult
+): NodePosition | null {
+  return nodeMapping.nodePositions.get(nodeId) || null;
+}
+
+/**
+ * 指定範囲内の全ノードIDを取得
+ */
+export function getNodesInRange(
+  startLine: number,
+  endLine: number,
+  nodeMapping: NodeMappingResult
+): string[] {
+  const nodeIds: string[] = [];
+  
+  for (let line = startLine; line <= endLine; line++) {
+    const nodeId = nodeMapping.lineToNodeId.get(line);
+    if (nodeId && !nodeIds.includes(nodeId)) {
+      nodeIds.push(nodeId);
+    }
+  }
+  
+  return nodeIds;
+}
+
+/**
+ * ノードの階層レベルを取得
+ */
+export function getNodeLevel(nodeId: string, mindmapData: MindmapData | null): number {
+  if (!mindmapData) return 0;
+  
+  function findLevel(node: MindmapNode, targetId: string, currentLevel: number): number {
+    if (node.id === targetId) {
+      return currentLevel;
+    }
+    
+    if (node.children) {
+      for (const child of node.children) {
+        const level = findLevel(child, targetId, currentLevel + 1);
+        if (level !== -1) return level;
+      }
+    }
+    
+    return -1;
+  }
+  
+  return findLevel(mindmapData.root, nodeId, 0);
+}

@@ -14,6 +14,7 @@ export const MindmapPane: React.FC = () => {
   const parsedData = useAppStore(state => state.parse.parsedData);
   const mindmapSettings = useAppStore(state => state.ui.mindmapSettings);
   const selectedNodeId = useAppStore(state => state.ui.selectedNodeId);
+  const cursorCorrespondingNodeId = useAppStore(state => state.ui.cursorCorrespondingNodeId);
   const selectNode = useAppStore(state => state.selectNode);
   
   // マインドマップ同期フックの使用
@@ -30,23 +31,23 @@ export const MindmapPane: React.FC = () => {
         rendererRef.current.focusNode(node.data.id);
       }
     },
-    onNodeHover: (node: D3Node, event: MouseEvent) => {
+    onNodeHover: (_node: D3Node, event: MouseEvent) => {
       // ホバー時の処理
       const target = event.target as SVGElement;
       if (target) {
         target.style.cursor = 'pointer';
       }
     },
-    onNodeLeave: (node: D3Node, event: MouseEvent) => {
+    onNodeLeave: (_node: D3Node, event: MouseEvent) => {
       // ホバー終了時の処理
       const target = event.target as SVGElement;
       if (target) {
         target.style.cursor = 'default';
       }
     },
-    onBackgroundClick: (event: MouseEvent) => {
+    onBackgroundClick: (_event: MouseEvent) => {
       // 背景クリック時の処理
-      selectNode(null as any);
+      selectNode(null);
     },
   }), [selectNode]);
 
@@ -98,6 +99,13 @@ export const MindmapPane: React.FC = () => {
     }
   }, [selectedNodeId]);
 
+  // カーソル対応ノードの強調表示
+  useEffect(() => {
+    if (rendererRef.current) {
+      rendererRef.current.highlightCursorNode(cursorCorrespondingNodeId);
+    }
+  }, [cursorCorrespondingNodeId]);
+
   // キーボードショートカット
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -130,6 +138,23 @@ export const MindmapPane: React.FC = () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [selectedNodeId]);
+
+  // ウィンドウリサイズ対応
+  useEffect(() => {
+    const handleResize = () => {
+      if (rendererRef.current) {
+        // リサイズ後に少し遅延してビューを再調整
+        setTimeout(() => {
+          rendererRef.current?.centerView();
+        }, 100);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const handleZoomIn = () => {
     if (rendererRef.current) {

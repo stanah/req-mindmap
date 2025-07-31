@@ -57,6 +57,32 @@ export interface ParseState {
 }
 
 /**
+ * エディタカーソル位置
+ */
+export interface EditorCursorPosition {
+  /** 行番号（1-based） */
+  line: number;
+  /** 列番号（1-based） */
+  column: number;
+}
+
+/**
+ * エディタハイライト範囲
+ */
+export interface EditorHighlightRange {
+  /** 開始行（1-based） */
+  startLine: number;
+  /** 開始列（1-based） */
+  startColumn: number;
+  /** 終了行（1-based） */
+  endLine: number;
+  /** 終了列（1-based） */
+  endColumn: number;
+  /** ハイライトの理由 */
+  reason?: 'node-selection' | 'search' | 'error';
+}
+
+/**
  * UI状態
  */
 export interface UIState {
@@ -68,6 +94,12 @@ export interface UIState {
   selectedNodeId: string | null;
   /** ノード選択情報 */
   nodeSelection: NodeSelection | null;
+  /** エディタのカーソル位置 */
+  editorCursorPosition: EditorCursorPosition | null;
+  /** エディタのハイライト範囲 */
+  editorHighlightRange: EditorHighlightRange | null;
+  /** カーソル位置に対応するノードID */
+  cursorCorrespondingNodeId: string | null;
   /** サイドバーが開いているかどうか */
   sidebarOpen: boolean;
   /** 設定パネルが開いているかどうか */
@@ -183,10 +215,16 @@ export interface AppActions {
   focusEditor: () => void;
   /** 指定行にジャンプ */
   goToLine: (line: number) => void;
+  /** エディタのカーソル位置を更新 */
+  updateEditorCursorPosition: (position: EditorCursorPosition) => void;
+  /** エディタのハイライト範囲を設定 */
+  setEditorHighlight: (range: EditorHighlightRange | null) => void;
+  /** エディタの該当箇所をハイライト */
+  highlightEditorRange: (startLine: number, startColumn: number, endLine: number, endColumn: number, reason?: 'node-selection' | 'search' | 'error') => void;
 
   // マインドマップ操作
   /** ノードを選択 */
-  selectNode: (nodeId: string) => void;
+  selectNode: (nodeId: string | null) => void;
   /** ノードの折りたたみ状態を切り替え */
   toggleNodeCollapse: (nodeId: string) => void;
   /** マインドマップ設定を更新 */

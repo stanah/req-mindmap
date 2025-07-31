@@ -10,7 +10,10 @@ export const EditorPane: React.FC = () => {
   const fileContent = useAppStore(state => state.file.fileContent);
   const editorSettings = useAppStore(state => state.ui.editorSettings);
   const parseErrors = useAppStore(state => state.parse.parseErrors);
+  const editorHighlightRange = useAppStore(state => state.ui.editorHighlightRange);
   const updateEditorSettings = useAppStore(state => state.updateEditorSettings);
+  const updateEditorCursorPosition = useAppStore(state => state.updateEditorCursorPosition);
+  const setEditorHighlight = useAppStore(state => state.setEditorHighlight);
   
   // エディタ同期フックの使用
   const { debouncedUpdateContent } = useEditorSync();
@@ -100,6 +103,14 @@ export const EditorPane: React.FC = () => {
       detectIndentation: false,
     });
 
+    // カーソル位置変更のリスナー
+    editor.onDidChangeCursorPosition((e) => {
+      updateEditorCursorPosition({
+        line: e.position.lineNumber,
+        column: e.position.column,
+      });
+    });
+
     // キーボードショートカットの設定
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
       // 保存処理（将来的に実装）
@@ -153,7 +164,7 @@ export const EditorPane: React.FC = () => {
     return () => {
       hoverProvider.dispose();
     };
-  }, [editorSettings, updateErrorMarkers]);
+  }, [editorSettings, updateErrorMarkers, updateEditorCursorPosition]);
 
   // エディタの内容変更時の処理
   const handleEditorChange = useCallback((value: string | undefined) => {
@@ -202,6 +213,44 @@ export const EditorPane: React.FC = () => {
       });
     }
   }, [editorSettings]);
+
+  // ハイライト範囲の変更を監視してエディタに反映
+  useEffect(() => {
+    if (!editorRef.current) return;
+
+    const editor = editorRef.current;
+    const model = editor.getModel();
+    if (!model) return;
+
+    // 既存のハイライトをクリア
+    monaco.editor.setModelMarkers(model, 'node-highlight', []);
+
+    if (editorHighlightRange) {
+      // 新しいハイライトを設定
+      const markers: monaco.editor.IMarkerData[] = [{
+        severity: monaco.MarkerSeverity.Info,
+        startLineNumber: editorHighlightRange.startLine,
+        startColumn: editorHighlightRange.startColumn,
+        endLineNumber: editorHighlightRange.endLine,
+        endColumn: editorHighlightRange.endColumn,
+        message: `選択されたノードに対応する箇所`,
+        source: 'node-highlight',
+        tags: [monaco.MarkerTag.Unnecessary], // 視覚的にハイライト
+      }];
+
+      monaco.editor.setModelMarkers(model, 'node-highlight', markers);
+
+      // ハイライト箇所にスクロール
+      if (editorHighlightRange.reason === 'node-selection') {
+        editor.revealLineInCenter(editorHighlightRange.startLine);
+        
+        // 一定時間後にハイライトをクリア（オプション）
+        setTimeout(() => {
+          setEditorHighlight(null);
+        }, 3000);
+      }
+    }
+  }, [editorHighlightRange, setEditorHighlight]);
 
   return (
     <div className="editor-pane">

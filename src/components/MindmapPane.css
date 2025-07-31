@@ -69,6 +69,8 @@
 
 .mindmap-svg {
   display: block;
+  width: 100%;
+  height: 100%;
   background-color: var(--canvas-bg, #ffffff);
   cursor: grab;
 }
@@ -125,6 +127,24 @@
   stroke: var(--primary-color, #2563eb);
   stroke-width: 3px;
   filter: brightness(0.98);
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.3);
+}
+
+.mindmap-node.cursor-highlight .mindmap-node-rect {
+  stroke: var(--secondary-color, #f59e0b);
+  stroke-width: 2px;
+  stroke-dasharray: 5,5;
+  filter: brightness(1.05);
+  animation: cursor-pulse 2s infinite;
+}
+
+@keyframes cursor-pulse {
+  0%, 100% {
+    stroke-opacity: 1;
+  }
+  50% {
+    stroke-opacity: 0.6;
+  }
 }
 
 .mindmap-collapse-group {
@@ -174,6 +194,7 @@
   --node-bg: #2d2d2d;
   --node-border: #404040;
   --link-color: #64748b;
+  --secondary-color: #fbbf24;
 }
 
 /* ノード詳細パネル */
