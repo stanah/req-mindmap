@@ -188,8 +188,8 @@ export class MindmapRenderer {
       case 'radial':
         // 放射状レイアウト
         layout = d3.tree<MindmapNode>()
-          .size([2 * Math.PI, Math.min(400, 300)])
-          .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
+          .size([2 * Math.PI, 500])
+          .separation((a, b) => (a.parent === b.parent ? 2 : 3) / Math.max(a.depth, 1));
         break;
       
       case 'tree':
