@@ -5,7 +5,7 @@
  * 型とインターフェースを定義します。
  */
 
-import { 
+import type { 
   MindmapData, 
   ParseError, 
   NodeSelection, 

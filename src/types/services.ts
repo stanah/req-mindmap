@@ -5,7 +5,7 @@
  * インターフェースと型を定義します。
  */
 
-import { MindmapData, ParseError, ValidationResult, FileError } from './mindmap';
+import type { MindmapData, ParseError, ValidationResult, FileError } from './mindmap';
 
 /**
  * ファイルサービスインターフェース

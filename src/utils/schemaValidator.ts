@@ -6,7 +6,7 @@
 
 import Ajv, { JSONSchemaType, ValidateFunction, ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
-import { 
+import type { 
   MindmapData, 
   CustomSchema, 
   ValidationResult, 
