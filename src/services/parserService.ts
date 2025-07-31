@@ -87,6 +87,63 @@ export class ParserServiceImpl implements ParserService {
   }
 
   /**
+   * 汎用パース関数（JSON/YAMLを自動判定）
+   */
+  async parse(content: string): Promise<{ success: boolean; data?: MindmapData; errors?: ParseError[] }> {
+    try {
+      // 空文字列チェック
+      if (!content.trim()) {
+        return {
+          success: false,
+          errors: [{
+            line: 1,
+            column: 1,
+            message: 'ファイル内容が空です',
+            severity: 'error',
+            code: 'EMPTY_CONTENT'
+          }]
+        };
+      }
+
+      // まずJSONとして解析を試行
+      try {
+        const data = await this.parseJSON(content);
+        return { success: true, data };
+      } catch (jsonError) {
+        // JSONで失敗した場合、YAMLを試行
+        try {
+          const data = await this.parseYAML(content);
+          return { success: true, data };
+        } catch (yamlError) {
+          // 両方失敗した場合、パースエラーを返す
+          const parseErrors = this.getParseErrors(content);
+          return {
+            success: false,
+            errors: parseErrors.length > 0 ? parseErrors : [{
+              line: 1,
+              column: 1,
+              message: 'JSONまたはYAML形式でのパースに失敗しました',
+              severity: 'error',
+              code: 'PARSE_FAILED'
+            }]
+          };
+        }
+      }
+    } catch (error) {
+      return {
+        success: false,
+        errors: [{
+          line: 1,
+          column: 1,
+          message: error instanceof Error ? error.message : '不明なエラー',
+          severity: 'error',
+          code: 'UNKNOWN_ERROR'
+        }]
+      };
+    }
+  }
+
+  /**
    * データの基本的なバリデーション
    */
   validateData(data: any): ValidationResult {
