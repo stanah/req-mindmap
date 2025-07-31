@@ -51,7 +51,7 @@ export const MindmapPane: React.FC = () => {
     },
   }), [selectNode]);
 
-  // レンダラーの初期化
+  // レンダラーの初期化（初回のみ）
   useEffect(() => {
     if (!svgRef.current) return;
 
@@ -73,7 +73,7 @@ export const MindmapPane: React.FC = () => {
         rendererRef.current = null;
       }
     };
-  }, [mindmapSettings, eventHandlers]);
+  }, [eventHandlers]); // mindmapSettingsを依存配列から除去
 
   // データの描画
   useEffect(() => {

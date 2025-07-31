@@ -858,6 +858,9 @@ export class MindmapRenderer {
     
     // レイアウトが変更された場合は再描画
     if (newSettings.layout && newSettings.layout !== oldLayout && this.root) {
+      // 既存のSVG要素をクリアしてから再レイアウト
+      this.container.selectAll('*').remove();
+      
       this.root = this.applyLayout(this.root);
       this.draw();
       
