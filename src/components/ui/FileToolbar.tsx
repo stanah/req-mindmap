@@ -4,11 +4,13 @@
  * ファイルの読み込み、保存、新規作成などの操作を提供するツールバー
  */
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useAppStore } from '../../stores/appStore';
 import { fileService, BrowserFileService } from '../../services/fileService';
 import { projectManagementSample, sampleYAML } from '../../data/samples';
+import { SettingsPanel } from './SettingsPanel';
 import type { FileLoadResult } from '../../services/fileService';
+import './SettingsPanel.css';
 
 interface FileToolbarProps {
   className?: string;
@@ -26,6 +28,7 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
   } = useAppStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   /**
    * ファイル読み込みハンドラー
@@ -273,6 +276,17 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
         </button>
       </div>
 
+      {/* 設定ボタン */}
+      <div className="file-toolbar__group">
+        <button
+          className="file-toolbar__button"
+          onClick={() => setShowSettings(true)}
+          title="設定"
+        >
+          ⚙️ 設定
+        </button>
+      </div>
+
       {/* ファイル情報表示 */}
       <div className="file-toolbar__info">
         {file.currentFile && (
@@ -306,6 +320,12 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
         accept=".json,.yaml,.yml,.txt"
         style={{ display: 'none' }}
         onChange={() => {}} // ファイル選択はhandleLoadFileで処理
+      />
+
+      {/* 設定パネル */}
+      <SettingsPanel
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
       />
     </div>
   );
