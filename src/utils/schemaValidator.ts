@@ -4,7 +4,7 @@
  * このファイルは、JSON SchemaとAjvを使用したデータバリデーション機能を提供します。
  */
 
-import Ajv, { JSONSchemaType, ValidateFunction, ErrorObject } from 'ajv';
+import Ajv, { type ValidateFunction, type ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import type { 
   MindmapData, 
@@ -460,7 +460,7 @@ export class SchemaValidator {
   /**
    * スキーマから型定義を生成（開発用）
    */
-  generateTypeDefinition(schema: any): string {
+  generateTypeDefinition(_schema: any): string {
     // 簡単な型定義生成（実装は省略）
     return '// 型定義は別途実装';
   }

@@ -9,7 +9,6 @@ import type {
   MindmapData, 
   ParseError, 
   NodeSelection, 
-  NodeEvent, 
   EditorSettings, 
   MindmapSettings,
   AppSettings,
@@ -361,4 +360,4 @@ export interface StoreEvent {
 /**
  * ストアリスナー
  */
-export type StoreListener<T = any> = (event: StoreEvent, state: AppState) => void;
+export type StoreListener = (event: StoreEvent, state: AppState) => void;

@@ -10,11 +10,11 @@ import type { AppState } from '../../types/store';
 // モックの設定
 vi.mock('../../utils/helpers', () => ({
   storage: {
-    get: vi.fn((key: string, defaultValue: any) => defaultValue),
+    get: vi.fn((_key: string, defaultValue: any) => defaultValue),
     set: vi.fn(),
     remove: vi.fn(),
   },
-  debounce: vi.fn((fn: Function, delay: number) => fn),
+  debounce: vi.fn((fn: Function, _delay: number) => fn),
   generateId: vi.fn(() => 'test-id'),
   detectFileFormat: vi.fn(() => 'json'),
   deepClone: vi.fn((obj: any) => JSON.parse(JSON.stringify(obj))),

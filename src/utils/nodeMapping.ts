@@ -40,7 +40,7 @@ export interface NodeMappingResult {
 /**
  * JSON/YAMLコンテンツからノード位置マッピングを生成
  */
-export function createNodeMapping(content: string, format: 'json' | 'yaml'): NodeMappingResult {
+export async function createNodeMapping(content: string, format: 'json' | 'yaml'): Promise<NodeMappingResult> {
   const result: NodeMappingResult = {
     nodePositions: new Map(),
     lineToNodeId: new Map(),
@@ -51,7 +51,7 @@ export function createNodeMapping(content: string, format: 'json' | 'yaml'): Nod
     if (format === 'json') {
       return createJsonNodeMapping(content);
     } else {
-      return createYamlNodeMapping(content);
+      return await createYamlNodeMapping(content);
     }
   } catch (error) {
     console.error('ノードマッピング作成エラー:', error);
@@ -90,7 +90,7 @@ function createJsonNodeMapping(content: string): NodeMappingResult {
 /**
  * YAMLコンテンツのノードマッピング作成
  */
-function createYamlNodeMapping(content: string): NodeMappingResult {
+async function createYamlNodeMapping(content: string): Promise<NodeMappingResult> {
   const result: NodeMappingResult = {
     nodePositions: new Map(),
     lineToNodeId: new Map(),
@@ -98,8 +98,8 @@ function createYamlNodeMapping(content: string): NodeMappingResult {
   };
 
   try {
-    // YAML解析（簡易実装）
-    const yaml = require('js-yaml');
+    // YAML解析（非同期インポート）
+    const yaml = await import('js-yaml');
     const data = yaml.load(content) as MindmapData;
     result.mindmapData = data;
 

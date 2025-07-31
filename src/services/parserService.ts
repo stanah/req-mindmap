@@ -346,12 +346,12 @@ export class ParserServiceImpl implements ParserService {
       
       const fieldDef = {
         name,
-        type: primaryType,
+        type: primaryType as 'string' | 'number' | 'boolean' | 'date' | 'select' | 'multiselect',
         label: this.generateFieldLabel(name),
         description: `自動生成されたフィールド: ${name} (使用率: ${Math.round((stats.count - stats.nullCount) / stats.count * 100)}%)`,
         required: stats.nullCount === 0 && stats.count > 1, // 全てのノードで値が設定されている場合は必須
         ...(primaryType === 'select' && this.generateSelectOptions(examples)),
-        ...(primaryType === 'date' && { validation: [{ type: 'date' as const }] }),
+        ...(primaryType === 'date' && { validation: [{ type: 'required' as const }] }),
         ...(primaryType === 'number' && this.generateNumberValidation(examples))
       };
 
@@ -664,13 +664,13 @@ export class ParserServiceImpl implements ParserService {
   /**
    * 数値フィールドのバリデーションを生成
    */
-  private generateNumberValidation(examples: any[]): { validation: Array<{ type: string; value?: number }> } {
+  private generateNumberValidation(examples: any[]): { validation: Array<{ type: 'min' | 'max'; value?: number }> } {
     const numbers = examples.filter(v => typeof v === 'number');
     if (numbers.length === 0) return { validation: [] };
 
     const min = Math.min(...numbers);
     const max = Math.max(...numbers);
-    const validation = [];
+    const validation: Array<{ type: 'min' | 'max'; value?: number }> = [];
 
     if (min >= 0) {
       validation.push({ type: 'min', value: 0 });
