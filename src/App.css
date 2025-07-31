@@ -1,16 +1,40 @@
 /* アプリケーション全体のスタイル */
 .app-content {
   display: flex;
+  width: 100%;
   height: 100%;
   overflow: hidden;
 }
 
 .editor-section {
-  flex: 1;
-  min-width: 400px;
-  max-width: 60%;
-  resize: horizontal;
+  flex: 0 0 50%;
+  min-width: 300px;
+  max-width: 70%;
   overflow: hidden;
+  position: relative;
+}
+
+.panel-resizer {
+  width: 4px;
+  background: var(--border-color);
+  cursor: ew-resize;
+  position: relative;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease;
+}
+
+.panel-resizer:hover {
+  background: var(--primary-color);
+}
+
+.panel-resizer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -2px;
+  right: -2px;
+  bottom: 0;
+  background: transparent;
 }
 
 .mindmap-section {
