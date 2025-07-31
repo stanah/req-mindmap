@@ -6,7 +6,7 @@
  */
 
 import * as d3 from 'd3';
-import type { MindmapData, MindmapNode, MindmapSettings, CustomSchema, DisplayRule } from '../types/mindmap';
+import type { MindmapData, MindmapNode, MindmapSettings, CustomSchema } from '../types/mindmap';
 
 /**
  * D3.js用の拡張ノードデータ
@@ -186,7 +186,7 @@ export class MindmapRenderer {
 
     switch (this.settings.layout) {
       case 'radial':
-        // 放射状レイアウト（将来実装）
+        // 放射状レイアウト
         layout = d3.tree<MindmapNode>()
           .size([2 * Math.PI, Math.min(400, 300)])
           .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
@@ -217,8 +217,18 @@ export class MindmapRenderer {
 
     const result = layout(hierarchy) as D3Node;
     
-    // 横方向レイアウトの場合の座標変換
-    if (this.settings.layout === 'tree') {
+    // レイアウトごとの座標変換
+    if (this.settings.layout === 'radial') {
+      // 放射状レイアウトの座標変換（極座標から直交座標への変換）
+      result.each((node: any) => {
+        const angle = node.x;
+        const radius = node.y;
+        
+        // 極座標から直交座標に変換
+        node.x = radius * Math.cos(angle - Math.PI / 2);
+        node.y = radius * Math.sin(angle - Math.PI / 2);
+      });
+    } else if (this.settings.layout === 'tree') {
       // x <-> y を入れ替えて横方向にする
       result.each((node: any) => {
         const originalX = node.x;
@@ -288,9 +298,17 @@ export class MindmapRenderer {
    * リンクの描画
    */
   private drawLinks(links: D3Link[]): void {
-    const linkGenerator = d3.linkHorizontal<D3Link, D3Node>()
-      .x(d => d.x)
-      .y(d => d.y);
+    // レイアウトに応じてリンク生成器を選択
+    const linkGenerator = this.settings.layout === 'radial'
+      ? d3.linkRadial<D3Link, D3Node>()
+          .angle(d => {
+            // 直交座標から角度を逆算
+            return Math.atan2(d.y, d.x) + Math.PI / 2;
+          })
+          .radius(d => Math.sqrt(d.x * d.x + d.y * d.y))
+      : d3.linkHorizontal<D3Link, D3Node>()
+          .x(d => d.x)
+          .y(d => d.y);
 
     const linkSelection = this.container
       .selectAll<SVGPathElement, D3Link>('.mindmap-link')

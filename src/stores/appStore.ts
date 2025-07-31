@@ -23,12 +23,12 @@ import type {
   MindmapSettings, 
   AppSettings,
   MindmapData,
-  ParseError,
-  ValidationResult
+  ParseError
 } from '../types/mindmap';
-import { APP_CONFIG, STORAGE_KEYS, DEBOUNCE_DELAY } from '../utils/constants';
-import { storage, debounce, generateId, detectFileFormat, deepClone, findNodeById } from '../utils/helpers';
+import { STORAGE_KEYS, DEBOUNCE_DELAY } from '../utils/constants';
+import { storage, generateId, detectFileFormat, deepClone, findNodeById } from '../utils/helpers';
 import { createNodeMapping, getNodeIdAtCursor, getEditorPositionForNode, type NodeMappingResult } from '../utils/nodeMapping';
+import { settingsService } from '../services/settingsService';
 
 /**
  * 初期ファイル状態
@@ -60,28 +60,8 @@ const initialParseState: ParseState = {
  * 初期UI状態
  */
 const initialUIState: UIState = {
-  editorSettings: storage.get(STORAGE_KEYS.EDITOR_SETTINGS, {
-    language: 'json',
-    theme: 'vs-light',
-    fontSize: 14,
-    tabSize: 2,
-    formatOnType: true,
-    autoSave: false,
-    lineNumbers: true,
-    wordWrap: true,
-    minimap: true,
-  }),
-  mindmapSettings: storage.get(STORAGE_KEYS.MINDMAP_SETTINGS, {
-    theme: 'light',
-    layout: 'tree',
-    zoom: 1,
-    center: { x: 0, y: 0 },
-    maxNodeWidth: 300,
-    nodeSpacing: 20,
-    levelSpacing: 100,
-    enableAnimation: true,
-    autoLayout: true,
-  }),
+  editorSettings: settingsService.loadSettings().editor,
+  mindmapSettings: settingsService.loadSettings().mindmap,
   selectedNodeId: null,
   nodeSelection: null,
   editorCursorPosition: null,
@@ -105,14 +85,7 @@ const initialUIState: UIState = {
 /**
  * 初期アプリケーション設定
  */
-const initialSettings: AppSettings = {
-  editor: initialUIState.editorSettings,
-  mindmap: initialUIState.mindmapSettings,
-  language: 'ja',
-  debug: false,
-  autoBackup: true,
-  recentFiles: storage.get(STORAGE_KEYS.RECENT_FILES, []),
-};
+const initialSettings: AppSettings = settingsService.loadSettings();
 
 /**
  * 初期アプリケーション状態
@@ -122,7 +95,7 @@ const initialState: AppState = {
   parse: initialParseState,
   ui: initialUIState,
   settings: initialSettings,
-  recentFiles: storage.get(STORAGE_KEYS.RECENT_FILES, []),
+  recentFiles: settingsService.getRecentFiles().map(f => f.path),
   initialized: false,
   debugMode: false,
 };
@@ -131,7 +104,6 @@ const initialState: AppState = {
  * デバウンス処理用のタイマー管理
  */
 let contentUpdateTimer: NodeJS.Timeout | null = null;
-let parseTimer: NodeJS.Timeout | null = null;
 
 /**
  * ノードマッピング情報のグローバル管理
@@ -167,15 +139,19 @@ export const useAppStore = create<AppStore>()(
             const fileName = path.split('/').pop() || path;
             
             // 最近開いたファイルに追加
-            const recentFiles = get().recentFiles.filter(f => f !== path);
-            recentFiles.unshift(path);
-            const updatedRecentFiles = recentFiles.slice(0, 10); // 最大10件
+            settingsService.addRecentFile({
+              path,
+              name: fileName,
+              size: 0, // TODO: 実際のファイルサイズを取得
+              format: format as 'json' | 'yaml',
+            });
+            const updatedRecentFiles = settingsService.getRecentFiles().map(f => f.path);
             
             set((state) => ({
               file: {
                 ...state.file,
                 currentFile: path,
-                fileFormat: format,
+                fileFormat: format === 'unknown' ? null : format,
                 isDirty: false,
                 lastSaved: Date.now(),
                 fileSize: 0, // TODO: 実際のファイルサイズを取得
@@ -188,8 +164,6 @@ export const useAppStore = create<AppStore>()(
               },
             }));
 
-            // ローカルストレージに保存
-            storage.set(STORAGE_KEYS.RECENT_FILES, updatedRecentFiles);
 
             // 成功通知
             get().addNotification({
@@ -295,7 +269,7 @@ export const useAppStore = create<AppStore>()(
               file: {
                 ...state.file,
                 currentFile: path,
-                fileFormat: format,
+                fileFormat: format === 'unknown' ? null : format,
                 isDirty: false,
                 lastSaved: Date.now(),
               },
@@ -416,6 +390,12 @@ export const useAppStore = create<AppStore>()(
             },
           }));
 
+          // セッション状態を保存
+          settingsService.saveSessionState({
+            lastFileContent: content,
+            lastOpenFile: file.currentFile || undefined,
+          });
+
           // デバウンス処理でパースを実行
           if (contentUpdateTimer) {
             clearTimeout(contentUpdateTimer);
@@ -507,13 +487,18 @@ export const useAppStore = create<AppStore>()(
             ui: {
               ...state.ui,
               selectedNodeId: nodeId,
-              nodeSelection: {
+              nodeSelection: nodeId ? {
                 nodeId,
                 type: 'click',
                 timestamp: Date.now(),
-              },
+              } : null,
             },
           }));
+
+          // セッション状態を保存
+          settingsService.saveSessionState({
+            lastSelectedNodeId: nodeId || undefined,
+          });
 
           // ノードに対応するエディタ位置をハイライト
           if (currentNodeMapping && nodeId) {
@@ -623,6 +608,11 @@ export const useAppStore = create<AppStore>()(
               panelSizes: sizes,
             },
           }));
+          
+          // セッション状態を保存
+          settingsService.saveSessionState({
+            panelSizes: sizes,
+          });
         },
 
         toggleFullscreen: () => {
@@ -708,36 +698,53 @@ export const useAppStore = create<AppStore>()(
         // ===== 設定操作 =====
 
         updateSettings: (settings: Partial<AppSettings>) => {
+          const newSettings = { ...get().settings, ...settings };
+          
           set((state) => ({
-            settings: {
-              ...state.settings,
-              ...settings,
-            },
+            ...state,
+            settings: newSettings,
           }));
+          
+          // ローカルストレージに保存
+          settingsService.saveSettings(newSettings);
         },
 
         resetSettings: () => {
+          const defaultSettings = settingsService.loadSettings();
+          settingsService.clearAllData();
+          
           set((state) => ({
-            settings: initialSettings,
+            ...state,
+            settings: defaultSettings,
             ui: {
               ...state.ui,
-              editorSettings: initialSettings.editor,
-              mindmapSettings: initialSettings.mindmap,
+              editorSettings: defaultSettings.editor,
+              mindmapSettings: defaultSettings.mindmap,
             },
           }));
-
-          // ローカルストレージからも削除
-          storage.remove(STORAGE_KEYS.EDITOR_SETTINGS);
-          storage.remove(STORAGE_KEYS.MINDMAP_SETTINGS);
         },
 
         exportSettings: () => {
-          return get().settings;
+          const exportedData = settingsService.exportSettings();
+          return JSON.parse(exportedData);
         },
 
         importSettings: (settings: Record<string, any>) => {
           try {
-            get().updateSettings(settings as Partial<AppSettings>);
+            settingsService.importSettings(JSON.stringify(settings));
+            
+            // ストアの状態も更新
+            const newSettings = settingsService.loadSettings();
+            set((state) => ({
+              settings: newSettings,
+              ui: {
+                ...state.ui,
+                editorSettings: newSettings.editor,
+                mindmapSettings: newSettings.mindmap,
+              },
+              recentFiles: settingsService.getRecentFiles().map(f => f.path),
+            }));
+            
             get().addNotification({
               message: '設定をインポートしました',
               type: 'success',
@@ -765,8 +772,60 @@ export const useAppStore = create<AppStore>()(
               },
             }));
 
-            // 初期化処理
-            // TODO: 必要な初期化処理を実装
+            // 設定を読み込む
+            const settings = settingsService.loadSettings();
+            const sessionState = settingsService.loadSessionState();
+            
+            // 前回のセッション状態を復元
+            set((state) => ({
+              settings,
+              ui: {
+                ...state.ui,
+                editorSettings: settings.editor,
+                mindmapSettings: settings.mindmap,
+                panelSizes: sessionState.panelSizes || state.ui.panelSizes,
+                darkMode: settings.editor.theme === 'vs-dark',
+              },
+              recentFiles: settingsService.getRecentFiles().map(f => f.path),
+            }));
+
+            // 前回のファイル内容を復元（オプション）
+            if (sessionState.lastOpenFile && sessionState.lastFileContent) {
+              set((state) => ({
+                file: {
+                  ...state.file,
+                  currentFile: sessionState.lastOpenFile || null,
+                  fileContent: sessionState.lastFileContent || '',
+                  fileFormat: sessionState.lastOpenFile ? 
+                    (detectFileFormat(sessionState.lastOpenFile) === 'unknown' ? null : detectFileFormat(sessionState.lastOpenFile) as 'json' | 'yaml') 
+                    : null,
+                  isDirty: false,
+                },
+              }));
+
+              // 前回の内容をパース
+              if (sessionState.lastFileContent) {
+                await get().parseContent(sessionState.lastFileContent);
+              }
+
+              // 前回の選択状態を復元
+              if (sessionState.lastSelectedNodeId) {
+                get().selectNode(sessionState.lastSelectedNodeId);
+              }
+            }
+
+            // 自動保存を開始
+            if (settings.autoBackup) {
+              settingsService.startAutoSave(async () => {
+                const currentState = get();
+                if (currentState.file.fileContent) {
+                  settingsService.saveAutoSaveData(
+                    currentState.file.fileContent,
+                    currentState.file.currentFile?.split('/').pop()
+                  );
+                }
+              });
+            }
 
             set((state) => ({
               initialized: true,
@@ -776,6 +835,13 @@ export const useAppStore = create<AppStore>()(
                 loadingMessage: '',
               },
             }));
+
+            get().addNotification({
+              message: 'アプリケーションが初期化されました',
+              type: 'success',
+              autoHide: true,
+              duration: 2000,
+            });
 
           } catch (error) {
             console.error('Failed to initialize app:', error);
@@ -853,9 +919,9 @@ export const useAppStore = create<AppStore>()(
               parsedData = result.data;
               
               // ノードマッピングを作成
-              const { file } = get();
-              const format = file.fileFormat || 'json';
-              currentNodeMapping = createNodeMapping(content, format);
+              const { ui } = get();
+              const format = ui.editorSettings.language;
+              currentNodeMapping = await createNodeMapping(content, format);
             } else if (result.errors) {
               parseErrors.push(...result.errors);
               currentNodeMapping = null;
