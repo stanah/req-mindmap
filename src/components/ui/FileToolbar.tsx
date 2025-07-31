@@ -20,7 +20,6 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
   const {
     file,
     newFile,
-    saveFile,
     updateContent,
     addNotification,
     closeFile,
