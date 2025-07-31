@@ -61,7 +61,7 @@ export class ParserServiceImpl implements ParserService {
       // YAML解析
       const data = yaml.load(content, {
         // セキュリティのため、安全なタイプのみ許可
-        schema: yaml.SAFE_SCHEMA,
+        schema: yaml.JSON_SCHEMA,
         // 重複キーを許可しない
         json: true
       });
@@ -238,7 +238,7 @@ export class ParserServiceImpl implements ParserService {
 
     // 次にYAMLとして解析を試行
     try {
-      yaml.load(content, { schema: yaml.SAFE_SCHEMA });
+      yaml.load(content, { schema: yaml.JSON_SCHEMA });
       // YAMLとして成功した場合、JSONエラーをクリアしてYAMLとして扱う
       return [];
     } catch (yamlError) {
@@ -439,7 +439,7 @@ export class ParserServiceImpl implements ParserService {
 
     // YAMLの判定を試行
     try {
-      const parsed = yaml.load(trimmed, { schema: yaml.SAFE_SCHEMA });
+      const parsed = yaml.load(trimmed, { schema: yaml.JSON_SCHEMA });
       if (parsed !== null && typeof parsed === 'object') {
         return 'yaml';
       }

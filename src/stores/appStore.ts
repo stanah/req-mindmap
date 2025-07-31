@@ -66,6 +66,7 @@ const initialUIState: UIState = {
     autoSave: false,
     lineNumbers: true,
     wordWrap: true,
+    minimap: true,
   }),
   mindmapSettings: storage.get(STORAGE_KEYS.MINDMAP_SETTINGS, {
     theme: 'light',
@@ -588,7 +589,7 @@ export const useAppStore = create<AppStore>()(
           set((state) => ({
             ui: {
               ...state.ui,
-              notifications: [...state.ui.notifications, newNotification],
+              notifications: [...(state.ui.notifications || []), newNotification],
             },
           }));
 
@@ -604,7 +605,7 @@ export const useAppStore = create<AppStore>()(
           set((state) => ({
             ui: {
               ...state.ui,
-              notifications: state.ui.notifications.filter(n => n.id !== id),
+              notifications: (state.ui.notifications || []).filter(n => n.id !== id),
             },
           }));
         },

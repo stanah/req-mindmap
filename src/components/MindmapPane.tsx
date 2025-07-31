@@ -9,7 +9,7 @@ export const MindmapPane: React.FC = () => {
   // 新しいZustandストアからの状態取得
   const parsedData = useAppStore(state => state.parse.parsedData);
   const mindmapSettings = useAppStore(state => state.ui.mindmapSettings);
-  const updateMindmapSettings = useAppStore(state => state.updateMindmapSettings);
+
   
   // マインドマップ同期フックの使用
   const { updateMindmapSettings: syncUpdateSettings } = useMindmapSync();

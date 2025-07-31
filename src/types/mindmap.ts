@@ -288,6 +288,8 @@ export interface EditorSettings {
   lineNumbers: boolean;
   /** 折り返し */
   wordWrap: boolean;
+  /** ミニマップ表示 */
+  minimap: boolean;
 }
 
 /**

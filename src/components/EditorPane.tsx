@@ -1,31 +1,207 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
+import * as monaco from 'monaco-editor';
 import { useAppStore } from '../stores';
 import { useEditorSync } from '../hooks';
-import { debounce } from '../utils/helpers';
-import { DEBOUNCE_DELAY } from '../utils/constants';
 import './EditorPane.css';
 
 export const EditorPane: React.FC = () => {
-  // 新しいZustandストアからの状態取得
+  // Zustandストアからの状態取得
   const fileContent = useAppStore(state => state.file.fileContent);
   const editorSettings = useAppStore(state => state.ui.editorSettings);
   const parseErrors = useAppStore(state => state.parse.parseErrors);
-  const updateContent = useAppStore(state => state.updateContent);
   const updateEditorSettings = useAppStore(state => state.updateEditorSettings);
   
   // エディタ同期フックの使用
   const { debouncedUpdateContent } = useEditorSync();
+  
+  // Monaco Editorのインスタンス参照
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
-  const handleEditorChange = (value: string | undefined) => {
+  // エラーマーカーの更新
+  const updateErrorMarkers = useCallback(() => {
+    if (!editorRef.current) return;
+
+    const model = editorRef.current.getModel();
+    if (!model) return;
+
+    // パーサーエラーのマーカーをクリア
+    monaco.editor.setModelMarkers(model, 'parser', []);
+
+    // パースエラーがある場合、マーカーを設定
+    if (parseErrors.length > 0) {
+      const markers: monaco.editor.IMarkerData[] = parseErrors.map(error => ({
+        severity: error.severity === 'error' 
+          ? monaco.MarkerSeverity.Error 
+          : monaco.MarkerSeverity.Warning,
+        startLineNumber: error.line,
+        startColumn: error.column,
+        endLineNumber: error.line,
+        endColumn: Math.min(error.column + 20, model.getLineMaxColumn(error.line)), // 行末を超えないように調整
+        message: error.message,
+        source: 'parser',
+        tags: [monaco.MarkerTag.Unnecessary], // エラー箇所を視覚的に強調
+      }));
+
+      monaco.editor.setModelMarkers(model, 'parser', markers);
+    }
+  }, [parseErrors]);
+
+  // リアルタイム構文チェック
+  const performSyntaxCheck = useCallback((content: string) => {
+    if (!editorRef.current) return;
+
+    const model = editorRef.current.getModel();
+    if (!model) return;
+
+    // ParserServiceを使用してリアルタイム構文チェック
+    import('../services').then(({ parserService }) => {
+      const syntaxErrors = parserService.getParseErrors(content);
+      
+      // 構文エラーのマーカーを設定
+      const markers: monaco.editor.IMarkerData[] = syntaxErrors.map(error => ({
+        severity: error.severity === 'error' 
+          ? monaco.MarkerSeverity.Error 
+          : monaco.MarkerSeverity.Warning,
+        startLineNumber: error.line,
+        startColumn: error.column,
+        endLineNumber: error.line,
+        endColumn: error.column + 10,
+        message: error.message,
+        source: 'syntax-checker',
+      }));
+
+      monaco.editor.setModelMarkers(model, 'syntax-checker', markers);
+    });
+  }, []);
+
+  // エディタのマウント時の処理
+  const handleEditorDidMount = useCallback((editor: monaco.editor.IStandaloneCodeEditor) => {
+    editorRef.current = editor;
+    
+    // エディタの設定を適用
+    editor.updateOptions({
+      fontSize: editorSettings.fontSize,
+      wordWrap: editorSettings.wordWrap ? 'on' : 'off',
+      minimap: { enabled: editorSettings.minimap },
+      automaticLayout: true,
+      formatOnPaste: true,
+      formatOnType: true,
+      scrollBeyondLastLine: false,
+      renderWhitespace: 'selection',
+      bracketPairColorization: { enabled: true },
+      guides: {
+        bracketPairs: true,
+        indentation: true,
+      },
+      // JSON/YAML特有の設定
+      tabSize: editorSettings.language === 'yaml' ? 2 : 4,
+      insertSpaces: true,
+      detectIndentation: false,
+    });
+
+    // キーボードショートカットの設定
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+      // 保存処理（将来的に実装）
+      console.log('保存ショートカットが押されました');
+    });
+
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF, () => {
+      // フォーマット処理
+      editor.getAction('editor.action.formatDocument')?.run();
+    });
+
+    // エラーマーカーの初期化
+    updateErrorMarkers();
+
+    // ホバープロバイダーの登録
+    const hoverProvider = monaco.languages.registerHoverProvider(
+      [editorSettings.language],
+      {
+        provideHover: (model, position) => {
+          // 現在の位置にエラーがあるかチェック
+          const markers = monaco.editor.getModelMarkers({ resource: model.uri });
+          const errorAtPosition = markers.find(marker => 
+            marker.startLineNumber <= position.lineNumber &&
+            marker.endLineNumber >= position.lineNumber &&
+            marker.startColumn <= position.column &&
+            marker.endColumn >= position.column
+          );
+
+          if (errorAtPosition) {
+            return {
+              range: new monaco.Range(
+                errorAtPosition.startLineNumber,
+                errorAtPosition.startColumn,
+                errorAtPosition.endLineNumber,
+                errorAtPosition.endColumn
+              ),
+              contents: [
+                { value: `**${errorAtPosition.severity === monaco.MarkerSeverity.Error ? 'エラー' : '警告'}**` },
+                { value: errorAtPosition.message },
+                { value: `行 ${errorAtPosition.startLineNumber}, 列 ${errorAtPosition.startColumn}` }
+              ]
+            };
+          }
+
+          return null;
+        }
+      }
+    );
+
+    // クリーンアップ関数でプロバイダーを解除
+    return () => {
+      hoverProvider.dispose();
+    };
+  }, [editorSettings, updateErrorMarkers]);
+
+  // エディタの内容変更時の処理
+  const handleEditorChange = useCallback((value: string | undefined) => {
     if (value !== undefined) {
       debouncedUpdateContent(value);
+      
+      // リアルタイム構文チェック（デバウンス付き）
+      setTimeout(() => {
+        performSyntaxCheck(value);
+      }, 300);
     }
-  };
+  }, [debouncedUpdateContent, performSyntaxCheck]);
 
-  const handleLanguageChange = (language: 'json' | 'yaml') => {
+  // 言語変更時の処理
+  const handleLanguageChange = useCallback((language: 'json' | 'yaml') => {
     updateEditorSettings({ language });
-  };
+    
+    // エディタのタブサイズを言語に応じて調整
+    if (editorRef.current) {
+      editorRef.current.updateOptions({
+        tabSize: language === 'yaml' ? 2 : 4,
+      });
+    }
+  }, [updateEditorSettings]);
+
+  // フォーマット処理
+  const handleFormat = useCallback(() => {
+    if (editorRef.current) {
+      editorRef.current.getAction('editor.action.formatDocument')?.run();
+    }
+  }, []);
+
+  // パースエラーの変更を監視してマーカーを更新
+  useEffect(() => {
+    updateErrorMarkers();
+  }, [parseErrors, updateErrorMarkers]);
+
+  // エディタ設定の変更を監視してエディタに反映
+  useEffect(() => {
+    if (editorRef.current) {
+      editorRef.current.updateOptions({
+        fontSize: editorSettings.fontSize,
+        wordWrap: editorSettings.wordWrap ? 'on' : 'off',
+        minimap: { enabled: editorSettings.minimap },
+        tabSize: editorSettings.language === 'yaml' ? 2 : 4,
+      });
+    }
+  }, [editorSettings]);
 
   return (
     <div className="editor-pane">
@@ -45,7 +221,13 @@ export const EditorPane: React.FC = () => {
           </button>
         </div>
         <div className="editor-actions">
-          {/* TODO: フォーマット、検証などのボタンを追加 */}
+          <button
+            className="action-btn"
+            onClick={handleFormat}
+            title="フォーマット (Ctrl+F)"
+          >
+            フォーマット
+          </button>
         </div>
       </div>
       
@@ -53,9 +235,10 @@ export const EditorPane: React.FC = () => {
         <Editor
           height="100%"
           language={editorSettings.language}
-          theme={editorSettings.theme === 'dark' ? 'vs-dark' : 'vs'}
+          theme={editorSettings.theme === 'vs-dark' ? 'vs-dark' : 'vs'}
           value={fileContent}
           onChange={handleEditorChange}
+          onMount={handleEditorDidMount}
           options={{
             fontSize: editorSettings.fontSize,
             wordWrap: editorSettings.wordWrap ? 'on' : 'off',
@@ -70,6 +253,31 @@ export const EditorPane: React.FC = () => {
               bracketPairs: true,
               indentation: true,
             },
+            tabSize: editorSettings.language === 'yaml' ? 2 : 4,
+            insertSpaces: true,
+            detectIndentation: false,
+            // JSON/YAML特有の設定
+            folding: true,
+            foldingStrategy: 'indentation',
+            showFoldingControls: 'always',
+            // 自動補完とIntelliSense
+            quickSuggestions: {
+              other: true,
+              comments: false,
+              strings: true,
+            },
+            suggestOnTriggerCharacters: true,
+            acceptSuggestionOnEnter: 'on',
+            // エラー表示
+            renderValidationDecorations: 'on',
+            // エラーハイライト設定
+            glyphMargin: true,
+            // ホバー設定
+            hover: {
+              enabled: true,
+              delay: 300,
+              sticky: true,
+            },
           }}
         />
       </div>
@@ -78,10 +286,43 @@ export const EditorPane: React.FC = () => {
         <div className="error-panel">
           <div className="error-header">
             <span className="error-count">{parseErrors.length} エラー</span>
+            <button
+              className="error-clear-btn"
+              onClick={() => {
+                // 全てのエラーマーカーをクリア
+                if (editorRef.current) {
+                  const model = editorRef.current.getModel();
+                  if (model) {
+                    monaco.editor.setModelMarkers(model, 'parser', []);
+                    monaco.editor.setModelMarkers(model, 'syntax-checker', []);
+                  }
+                }
+              }}
+              title="エラーマーカーをクリア"
+            >
+              クリア
+            </button>
           </div>
           <div className="error-list">
             {parseErrors.map((error, index) => (
-              <div key={index} className={`error-item ${error.severity}`}>
+              <div 
+                key={index} 
+                className={`error-item ${error.severity}`}
+                onClick={() => {
+                  // エラー箇所にジャンプ
+                  if (editorRef.current) {
+                    editorRef.current.setPosition({
+                      lineNumber: error.line,
+                      column: error.column,
+                    });
+                    editorRef.current.focus();
+                    
+                    // エラー箇所を中央に表示
+                    editorRef.current.revealLineInCenter(error.line);
+                  }
+                }}
+                title="クリックしてエラー箇所にジャンプ"
+              >
                 <span className="error-location">
                   行 {error.line}, 列 {error.column}:
                 </span>
