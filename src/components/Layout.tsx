@@ -9,15 +9,18 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const updateContent = useAppStore(state => state.updateContent);
-  const fileFormat = useAppStore(state => state.file.fileFormat);
+  const language = useAppStore(state => state.ui.editorSettings.language);
 
   const handleLoadSample = () => {
+    console.log('Current language:', language);
     let content: string;
     
-    // ファイル形式に応じてサンプルを選択
-    if (fileFormat === 'yaml') {
+    // エディター言語に応じてサンプルを選択
+    if (language === 'yaml') {
+      console.log('Loading YAML sample');
       content = sampleYAML;
     } else {
+      console.log('Loading JSON sample (default)');
       // デフォルトはJSON（projectManagementSample）
       content = JSON.stringify(projectManagementSample, null, 2);
     }
