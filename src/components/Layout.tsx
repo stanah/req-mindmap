@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppStore } from '../stores';
-import { projectManagementSample } from '../data/samples';
+import { projectManagementSample, sampleYAML } from '../data/samples';
 import './Layout.css';
 
 interface LayoutProps {
@@ -9,10 +9,20 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const updateContent = useAppStore(state => state.updateContent);
+  const fileFormat = useAppStore(state => state.file.fileFormat);
 
   const handleLoadSample = () => {
-    const jsonContent = JSON.stringify(projectManagementSample, null, 2);
-    updateContent(jsonContent);
+    let content: string;
+    
+    // ファイル形式に応じてサンプルを選択
+    if (fileFormat === 'yaml') {
+      content = sampleYAML;
+    } else {
+      // デフォルトはJSON（projectManagementSample）
+      content = JSON.stringify(projectManagementSample, null, 2);
+    }
+    
+    updateContent(content);
   };
 
   return (
