@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Layout, EditorPane, MindmapPane } from './components';
 import { PanelResizer } from './components/PanelResizer';
 import './App.css';

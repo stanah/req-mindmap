@@ -7,7 +7,6 @@
 import { useEffect, useCallback, useRef, useMemo } from 'react';
 import { useAppStore } from '../stores';
 import { useDebounce } from './useDebounce';
-import type { MindmapData } from '../types/mindmap';
 
 /**
  * リアルタイム同期の設定

@@ -222,6 +222,10 @@ export interface AppActions {
   /** エディタの該当箇所をハイライト */
   highlightEditorRange: (startLine: number, startColumn: number, endLine: number, endColumn: number, reason?: 'node-selection' | 'search' | 'error') => void;
 
+  // パース操作
+  /** コンテンツをパースする */
+  parseContent: (content: string) => Promise<void>;
+
   // マインドマップ操作
   /** ノードを選択 */
   selectNode: (nodeId: string | null) => void;
