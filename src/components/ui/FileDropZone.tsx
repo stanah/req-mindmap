@@ -4,7 +4,7 @@
  * ドラッグ&ドロップでファイルを読み込むためのコンポーネント
  */
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useAppStore } from '../../stores/appStore';
 import type { FileLoadResult } from '../../services/fileService';
 
@@ -103,7 +103,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
   /**
    * ドロップ処理
    */
-  const handleDrop = async (e: DragEvent) => {
+  const handleDrop = useCallback(async (e: DragEvent) => {
     preventDefaults(e);
     if (disabled) return;
     
@@ -180,7 +180,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
         duration: 5000,
       });
     }
-  };
+  }, [disabled, addNotification, updateContent, onFileLoad]);
 
   /**
    * ファイル形式を自動検出
@@ -226,7 +226,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
       dropZone.removeEventListener('dragover', handleDragOver);
       dropZone.removeEventListener('drop', handleDrop);
     };
-  }, [disabled]);
+  }, [handleDragEnter, handleDragLeave, handleDragOver, handleDrop]);
 
   return (
     <div

@@ -16,7 +16,7 @@ export const StatusBar: React.FC = () => {
   const optimizeMemory = useAppStore(state => state.optimizeMemory);
 
   // パフォーマンス情報の状態
-  const [memoryInfo, setMemoryInfo] = useState<any>(null);
+  const [memoryInfo, setMemoryInfo] = useState<import('../../utils/performanceMonitor').MemoryInfo | null>(null);
   const [showPerformanceDetails, setShowPerformanceDetails] = useState(false);
 
   // メモリ情報を定期的に更新

@@ -34,17 +34,17 @@ const findNodeById = (node: MindmapNode, id: string): MindmapNode | null => {
 /**
  * カスタムフィールドの表示名を取得
  */
-const getFieldLabel = (fieldName: string, schema: any): string => {
+const getFieldLabel = (fieldName: string, schema: { fields?: Array<{ name: string; label?: string }> }): string => {
   if (!schema?.fields) return fieldName;
   
-  const field = schema.fields.find((f: any) => f.name === fieldName);
+  const field = schema.fields.find((f) => f.name === fieldName);
   return field?.label || fieldName;
 };
 
 /**
  * 値をフォーマット
  */
-const formatValue = (value: any): string => {
+const formatValue = (value: unknown): string => {
   if (value === null || value === undefined) {
     return '未設定';
   }

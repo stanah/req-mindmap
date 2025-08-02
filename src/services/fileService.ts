@@ -98,7 +98,7 @@ export class BrowserFileService implements FileService {
   /**
    * ファイルの読み込み（ダイアログ経由）
    */
-  async loadFile(_path?: string): Promise<string> {
+  async loadFile(): Promise<string> {
     const result = await this.loadFileWithInfo();
     return result.content;
   }
@@ -325,22 +325,22 @@ export class BrowserFileService implements FileService {
     this.watchers.delete(path);
   }
 
-  async exists(_path: string): Promise<boolean> {
+  async exists(): Promise<boolean> {
     // ブラウザ環境では実装不可能（セキュリティ上の制限）
     return false;
   }
 
-  async deleteFile(_path: string): Promise<void> {
+  async deleteFile(): Promise<void> {
     // ブラウザ環境では実装不可能（セキュリティ上の制限）
     throw new Error('ブラウザ環境ではファイル削除はサポートされていません');
   }
 
-  async createDirectory(_path: string): Promise<void> {
+  async createDirectory(): Promise<void> {
     // ブラウザ環境では実装不可能（セキュリティ上の制限）
     throw new Error('ブラウザ環境ではディレクトリ作成はサポートされていません');
   }
 
-  async listFiles(_path: string): Promise<string[]> {
+  async listFiles(): Promise<string[]> {
     // ブラウザ環境では実装不可能（セキュリティ上の制限）
     return [];
   }
@@ -675,49 +675,49 @@ root:
 
 // VSCode拡張用のファイルサービス実装（将来用）
 export class VSCodeFileService implements FileService {
-  async loadFile(_path: string): Promise<string> {
+  async loadFile(): Promise<string> {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
     throw new Error('VSCode file service not implemented yet');
   }
 
-  async saveFile(_path: string, _content: string): Promise<void> {
+  async saveFile(): Promise<void> {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
     throw new Error('VSCode file service not implemented yet');
   }
 
-  watchFile(_path: string, _callback: (content: string) => void): void {
+  watchFile(): void {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
     throw new Error('VSCode file service not implemented yet');
   }
 
-  stopWatching(_path: string): void {
+  stopWatching(): void {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
     throw new Error('VSCode file service not implemented yet');
   }
 
-  async exists(_path: string): Promise<boolean> {
+  async exists(): Promise<boolean> {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
     throw new Error('VSCode file service not implemented yet');
   }
 
-  async deleteFile(_path: string): Promise<void> {
+  async deleteFile(): Promise<void> {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
     throw new Error('VSCode file service not implemented yet');
   }
 
-  async createDirectory(_path: string): Promise<void> {
+  async createDirectory(): Promise<void> {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
     throw new Error('VSCode file service not implemented yet');
   }
 
-  async listFiles(_path: string): Promise<string[]> {
+  async listFiles(): Promise<string[]> {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
     throw new Error('VSCode file service not implemented yet');

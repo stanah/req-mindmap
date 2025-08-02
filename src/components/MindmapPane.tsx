@@ -52,7 +52,7 @@ export const MindmapPane: React.FC = () => {
         target.style.cursor = 'default';
       }
     },
-    onBackgroundClick: (_event: MouseEvent) => {
+    onBackgroundClick: () => {
       // 背景クリック時の処理
       selectNode(null);
     },
@@ -80,7 +80,7 @@ export const MindmapPane: React.FC = () => {
         rendererRef.current = null;
       }
     };
-  }, [eventHandlers]); // mindmapSettingsを依存配列から除去
+  }, [eventHandlers, mindmapSettings]);
 
   // データの描画
   useEffect(() => {
@@ -296,7 +296,7 @@ export const MindmapPane: React.FC = () => {
             <select
               className="performance-mode-select"
               value={performanceMode}
-              onChange={(e) => handlePerformanceModeChange(e.target.value as any)}
+              onChange={(e) => handlePerformanceModeChange(e.target.value as 'auto' | 'performance' | 'quality')}
               title="パフォーマンスモード"
             >
               <option value="auto">自動</option>

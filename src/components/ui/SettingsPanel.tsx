@@ -36,7 +36,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
   /**
    * エディタ設定の更新
    */
-  const handleEditorSettingChange = (setting: keyof EditorSettings, value: any) => {
+  const handleEditorSettingChange = (setting: keyof EditorSettings, value: EditorSettings[keyof EditorSettings]) => {
     updateEditorSettings({ [setting]: value });
     
     addNotification({
@@ -50,7 +50,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
   /**
    * マインドマップ設定の更新
    */
-  const handleMindmapSettingChange = (setting: keyof MindmapSettings, value: any) => {
+  const handleMindmapSettingChange = (setting: keyof MindmapSettings, value: MindmapSettings[keyof MindmapSettings]) => {
     updateMindmapSettings({ [setting]: value });
     
     addNotification({
@@ -91,7 +91,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
         autoHide: true,
         duration: 3000,
       });
-    } catch (error) {
+    } catch {
       addNotification({
         message: '設定のエクスポートに失敗しました',
         type: 'error',
@@ -130,7 +130,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
         autoHide: true,
         duration: 3000,
       });
-    } catch (error) {
+    } catch {
       addNotification({
         message: '設定のインポートに失敗しました。正しいJSONファイルを選択してください。',
         type: 'error',

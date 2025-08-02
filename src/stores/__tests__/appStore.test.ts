@@ -14,7 +14,7 @@ vi.mock('../../utils/helpers', () => ({
     set: vi.fn(),
     remove: vi.fn(),
   },
-  debounce: vi.fn((fn: (...args: unknown[]) => unknown, _: number) => fn),
+  debounce: vi.fn((fn: (...args: unknown[]) => unknown) => fn),
   generateId: vi.fn(() => 'test-id'),
   detectFileFormat: vi.fn(() => 'json'),
   deepClone: vi.fn((obj: unknown) => JSON.parse(JSON.stringify(obj))),
