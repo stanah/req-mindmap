@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import type { MindmapData, MindmapNode } from '../types/mindmap';
+import type { MindmapData, MindmapNode, CustomSchema } from '../types/mindmap';
 
 interface NodeDetailsPanelProps {
   nodeId: string;
@@ -34,9 +34,9 @@ const findNodeById = (node: MindmapNode, id: string): MindmapNode | null => {
 /**
  * カスタムフィールドの表示名を取得
  */
-const getFieldLabel = (fieldName: string, schema: { fields?: Array<{ name: string; label?: string }> }): string => {
+const getFieldLabel = (fieldName: string, schema?: CustomSchema): string => {
   if (!schema?.fields) return fieldName;
-  
+
   const field = schema.fields.find((f) => f.name === fieldName);
   return field?.label || fieldName;
 };
@@ -48,15 +48,15 @@ const formatValue = (value: unknown): string => {
   if (value === null || value === undefined) {
     return '未設定';
   }
-  
+
   if (typeof value === 'boolean') {
     return value ? 'はい' : 'いいえ';
   }
-  
+
   if (Array.isArray(value)) {
     return value.join(', ');
   }
-  
+
   return String(value);
 };
 
@@ -84,7 +84,7 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
         <h3>{node.title}</h3>
         <button className="close-btn" onClick={onClose} title="閉じる">×</button>
       </div>
-      
+
       <div className="node-details-content">
         {/* 基本情報 */}
         <div className="details-section">
@@ -161,9 +161,9 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
             {node.links.map((link, index) => (
               <div key={index} className="details-item">
                 <label>{link.title || 'リンク'}:</label>
-                <a 
-                  href={link.url} 
-                  target="_blank" 
+                <a
+                  href={link.url}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="link-url"
                 >

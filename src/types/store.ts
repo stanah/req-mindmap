@@ -284,6 +284,25 @@ export interface AppActions {
   toggleDebugMode: () => void;
   /** アプリケーションをリセット */
   reset: () => void;
+
+  // パフォーマンス関連
+  /** ノード数をカウント */
+  countNodes: (node: import('./mindmap').MindmapNode) => number;
+  /** パフォーマンス統計を取得 */
+  getPerformanceStats: () => {
+    parseMetrics: Record<string, unknown> | null;
+    memoryInfo: {
+      usedJSHeapSize: number;
+      totalJSHeapSize: number;
+      jsHeapSizeLimit: number;
+      usageRatio: number;
+    } | null;
+    totalMetrics: number;
+  };
+  /** パフォーマンス統計をログ出力 */
+  logPerformanceStats: () => void;
+  /** メモリ使用量を最適化 */
+  optimizeMemory: () => void;
 }
 
 /**

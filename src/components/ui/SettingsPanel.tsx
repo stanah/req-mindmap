@@ -36,7 +36,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
   /**
    * エディタ設定の更新
    */
-  const handleEditorSettingChange = (setting: keyof EditorSettings, value: EditorSettings[keyof EditorSettings]) => {
+  const handleEditorSettingChange = <K extends keyof EditorSettings>(
+    setting: K, 
+    value: EditorSettings[K]
+  ) => {
     updateEditorSettings({ [setting]: value });
     
     addNotification({
@@ -50,7 +53,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
   /**
    * マインドマップ設定の更新
    */
-  const handleMindmapSettingChange = (setting: keyof MindmapSettings, value: MindmapSettings[keyof MindmapSettings]) => {
+  const handleMindmapSettingChange = <K extends keyof MindmapSettings>(
+    setting: K, 
+    value: MindmapSettings[K]
+  ) => {
     updateMindmapSettings({ [setting]: value });
     
     addNotification({
@@ -238,7 +244,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
                 <label className="setting-label">言語</label>
                 <select
                   value={editorSettings.language}
-                  onChange={(e) => handleEditorSettingChange('language', e.target.value)}
+                  onChange={(e) => handleEditorSettingChange('language', e.target.value as 'json' | 'yaml')}
                   className="setting-select"
                 >
                   <option value="json">JSON</option>
@@ -250,7 +256,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
                 <label className="setting-label">テーマ</label>
                 <select
                   value={editorSettings.theme}
-                  onChange={(e) => handleEditorSettingChange('theme', e.target.value)}
+                  onChange={(e) => handleEditorSettingChange('theme', e.target.value as 'vs-light' | 'vs-dark' | 'hc-black')}
                   className="setting-select"
                 >
                   <option value="vs-light">ライト</option>
@@ -338,7 +344,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
                 <label className="setting-label">レイアウト</label>
                 <select
                   value={mindmapSettings.layout || 'tree'}
-                  onChange={(e) => handleMindmapSettingChange('layout', e.target.value)}
+                  onChange={(e) => handleMindmapSettingChange('layout', e.target.value as 'tree' | 'radial' | 'force')}
                   className="setting-select"
                 >
                   <option value="tree">ツリー</option>

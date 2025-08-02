@@ -10,7 +10,9 @@ import type {
   MindmapData, 
   ParseError, 
   ValidationResult, 
-  CustomSchema 
+  CustomSchema,
+  StyleSettings,
+  DisplayRule
 } from '../types';
 import { schemaValidator } from '../utils/schemaValidator';
 
@@ -361,12 +363,19 @@ export class ParserServiceImpl implements ParserService {
     });
 
     // 表示ルールを生成
-    const displayRules = fieldDefinitions.map(field => ({
-      field: field.name,
-      displayType: this.getDefaultDisplayType(field.type),
-      position: 'inline' as const,
-      ...(field.type === 'select' && this.generateSelectDisplayStyle(field.options || []))
-    }));
+    const displayRules: DisplayRule[] = fieldDefinitions.map(field => {
+      const baseRule: DisplayRule = {
+        field: field.name,
+        displayType: this.getDefaultDisplayType(field.type),
+        position: 'inline' as const
+      };
+
+      if (field.type === 'select' && field.options) {
+        baseRule.style = this.generateSelectDisplayStyle(field.options);
+      }
+
+      return baseRule;
+    });
 
     return {
       version: '1.0',
@@ -650,7 +659,7 @@ export class ParserServiceImpl implements ParserService {
   /**
    * デフォルトの表示タイプを取得
    */
-  private getDefaultDisplayType(fieldType: string): 'badge' | 'icon' | 'color' | 'text' {
+  private getDefaultDisplayType(fieldType: string): DisplayRule['displayType'] {
     switch (fieldType) {
       case 'boolean':
         return 'icon';
@@ -688,20 +697,19 @@ export class ParserServiceImpl implements ParserService {
   /**
    * select型の表示スタイルを生成
    */
-  private generateSelectDisplayStyle(options: string[]): { style: Record<string, unknown> } {
+  private generateSelectDisplayStyle(options: string[]): Record<string, StyleSettings> {
     const colors = ['#e3f2fd', '#f3e5f5', '#e8f5e8', '#fff3e0', '#ffebee'];
-    const style: Record<string, unknown> = {};
+    const style: Record<string, StyleSettings> = {};
 
     options.forEach((option, index) => {
       style[option] = {
         backgroundColor: colors[index % colors.length],
-        color: '#333',
-        borderRadius: '4px',
-        padding: '2px 6px'
+        color: '#333333',
+        borderColor: 'transparent'
       };
     });
 
-    return { style };
+    return style;
   }
 
   /**

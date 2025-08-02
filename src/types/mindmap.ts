@@ -38,6 +38,26 @@ export interface FieldDefinition {
 }
 
 /**
+ * スタイル設定の型定義
+ */
+export interface StyleSettings {
+  /** 背景色 */
+  backgroundColor?: string;
+  /** テキスト色 */
+  color?: string;
+  /** ボーダー色 */
+  borderColor?: string;
+  /** アイコン */
+  icon?: string;
+  /** フォントサイズ */
+  fontSize?: number;
+  /** フォントウェイト */
+  fontWeight?: string | number;
+  /** その他のスタイルプロパティ */
+  [key: string]: string | number | undefined;
+}
+
+/**
  * 表示ルール
  * カスタムフィールドの表示方法を定義
  */
@@ -49,7 +69,7 @@ export interface DisplayRule {
   /** 表示条件（オプション） */
   condition?: string;
   /** スタイル設定 */
-  style?: Record<string, string | number>;
+  style?: Record<string, StyleSettings>;
   /** 表示位置 */
   position?: 'inline' | 'tooltip' | 'sidebar';
 }

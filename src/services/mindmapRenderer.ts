@@ -7,7 +7,7 @@
  */
 
 import * as d3 from 'd3';
-import type { MindmapData, MindmapNode, MindmapSettings, CustomSchema } from '../types/mindmap';
+import type { MindmapData, MindmapNode, MindmapSettings, CustomSchema, StyleSettings } from '../types/mindmap';
 import { performanceMonitor, debounce, rafThrottle } from '../utils/performanceMonitor';
 import { VirtualizationManager, type Viewport, type VirtualizationResult } from '../utils/virtualization';
 
@@ -53,7 +53,7 @@ export class MindmapRenderer {
   private eventHandlers: RendererEventHandlers = {};
   private customSchema: CustomSchema | null = null;
   private resizeObserver: ResizeObserver | null = null;
-  
+
   // パフォーマンス最適化関連
   private virtualizationManager: VirtualizationManager;
   private currentViewport: Viewport | null = null;
@@ -61,10 +61,10 @@ export class MindmapRenderer {
   private enableVirtualization = true;
   private performanceMode: 'auto' | 'performance' | 'quality' = 'auto';
   private nodeCountThreshold = 100; // 仮想化を有効にするノード数の閾値
-  
+
   // 描画最適化
   private debouncedRender = debounce(this.performRender.bind(this), 16);
-  private throttledZoomHandler = rafThrottle(this.handleZoomChange.bind(this));
+  private throttledZoomHandler = rafThrottle((transform: d3.ZoomTransform) => this.handleZoomChange(transform));
 
   // レイアウト設定
   private readonly NODE_WIDTH = 160;
@@ -129,7 +129,7 @@ export class MindmapRenderer {
    */
   private initializeSVG(svgElement: SVGSVGElement): void {
     this.svg = d3.select(svgElement);
-    
+
     // 既存の内容をクリア
     this.svg.selectAll('*').remove();
 
@@ -181,16 +181,16 @@ export class MindmapRenderer {
 
     // 階層データの作成
     const hierarchy = d3.hierarchy(data.root);
-    
+
     // ノードサイズの計算
     hierarchy.each((node: d3.HierarchyNode<MindmapNode>) => {
       const nodeData = node.data;
       const textLength = this.calculateTextWidth(nodeData.title);
       const badgeHeight = this.calculateBadgeHeight(nodeData);
-      
+
       (node as D3Node).width = Math.min(Math.max(textLength + this.NODE_PADDING * 2, this.NODE_WIDTH), this.settings.maxNodeWidth || 200);
       (node as D3Node).height = this.NODE_HEIGHT + badgeHeight;
-      
+
       // 折りたたみ状態の初期化
       if (nodeData.collapsed && node.children) {
         (node as D3Node)._children = node.children as D3Node[];
@@ -221,16 +221,16 @@ export class MindmapRenderer {
     // 既存の階層から元のデータを抽出して再構築
     const rootData = this.extractNodeData(hierarchy);
     const newHierarchy = d3.hierarchy(rootData);
-    
+
     // ノードサイズの再計算
     newHierarchy.each((node: d3.HierarchyNode<MindmapNode>) => {
       const nodeData = node.data;
       const textLength = this.calculateTextWidth(nodeData.title);
       const badgeHeight = this.calculateBadgeHeight(nodeData);
-      
+
       (node as D3Node).width = Math.min(Math.max(textLength + this.NODE_PADDING * 2, this.NODE_WIDTH), this.settings.maxNodeWidth || 200);
       (node as D3Node).height = this.NODE_HEIGHT + badgeHeight;
-      
+
       // 折りたたみ状態の復元
       if (nodeData.collapsed && node.children) {
         (node as D3Node)._children = node.children as D3Node[];
@@ -246,7 +246,7 @@ export class MindmapRenderer {
           .size([2 * Math.PI, 500])
           .separation((a, b) => (a.parent === b.parent ? 2 : 3) / Math.max(a.depth, 1));
         break;
-      
+
       case 'tree':
       default:
         // 横方向ツリーレイアウト（左から右）
@@ -257,28 +257,28 @@ export class MindmapRenderer {
             // 実際のノードサイズに基づいた分離距離を計算
             const aNode = a as D3Node;
             const bNode = b as D3Node;
-            
+
             // ノードの高さに基づく間隔計算
             const maxHeight = Math.max(aNode.height || this.NODE_HEIGHT, bNode.height || this.NODE_HEIGHT);
             const baseSpacing = maxHeight / this.NODE_SPACING;
-            
+
             // 同じ親の子ノード間は基本間隔、異なる親の子ノード間は1.5倍
             const separationMultiplier = a.parent === b.parent ? 1.2 : 1.8;
-            
+
             return baseSpacing * separationMultiplier;
           });
         break;
     }
 
     const result = layout(newHierarchy) as D3Node;
-    
+
     // レイアウトごとの座標変換
     if (this.settings.layout === 'radial') {
       // 放射状レイアウトの座標変換（極座標から直交座標への変換）
       result.each((node: d3.HierarchyPointNode<MindmapNode>) => {
         const angle = node.x;
         const radius = node.y;
-        
+
         // 極座標から直交座標に変換
         node.x = radius * Math.cos(angle - Math.PI / 2);
         node.y = radius * Math.sin(angle - Math.PI / 2);
@@ -291,11 +291,11 @@ export class MindmapRenderer {
         node.x = originalY; // 水平位置（左から右）
         node.y = originalX; // 垂直位置（上から下）
       });
-      
+
       // ノード間の重なりを防ぐ調整
       this.preventNodeOverlaps(result);
     }
-    
+
     return result;
   }
 
@@ -329,22 +329,22 @@ export class MindmapRenderer {
     // 同じレベルの兄弟ノード間の重なりをチェック・修正
     root.each((node: D3Node) => {
       if (!node.parent || !node.parent.children) return;
-      
+
       const siblings = node.parent.children as D3Node[];
       if (siblings.length <= 1) return;
-      
+
       // Y座標順にソート
       const sortedSiblings = [...siblings].sort((a, b) => a.y - b.y);
-      
+
       // 各ノードペアの間隔をチェック
       for (let i = 1; i < sortedSiblings.length; i++) {
         const prevNode = sortedSiblings[i - 1];
         const currentNode = sortedSiblings[i];
-        
+
         // 必要な最小間隔を計算（各ノードの高さの半分 + マージン）
         const minDistance = (prevNode.height + currentNode.height) / 2 + 40;
         const actualDistance = currentNode.y - prevNode.y;
-        
+
         if (actualDistance < minDistance) {
           // 重なりがある場合、現在のノードとそれ以降を下に移動
           const adjustment = minDistance - actualDistance;
@@ -374,20 +374,20 @@ export class MindmapRenderer {
     if (this.enableVirtualization && allNodes.length > this.nodeCountThreshold && this.currentViewport) {
       // 仮想化マネージャーでノード境界を更新
       this.virtualizationManager.updateNodeBounds(allNodes);
-      
+
       // 仮想化を実行
       const virtualizationResult = this.virtualizationManager.virtualize(allNodes, this.currentViewport);
       this.lastVirtualizationResult = virtualizationResult;
-      
+
       nodesToRender = virtualizationResult.visibleNodes;
       linksToRender = virtualizationResult.visibleLinks;
-      
+
       console.debug(`[Renderer] Virtualization: ${nodesToRender.length}/${allNodes.length} nodes visible`);
     }
 
     // リンクの描画
     this.drawLinks(linksToRender);
-    
+
     // ノードの描画
     this.drawNodes(nodesToRender);
 
@@ -408,14 +408,14 @@ export class MindmapRenderer {
     // レイアウトに応じてリンク生成器を選択
     const linkGenerator = this.settings.layout === 'radial'
       ? d3.linkRadial<D3Link, D3Node>()
-          .angle(d => {
-            // 直交座標から角度を逆算
-            return Math.atan2(d.y, d.x) + Math.PI / 2;
-          })
-          .radius(d => Math.sqrt(d.x * d.x + d.y * d.y))
+        .angle(d => {
+          // 直交座標から角度を逆算
+          return Math.atan2(d.y, d.x) + Math.PI / 2;
+        })
+        .radius(d => Math.sqrt(d.x * d.x + d.y * d.y))
       : d3.linkHorizontal<D3Link, D3Node>()
-          .x(d => d.x)
-          .y(d => d.y);
+        .x(d => d.x)
+        .y(d => d.y);
 
     const linkSelection = this.container
       .selectAll<SVGPathElement, D3Link>('.mindmap-link')
@@ -671,11 +671,11 @@ export class MindmapRenderer {
   private truncateText(text: string, maxWidth: number): string {
     const charWidth = 8; // 平均文字幅
     const maxChars = Math.floor(maxWidth / charWidth);
-    
+
     if (text.length <= maxChars) {
       return text;
     }
-    
+
     return text.substring(0, maxChars - 3) + '...';
   }
 
@@ -687,7 +687,7 @@ export class MindmapRenderer {
       return 0;
     }
 
-    const badgeRules = this.customSchema.displayRules.filter(rule => 
+    const badgeRules = this.customSchema.displayRules.filter(rule =>
       rule.displayType === 'badge' && nodeData.customFields?.[rule.field]
     );
 
@@ -702,13 +702,14 @@ export class MindmapRenderer {
       return '#ffffff';
     }
 
-    const colorRule = this.customSchema.displayRules.find(rule => 
+    const colorRule = this.customSchema.displayRules.find(rule =>
       rule.displayType === 'color' && nodeData.customFields?.[rule.field]
     );
 
     if (colorRule && colorRule.style) {
       const fieldValue = nodeData.customFields[colorRule.field];
-      const colorStyle = colorRule.style[fieldValue];
+      const fieldValueStr = String(fieldValue);
+      const colorStyle = colorRule.style[fieldValueStr] as StyleSettings;
       return colorStyle?.backgroundColor || '#ffffff';
     }
 
@@ -723,13 +724,14 @@ export class MindmapRenderer {
       return '#333333';
     }
 
-    const colorRule = this.customSchema.displayRules.find(rule => 
+    const colorRule = this.customSchema.displayRules.find(rule =>
       rule.displayType === 'color' && nodeData.customFields?.[rule.field]
     );
 
     if (colorRule && colorRule.style) {
       const fieldValue = nodeData.customFields[colorRule.field];
-      const colorStyle = colorRule.style[fieldValue];
+      const fieldValueStr = String(fieldValue);
+      const colorStyle = colorRule.style[fieldValueStr] as StyleSettings;
       return colorStyle?.color || '#333333';
     }
 
@@ -744,13 +746,14 @@ export class MindmapRenderer {
       return null;
     }
 
-    const iconRule = this.customSchema.displayRules.find(rule => 
+    const iconRule = this.customSchema.displayRules.find(rule =>
       rule.displayType === 'icon' && nodeData.customFields?.[rule.field]
     );
 
     if (iconRule && iconRule.style) {
       const fieldValue = nodeData.customFields[iconRule.field];
-      const iconStyle = iconRule.style[fieldValue];
+      const fieldValueStr = String(fieldValue);
+      const iconStyle = iconRule.style[fieldValueStr] as StyleSettings;
       return iconStyle?.icon || null;
     }
 
@@ -760,18 +763,19 @@ export class MindmapRenderer {
   /**
    * バッジ情報を取得
    */
-  private getNodeBadges(nodeData: MindmapNode): Array<{text: string, style: Record<string, string | number>}> {
+  private getNodeBadges(nodeData: MindmapNode): Array<{ text: string, style: StyleSettings }> {
     if (!this.customSchema || !nodeData.customFields) {
       return [];
     }
 
-    const badgeRules = this.customSchema.displayRules.filter(rule => 
+    const badgeRules = this.customSchema.displayRules.filter(rule =>
       rule.displayType === 'badge' && nodeData.customFields?.[rule.field]
     );
 
     return badgeRules.map(rule => {
       const fieldValue = nodeData.customFields![rule.field];
-      const badgeStyle = rule.style?.[fieldValue] || {};
+      const fieldValueStr = String(fieldValue);
+      const badgeStyle = (rule.style?.[fieldValueStr] as StyleSettings) || {};
       return {
         text: String(fieldValue),
         style: badgeStyle
@@ -786,10 +790,10 @@ export class MindmapRenderer {
     nodeUpdate.each((d, i, nodes) => {
       const node = d3.select(nodes[i]);
       const badges = this.getNodeBadges(d.data);
-      
+
       // 既存のバッジをクリア
       node.select('.mindmap-badges').selectAll('*').remove();
-      
+
       if (badges.length === 0) return;
 
       const badgeContainer = node.select('.mindmap-badges');
@@ -848,7 +852,7 @@ export class MindmapRenderer {
 
     const svgElement = this.svg.node() as SVGSVGElement;
     const svgRect = svgElement.getBoundingClientRect();
-    
+
     // SVGのサイズが0の場合は少し待ってから再試行
     if (svgRect.width === 0 || svgRect.height === 0) {
       setTimeout(() => this.centerView(), 100);
@@ -860,7 +864,7 @@ export class MindmapRenderer {
 
     const centerX = svgRect.width / 2;
     const centerY = svgRect.height / 2;
-    
+
     // より適切なスケーリング計算
     const padding = 50;
     const scale = Math.min(
@@ -872,7 +876,7 @@ export class MindmapRenderer {
     // ルートノードを左側に配置（横レイアウト用）
     const rootX = bounds.x + bounds.width / 2;
     const rootY = bounds.y + bounds.height / 2;
-    
+
     const transform = d3.zoomIdentity
       .translate(centerX - rootX * scale, centerY - rootY * scale)
       .scale(scale);
@@ -920,15 +924,15 @@ export class MindmapRenderer {
   public updateSettings(newSettings: Partial<MindmapSettings>): void {
     const oldLayout = this.settings.layout;
     this.settings = { ...this.settings, ...newSettings };
-    
+
     // レイアウトが変更された場合は再描画
     if (newSettings.layout && newSettings.layout !== oldLayout && this.root) {
       // 既存のSVG要素をクリアしてから再レイアウト
       this.container.selectAll('*').remove();
-      
+
       this.root = this.applyLayout(this.root);
       this.draw();
-      
+
       // ビューを中央に配置（少し遅延を入れて確実に描画完了を待つ）
       setTimeout(() => {
         this.centerView();
@@ -1055,7 +1059,7 @@ export class MindmapRenderer {
   private startPerformanceMonitoring(): void {
     performanceMonitor.startMemoryMonitoring(5000, (memoryInfo) => {
       console.warn('[Renderer] High memory usage detected:', memoryInfo);
-      
+
       // メモリ使用量が高い場合は自動的にパフォーマンスモードに切り替え
       if (memoryInfo.usageRatio > 0.85) {
         this.setPerformanceMode('performance');
@@ -1070,7 +1074,7 @@ export class MindmapRenderer {
     if (!this.svg.node()) return;
 
     const svgRect = (this.svg.node() as SVGSVGElement).getBoundingClientRect();
-    
+
     // 現在のビューポートを更新
     this.currentViewport = {
       x: -transform.x / transform.k,
@@ -1148,7 +1152,7 @@ export class MindmapRenderer {
    */
   public setVirtualizationEnabled(enabled: boolean): void {
     this.enableVirtualization = enabled;
-    
+
     if (this.root) {
       this.debouncedRender();
     }
@@ -1202,15 +1206,15 @@ export class MindmapRenderer {
    */
   public logPerformanceStats(): void {
     console.group('[Renderer] Performance Statistics');
-    
+
     const stats = this.getPerformanceStats();
-    
+
     if (stats.renderMetrics) {
       console.log('Render Metrics:', stats.renderMetrics);
     }
-    
+
     console.log('Virtualization Stats:', stats.virtualizationStats);
-    
+
     if (stats.memoryInfo) {
       console.log('Memory Usage:', {
         used: `${(stats.memoryInfo.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`,
@@ -1219,9 +1223,9 @@ export class MindmapRenderer {
         usage: `${(stats.memoryInfo.usageRatio * 100).toFixed(1)}%`,
       });
     }
-    
+
     console.log('Current Settings:', stats.currentSettings);
-    
+
     if (this.lastVirtualizationResult) {
       console.log('Last Virtualization Result:', {
         visibleNodes: this.lastVirtualizationResult.visibleNodeCount,
@@ -1231,7 +1235,7 @@ export class MindmapRenderer {
         memoryEstimate: `${(this.lastVirtualizationResult.stats.memoryEstimate / 1024).toFixed(2)}KB`,
       });
     }
-    
+
     console.groupEnd();
   }
 
@@ -1240,21 +1244,21 @@ export class MindmapRenderer {
    */
   public optimizeMemory(): void {
     console.log('[Renderer] Optimizing memory usage...');
-    
+
     // 仮想化キャッシュをクリア
     this.virtualizationManager.clearCache();
-    
+
     // パフォーマンス統計をクリア
     performanceMonitor.clearMetrics();
-    
+
     // ガベージコレクションを強制実行（可能な場合）
     performanceMonitor.forceGarbageCollection();
-    
+
     // パフォーマンスモードに切り替え
     if (this.performanceMode === 'auto') {
       this.setPerformanceMode('performance');
     }
-    
+
     console.log('[Renderer] Memory optimization completed');
   }
 
@@ -1264,19 +1268,19 @@ export class MindmapRenderer {
   public destroy(): void {
     // パフォーマンス監視を停止
     performanceMonitor.stopMemoryMonitoring();
-    
+
     // 仮想化マネージャーをクリア
     this.virtualizationManager.clearCache();
-    
+
     // リサイズ監視を停止
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
       this.resizeObserver = null;
     }
-    
+
     this.svg.selectAll('*').remove();
     this.svg.on('.zoom', null);
-    
+
     // 参照をクリア
     this.root = null;
     this.currentViewport = null;

@@ -17,44 +17,54 @@ export * from './store';
 
 // 型ガード関数
 export const isValidMindmapData = (data: unknown): data is import('./mindmap').MindmapData => {
-  return (
-    data &&
-    typeof data === 'object' &&
-    typeof data.version === 'string' &&
-    typeof data.title === 'string' &&
-    data.root &&
-    typeof data.root === 'object' &&
-    typeof data.root.id === 'string' &&
-    typeof data.root.title === 'string'
+  if (!data || typeof data !== 'object') return false;
+
+  const obj = data as Record<string, unknown>;
+
+  return Boolean(
+    typeof obj.version === 'string' &&
+    typeof obj.title === 'string' &&
+    obj.root &&
+    typeof obj.root === 'object' &&
+    obj.root !== null &&
+    typeof (obj.root as Record<string, unknown>).id === 'string' &&
+    typeof (obj.root as Record<string, unknown>).title === 'string'
   );
 };
 
 export const isValidMindmapNode = (node: unknown): node is import('./mindmap').MindmapNode => {
-  return (
-    node &&
-    typeof node === 'object' &&
-    typeof node.id === 'string' &&
-    typeof node.title === 'string'
+  if (!node || typeof node !== 'object') return false;
+
+  const obj = node as Record<string, unknown>;
+
+  return Boolean(
+    typeof obj.id === 'string' &&
+    typeof obj.title === 'string'
   );
 };
 
 export const isParseError = (error: unknown): error is import('./mindmap').ParseError => {
-  return (
-    error &&
-    typeof error === 'object' &&
-    typeof error.line === 'number' &&
-    typeof error.column === 'number' &&
-    typeof error.message === 'string' &&
-    ['error', 'warning', 'info'].includes(error.severity)
+  if (!error || typeof error !== 'object') return false;
+
+  const obj = error as Record<string, unknown>;
+
+  return Boolean(
+    typeof obj.line === 'number' &&
+    typeof obj.column === 'number' &&
+    typeof obj.message === 'string' &&
+    typeof obj.severity === 'string' &&
+    ['error', 'warning', 'info'].includes(obj.severity as string)
   );
 };
 
 export const isSchemaError = (error: unknown): error is import('./mindmap').SchemaError => {
-  return (
-    error &&
-    typeof error === 'object' &&
-    typeof error.path === 'string' &&
-    typeof error.message === 'string'
+  if (!error || typeof error !== 'object') return false;
+
+  const obj = error as Record<string, unknown>;
+
+  return Boolean(
+    typeof obj.path === 'string' &&
+    typeof obj.message === 'string'
   );
 };
 

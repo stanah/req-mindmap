@@ -336,12 +336,12 @@ export function throttle<T extends (...args: unknown[]) => unknown>(
 /**
  * RAF（RequestAnimationFrame）ベースのスロットル
  */
-export function rafThrottle<T extends (...args: unknown[]) => unknown>(
-  func: T
-): (...args: Parameters<T>) => void {
+export function rafThrottle<TArgs extends readonly unknown[], TReturn>(
+  func: (...args: TArgs) => TReturn
+): (...args: TArgs) => void {
   let rafId: number | null = null;
   
-  return function executedFunction(...args: Parameters<T>) {
+  return function executedFunction(...args: TArgs) {
     if (rafId === null) {
       rafId = requestAnimationFrame(() => {
         func(...args);
