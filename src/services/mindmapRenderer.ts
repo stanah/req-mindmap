@@ -183,17 +183,17 @@ export class MindmapRenderer {
     const hierarchy = d3.hierarchy(data.root);
     
     // ノードサイズの計算
-    hierarchy.each((node: any) => {
+    hierarchy.each((node: d3.HierarchyNode<MindmapNode>) => {
       const nodeData = node.data;
       const textLength = this.calculateTextWidth(nodeData.title);
       const badgeHeight = this.calculateBadgeHeight(nodeData);
       
-      node.width = Math.min(Math.max(textLength + this.NODE_PADDING * 2, this.NODE_WIDTH), this.settings.maxNodeWidth || 200);
-      node.height = this.NODE_HEIGHT + badgeHeight;
+      (node as D3Node).width = Math.min(Math.max(textLength + this.NODE_PADDING * 2, this.NODE_WIDTH), this.settings.maxNodeWidth || 200);
+      (node as D3Node).height = this.NODE_HEIGHT + badgeHeight;
       
       // 折りたたみ状態の初期化
       if (nodeData.collapsed && node.children) {
-        node._children = node.children;
+        (node as D3Node)._children = node.children as D3Node[];
         node.children = undefined;
       }
     });
@@ -223,17 +223,17 @@ export class MindmapRenderer {
     const newHierarchy = d3.hierarchy(rootData);
     
     // ノードサイズの再計算
-    newHierarchy.each((node: any) => {
+    newHierarchy.each((node: d3.HierarchyNode<MindmapNode>) => {
       const nodeData = node.data;
       const textLength = this.calculateTextWidth(nodeData.title);
       const badgeHeight = this.calculateBadgeHeight(nodeData);
       
-      node.width = Math.min(Math.max(textLength + this.NODE_PADDING * 2, this.NODE_WIDTH), this.settings.maxNodeWidth || 200);
-      node.height = this.NODE_HEIGHT + badgeHeight;
+      (node as D3Node).width = Math.min(Math.max(textLength + this.NODE_PADDING * 2, this.NODE_WIDTH), this.settings.maxNodeWidth || 200);
+      (node as D3Node).height = this.NODE_HEIGHT + badgeHeight;
       
       // 折りたたみ状態の復元
       if (nodeData.collapsed && node.children) {
-        node._children = node.children;
+        (node as D3Node)._children = node.children as D3Node[];
         node.children = undefined;
       }
     });
@@ -253,7 +253,7 @@ export class MindmapRenderer {
         // nodeSizeを使って固定サイズから開始し、後で調整
         layout = d3.tree<MindmapNode>()
           .nodeSize([this.NODE_SPACING * 1.5, this.LEVEL_SPACING])
-          .separation((a: any, b: any) => {
+          .separation((a: d3.HierarchyPointNode<MindmapNode>, b: d3.HierarchyPointNode<MindmapNode>) => {
             // 実際のノードサイズに基づいた分離距離を計算
             const aNode = a as D3Node;
             const bNode = b as D3Node;
@@ -275,7 +275,7 @@ export class MindmapRenderer {
     // レイアウトごとの座標変換
     if (this.settings.layout === 'radial') {
       // 放射状レイアウトの座標変換（極座標から直交座標への変換）
-      result.each((node: any) => {
+      result.each((node: d3.HierarchyPointNode<MindmapNode>) => {
         const angle = node.x;
         const radius = node.y;
         
@@ -285,7 +285,7 @@ export class MindmapRenderer {
       });
     } else if (this.settings.layout === 'tree') {
       // x <-> y を入れ替えて横方向にする
-      result.each((node: any) => {
+      result.each((node: d3.HierarchyPointNode<MindmapNode>) => {
         const originalX = node.x;
         const originalY = node.y;
         node.x = originalY; // 水平位置（左から右）
@@ -760,7 +760,7 @@ export class MindmapRenderer {
   /**
    * バッジ情報を取得
    */
-  private getNodeBadges(nodeData: MindmapNode): Array<{text: string, style: any}> {
+  private getNodeBadges(nodeData: MindmapNode): Array<{text: string, style: Record<string, string | number>}> {
     if (!this.customSchema || !nodeData.customFields) {
       return [];
     }
@@ -997,8 +997,8 @@ export class MindmapRenderer {
 
     if (nodeId) {
       this.container
-        .selectAll('.mindmap-node')
-        .filter((d: any) => d.data.id === nodeId)
+        .selectAll<SVGGElement, D3Node>('.mindmap-node')
+        .filter((d: D3Node) => d.data.id === nodeId)
         .classed('selected', true);
     }
   }
@@ -1013,8 +1013,8 @@ export class MindmapRenderer {
 
     if (nodeId) {
       this.container
-        .selectAll('.mindmap-node')
-        .filter((d: any) => d.data.id === nodeId)
+        .selectAll<SVGGElement, D3Node>('.mindmap-node')
+        .filter((d: D3Node) => d.data.id === nodeId)
         .classed('cursor-highlight', true);
     }
   }
@@ -1171,9 +1171,14 @@ export class MindmapRenderer {
    * パフォーマンス統計を取得
    */
   public getPerformanceStats(): {
-    renderMetrics: any;
-    virtualizationStats: any;
-    memoryInfo: any;
+    renderMetrics: Record<string, unknown> | null;
+    virtualizationStats: Record<string, unknown>;
+    memoryInfo: {
+      usedJSHeapSize: number;
+      totalJSHeapSize: number;
+      jsHeapSizeLimit: number;
+      usageRatio: number;
+    } | null;
     currentSettings: {
       enableVirtualization: boolean;
       performanceMode: string;
