@@ -1,0 +1,1006 @@
+{
+  "root": {
+    "id": "req-mindmap-system-comprehensive",
+    "title": "要件定義マインドマップシステム - 完全版",
+    "description": "要求定義・要件定義を効率的に進めるためのマインドマップツールとAI Agent統合システムの包括的要件定義",
+    "metadata": {
+      "version": "2.0.0",
+      "created": "2025-08-02",
+      "updated": "2025-08-02",
+      "technology": ["TypeScript", "Model Context Protocol", "React/Vue", "Node.js"],
+      "target": "要件定義の効率化と自動化",
+      "scope": "マインドマップベースの要件定義ツールとAI統合による自動化システム",
+      "constraints": [
+        "ローカル環境での実行を基本とする",
+        "将来的にVSCode拡張として公開予定",
+        "セキュアな環境での利用を考慮"
+      ],
+      "assumptions": [
+        "ユーザーはJSON/YAML形式に慣れている",
+        "開発者・要件定義者・プロジェクトマネージャーが主要ユーザー",
+        "チーム規模は5-20人程度"
+      ]
+    },
+    "stakeholders": [
+      {
+        "role": "開発者",
+        "responsibilities": ["システム実装", "技術的意思決定", "コード品質管理"],
+        "interests": ["開発効率向上", "保守性", "拡張性"]
+      },
+      {
+        "role": "要件定義者",
+        "responsibilities": ["要件の洗い出し", "要件の詳細化", "ステークホルダー調整"],
+        "interests": ["要件の可視化", "変更管理", "トレーサビリティ"]
+      },
+      {
+        "role": "プロジェクトマネージャー",
+        "responsibilities": ["プロジェクト管理", "リスク管理", "品質管理"],
+        "interests": ["進捗可視化", "リスク把握", "品質保証"]
+      },
+      {
+        "role": "AIエンジニア",
+        "responsibilities": ["AI機能実装", "MCP統合", "自動化機能開発"],
+        "interests": ["AI精度向上", "処理効率", "ユーザビリティ"]
+      }
+    ],
+    "children": [
+      {
+        "id": "functional-requirements",
+        "title": "機能要件",
+        "description": "システムの主要機能に関する要件",
+        "type": "requirement-category",
+        "children": [
+          {
+            "id": "fr-001",
+            "title": "ファイル形式サポート",
+            "type": "functional-requirement",
+            "user_story": {
+              "as_a": "開発者",
+              "i_want": "JSON/YAML形式でマインドマップデータを管理したい",
+              "so_that": "バージョン管理やテキストエディタでの編集が容易になる"
+            },
+            "description": "マインドマップデータをJSON/YAML形式で管理し、ファイルベースでの操作を可能にする",
+            "priority": "high",
+            "status": "pending",
+            "business_value": "開発者の既存ワークフローとの統合により、採用コストを削減",
+            "risk_level": "low",
+            "complexity": "medium",
+            "acceptance_criteria": [
+              {
+                "id": "fr-001-ac-001",
+                "condition": "WHEN ユーザーがJSONファイルを開く",
+                "expected_result": "THEN システムはマインドマップデータを正しく解析して表示する",
+                "test_data": "有効なJSONスキーマに準拠したファイル"
+              },
+              {
+                "id": "fr-001-ac-002", 
+                "condition": "WHEN ユーザーがYAMLファイルを開く",
+                "expected_result": "THEN システムはマインドマップデータを正しく解析して表示する",
+                "test_data": "有効なYAMLフォーマットのファイル"
+              },
+              {
+                "id": "fr-001-ac-003",
+                "condition": "WHEN ファイル形式が不正な場合",
+                "expected_result": "THEN システムは適切なエラーメッセージを表示する",
+                "test_data": "構文エラーを含むファイル"
+              },
+              {
+                "id": "fr-001-ac-004",
+                "condition": "WHEN ファイルが存在しない場合",
+                "expected_result": "THEN システムは新規作成オプションを提供する",
+                "test_data": "存在しないファイルパス"
+              }
+            ],
+            "dependencies": [],
+            "test_strategy": {
+              "unit_tests": ["ファイルパーサーのテスト", "エラーハンドリングのテスト"],
+              "integration_tests": ["ファイルシステム連携のテスト"],
+              "e2e_tests": ["ファイル読み込みからマインドマップ表示までの一連の流れ"]
+            },
+            "children": [
+              {
+                "id": "fr-001-001",
+                "title": "JSONファイル対応",
+                "description": "JSONファイルを正しく解析して表示する機能",
+                "type": "sub-requirement",
+                "technical_details": "JSON Schema ValidationとJSONパーサーライブラリの活用"
+              },
+              {
+                "id": "fr-001-002",
+                "title": "YAMLファイル対応", 
+                "description": "YAMLファイルを正しく解析して表示する機能",
+                "type": "sub-requirement",
+                "technical_details": "YAML.jsライブラリまたは同等のパーサーを使用"
+              },
+              {
+                "id": "fr-001-003",
+                "title": "エラーハンドリング",
+                "description": "不正な形式の場合の適切なエラーメッセージ表示",
+                "type": "sub-requirement",
+                "technical_details": "構文エラーの位置特定とユーザーフレンドリーなメッセージ生成"
+              },
+              {
+                "id": "fr-001-004",
+                "title": "新規作成サポート",
+                "description": "ファイル不在時の新規作成オプション提供",
+                "type": "sub-requirement",
+                "technical_details": "デフォルトテンプレートの提供とファイル作成UI"
+              }
+            ]
+          },
+          {
+            "id": "fr-002",
+            "title": "リアルタイム編集・表示",
+            "type": "functional-requirement",
+            "user_story": {
+              "as_a": "要件定義者",
+              "i_want": "左側でテキストを編集しながら右側でマインドマップをリアルタイムで確認したい",
+              "so_that": "思考の整理と視覚化を同時に行える"
+            },
+            "description": "テキストエディタでの編集内容をリアルタイムでマインドマップに反映する",
+            "priority": "high",
+            "status": "pending",
+            "business_value": "要件定義作業の効率化により、プロジェクト期間を短縮",
+            "risk_level": "medium",
+            "complexity": "high",
+            "acceptance_criteria": [
+              {
+                "id": "fr-002-ac-001",
+                "condition": "WHEN 左側エディタでJSON/YAMLを編集する",
+                "expected_result": "THEN 右側のマインドマップが即座に更新される",
+                "test_data": "各種編集操作（追加、削除、修正）"
+              },
+              {
+                "id": "fr-002-ac-002",
+                "condition": "WHEN 構文エラーがある場合",
+                "expected_result": "THEN システムはエラー箇所をハイライトし、マインドマップ表示を維持する",
+                "test_data": "構文エラーを含む編集操作"
+              },
+              {
+                "id": "fr-002-ac-003",
+                "condition": "WHEN ファイルが大きい場合でも",
+                "expected_result": "THEN 500ms以内にマインドマップが更新される",
+                "test_data": "100ノード以上のマインドマップ"
+              },
+              {
+                "id": "fr-002-ac-004",
+                "condition": "WHEN 編集中に一時的に不正な状態になる",
+                "expected_result": "THEN システムは最後の有効な状態を表示し続ける",
+                "test_data": "中間的な不正状態での編集"
+              },
+              {
+                "id": "fr-002-ac-005",
+                "condition": "WHEN JSON/YAMLファイルを編集する",
+                "expected_result": "THEN 自動インデント機能が適用される",
+                "test_data": "インデントが必要な編集操作"
+              },
+              {
+                "id": "fr-002-ac-006",
+                "condition": "WHEN エディタでコードを表示する",
+                "expected_result": "THEN 構文ハイライトが適切に表示される",
+                "test_data": "JSON/YAMLコード"
+              }
+            ],
+            "dependencies": ["fr-001"],
+            "test_strategy": {
+              "unit_tests": ["リアルタイム更新ロジック", "エラーハンドリング", "パフォーマンス測定"],
+              "integration_tests": ["エディタとマインドマップの連携"],
+              "e2e_tests": ["実際の編集シナリオでの動作確認"],
+              "performance_tests": ["大規模データでの応答時間測定"]
+            },
+            "children": [
+              {
+                "id": "fr-002-001",
+                "title": "即時更新",
+                "description": "編集内容の即座の反映機能",
+                "type": "sub-requirement",
+                "technical_details": "WebSocketまたはイベントベースの更新システム"
+              },
+              {
+                "id": "fr-002-002",
+                "title": "構文エラー処理",
+                "description": "エラー箇所のハイライトと安定表示維持",
+                "type": "sub-requirement",
+                "technical_details": "AST解析による段階的パース"
+              },
+              {
+                "id": "fr-002-003",
+                "title": "パフォーマンス最適化",
+                "description": "大きなファイルでも500ms以内の更新",
+                "type": "sub-requirement",
+                "technical_details": "差分更新とバーチャルスクロールの実装"
+              },
+              {
+                "id": "fr-002-004",
+                "title": "状態維持",
+                "description": "一時的な不正状態での安定表示",
+                "type": "sub-requirement",
+                "technical_details": "バリデーション付きステートマシン"
+              },
+              {
+                "id": "fr-002-005",
+                "title": "自動インデント",
+                "description": "JSON/YAML編集時の自動インデント機能",
+                "type": "sub-requirement",
+                "technical_details": "言語固有のフォーマッターライブラリ"
+              },
+              {
+                "id": "fr-002-006",
+                "title": "構文ハイライト",
+                "description": "コードの構文ハイライト表示",
+                "type": "sub-requirement",
+                "technical_details": "Monaco EditorまたはCodeMirrorの活用"
+              }
+            ]
+          },
+          {
+            "id": "fr-003",
+            "title": "マインドマップ視覚化",
+            "type": "functional-requirement",
+            "user_story": {
+              "as_a": "プロジェクトマネージャー",
+              "i_want": "階層構造を持つ要件を視覚的に把握したい",
+              "so_that": "関係性や全体像を理解しやすくなる"
+            },
+            "description": "階層構造を持つ要件を視覚的に表示する機能",
+            "priority": "high",
+            "status": "pending",
+            "business_value": "視覚的理解による意思決定速度の向上",
+            "risk_level": "medium",
+            "complexity": "high",
+            "acceptance_criteria": [
+              {
+                "id": "fr-003-ac-001",
+                "condition": "WHEN マインドマップデータが読み込まれる",
+                "expected_result": "THEN ノードが階層構造で表示される",
+                "test_data": "様々な階層深度のマインドマップ"
+              },
+              {
+                "id": "fr-003-ac-002",
+                "condition": "WHEN ノードが多数ある場合",
+                "expected_result": "THEN ズーム・パン機能で全体を閲覧できる",
+                "test_data": "100以上のノードを持つマインドマップ"
+              },
+              {
+                "id": "fr-003-ac-003",
+                "condition": "WHEN ノードをクリックする",
+                "expected_result": "THEN 対応するテキスト部分がハイライトされる",
+                "test_data": "各種ノードのクリック操作"
+              },
+              {
+                "id": "fr-003-ac-004",
+                "condition": "WHEN ノードが長いテキストを含む",
+                "expected_result": "THEN 適切に省略表示され、ホバーで全文が表示される",
+                "test_data": "長文を含むノード"
+              },
+              {
+                "id": "fr-003-ac-005",
+                "condition": "WHEN ノードを折りたたむ",
+                "expected_result": "THEN 子ノードが非表示になり、展開アイコンが表示される",
+                "test_data": "子ノードを持つノード"
+              },
+              {
+                "id": "fr-003-ac-006",
+                "condition": "WHEN 折りたたまれたノードを展開する",
+                "expected_result": "THEN 子ノードが表示され、階層構造が復元される",
+                "test_data": "折りたたまれたノード"
+              },
+              {
+                "id": "fr-003-ac-007",
+                "condition": "WHEN ノードに詳細情報がある",
+                "expected_result": "THEN ノード内またはツールチップで詳細を表示できる",
+                "test_data": "メタデータを含むノード"
+              }
+            ],
+            "dependencies": ["fr-001", "fr-002"],
+            "test_strategy": {
+              "unit_tests": ["レンダリングエンジン", "インタラクション処理"],
+              "integration_tests": ["エディタとの連携"],
+              "visual_tests": ["スクリーンショット比較テスト"],
+              "performance_tests": ["大規模データでの描画性能"]
+            }
+          },
+          {
+            "id": "fr-004",
+            "title": "データ構造の柔軟性",
+            "type": "functional-requirement",
+            "user_story": {
+              "as_a": "要件定義者",
+              "i_want": "様々な形式の要件データを扱いたい",
+              "so_that": "プロジェクトの特性に応じてマインドマップを作成できる"
+            },
+            "description": "多様な要件データ形式に対応する柔軟なデータ構造",
+            "priority": "medium",
+            "status": "pending",
+            "business_value": "様々なプロジェクトタイプへの適用拡大",
+            "risk_level": "medium",
+            "complexity": "high",
+            "acceptance_criteria": [
+              {
+                "id": "fr-004-ac-001",
+                "condition": "WHEN ノードにメタデータを追加する",
+                "expected_result": "THEN 優先度、ステータス、担当者などの情報を含められる",
+                "test_data": "各種メタデータ項目"
+              },
+              {
+                "id": "fr-004-ac-002",
+                "condition": "WHEN ノード間に関係性を定義する",
+                "expected_result": "THEN 依存関係や関連性を表現できる",
+                "test_data": "様々な関係性パターン"
+              },
+              {
+                "id": "fr-004-ac-003",
+                "condition": "WHEN カスタムプロパティを定義する",
+                "expected_result": "THEN プロジェクト固有の属性を追加できる",
+                "test_data": "カスタム属性定義"
+              },
+              {
+                "id": "fr-004-ac-004",
+                "condition": "WHEN データをエクスポートする",
+                "expected_result": "THEN 他のツールで利用可能な形式で出力できる",
+                "test_data": "各種エクスポート形式"
+              }
+            ],
+            "dependencies": ["fr-001"],
+            "test_strategy": {
+              "unit_tests": ["データ構造バリデーション", "スキーマ拡張機能"],
+              "integration_tests": ["外部ツール連携"],
+              "compatibility_tests": ["既存データとの互換性"]
+            }
+          },
+          {
+            "id": "fr-005",
+            "title": "テンプレート機能",
+            "type": "functional-requirement",
+            "user_story": {
+              "as_a": "要件定義者",
+              "i_want": "よく使う要件定義のパターンをテンプレート化して利用したい",
+              "so_that": "類似プロジェクトの要件定義を効率的に開始できる"
+            },
+            "description": "頻繁に使用される要件パターンのテンプレート化",
+            "priority": "medium",
+            "status": "pending",
+            "business_value": "新規プロジェクト立ち上げ時間の短縮",
+            "risk_level": "low",
+            "complexity": "medium",
+            "acceptance_criteria": [
+              {
+                "id": "fr-005-ac-001",
+                "condition": "WHEN ユーザーがテンプレートを保存する",
+                "expected_result": "THEN システムは現在のマインドマップ構造をテンプレートとして保存する",
+                "test_data": "様々な構造のマインドマップ"
+              },
+              {
+                "id": "fr-005-ac-002",
+                "condition": "WHEN ユーザーがテンプレートを選択する",
+                "expected_result": "THEN システムは事前定義されたマインドマップ構造を読み込む",
+                "test_data": "保存済みテンプレート"
+              },
+              {
+                "id": "fr-005-ac-003",
+                "condition": "WHEN テンプレートギャラリーを開く",
+                "expected_result": "THEN システムは利用可能なテンプレートの一覧を表示する",
+                "test_data": "複数のテンプレート"
+              },
+              {
+                "id": "fr-005-ac-004",
+                "condition": "WHEN カスタムテンプレートを作成する",
+                "expected_result": "THEN システムはユーザー定義のテンプレートを保存・管理できる",
+                "test_data": "カスタムテンプレート作成フロー"
+              }
+            ],
+            "dependencies": ["fr-001", "fr-004"],
+            "test_strategy": {
+              "unit_tests": ["テンプレート保存・読込機能"],
+              "integration_tests": ["ファイルシステム連携"],
+              "user_tests": ["テンプレート利用体験"]
+            }
+          },
+          {
+            "id": "fr-006",
+            "title": "コラボレーション機能",
+            "type": "functional-requirement",
+            "user_story": {
+              "as_a": "チームメンバー",
+              "i_want": "複数人で同時にマインドマップを編集したい",
+              "so_that": "効率的に要件定義を進められる"
+            },
+            "description": "複数ユーザーによる同時編集とリアルタイム同期",
+            "priority": "medium",
+            "status": "pending",
+            "business_value": "チーム作業効率向上によるプロジェクト期間短縮",
+            "risk_level": "high",
+            "complexity": "very_high",
+            "acceptance_criteria": [
+              {
+                "id": "fr-006-ac-001",
+                "condition": "WHEN 複数ユーザーが同じマインドマップを開く",
+                "expected_result": "THEN システムはリアルタイムで変更を同期する",
+                "test_data": "同時アクセスシナリオ"
+              },
+              {
+                "id": "fr-006-ac-002",
+                "condition": "WHEN 他のユーザーが編集中",
+                "expected_result": "THEN システムは編集中のノードをハイライト表示する",
+                "test_data": "同時編集状況"
+              },
+              {
+                "id": "fr-006-ac-003",
+                "condition": "WHEN 編集の競合が発生する",
+                "expected_result": "THEN システムは適切な競合解決オプションを提供する",
+                "test_data": "競合発生シナリオ"
+              },
+              {
+                "id": "fr-006-ac-004",
+                "condition": "WHEN コメント機能を使用する",
+                "expected_result": "THEN ユーザーはノードにコメントを追加・返信できる",
+                "test_data": "コメント機能の利用"
+              }
+            ],
+            "dependencies": ["fr-001", "fr-002"],
+            "test_strategy": {
+              "unit_tests": ["同期ロジック", "競合解決アルゴリズム"],
+              "integration_tests": ["リアルタイム通信"],
+              "load_tests": ["多数ユーザー同時アクセス"],
+              "security_tests": ["アクセス制御"]
+            }
+          },
+          {
+            "id": "fr-007",
+            "title": "リッチテキスト編集",
+            "type": "functional-requirement",
+            "user_story": {
+              "as_a": "要件定義者",
+              "i_want": "ノード内でマークダウンを使用したリッチテキスト編集をしたい",
+              "so_that": "より表現力豊かな要件記述ができる"
+            },
+            "description": "マークダウン対応のリッチテキスト編集機能",
+            "priority": "medium",
+            "status": "pending",
+            "business_value": "要件記述の表現力向上による理解促進",
+            "risk_level": "low",
+            "complexity": "medium",
+            "acceptance_criteria": [
+              {
+                "id": "fr-007-ac-001",
+                "condition": "WHEN ノードの説明欄でマークダウンを記述する",
+                "expected_result": "THEN システムはリアルタイムでプレビューを表示する",
+                "test_data": "各種マークダウン記法"
+              },
+              {
+                "id": "fr-007-ac-002", 
+                "condition": "WHEN リストや表を作成する",
+                "expected_result": "THEN システムは適切にフォーマットして表示する",
+                "test_data": "リスト・表形式のマークダウン"
+              },
+              {
+                "id": "fr-007-ac-003",
+                "condition": "WHEN 画像やリンクを挿入する",
+                "expected_result": "THEN システムは適切にレンダリングする",
+                "test_data": "画像・リンクを含むマークダウン"
+              },
+              {
+                "id": "fr-007-ac-004",
+                "condition": "WHEN コードブロックを記述する",
+                "expected_result": "THEN システムはシンタックスハイライトを適用する",
+                "test_data": "各種プログラミング言語のコードブロック"
+              }
+            ],
+            "dependencies": ["fr-002"],
+            "test_strategy": {
+              "unit_tests": ["マークダウンパーサー", "レンダリングエンジン"],
+              "integration_tests": ["エディタ連携"],
+              "visual_tests": ["レンダリング結果の確認"]
+            }
+          },
+          {
+            "id": "fr-008",
+            "title": "タグ・ラベル管理",
+            "type": "functional-requirement",
+            "user_story": {
+              "as_a": "プロジェクトマネージャー",
+              "i_want": "ノードをタグやラベルで分類したい",
+              "so_that": "特定の観点から要件を整理・フィルタリングできる"
+            },
+            "priority": "low",
+            "status": "pending"
+          },
+          {
+            "id": "fr-009",
+            "title": "進捗管理機能",
+            "type": "functional-requirement",
+            "user_story": {
+              "as_a": "プロジェクトマネージャー",
+              "i_want": "各要件の進捗状況を管理したい",
+              "so_that": "プロジェクト全体の進行状況を把握できる"
+            },
+            "priority": "medium",
+            "status": "pending"
+          },
+          {
+            "id": "fr-010",
+            "title": "高度なエクスポート機能",
+            "type": "functional-requirement",
+            "user_story": {
+              "as_a": "要件定義者",
+              "i_want": "マインドマップを様々な形式でエクスポートしたい",
+              "so_that": "他のツールやステークホルダーと情報を共有できる"
+            },
+            "priority": "medium",
+            "status": "pending"
+          },
+          {
+            "id": "fr-011",
+            "title": "自動保存・バージョン管理",
+            "type": "functional-requirement",
+            "user_story": {
+              "as_a": "要件定義者",
+              "i_want": "編集内容を自動的に保存し履歴を管理したい",
+              "so_that": "作業内容を失うリスクを最小化できる"
+            },
+            "priority": "high",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": "non-functional-requirements",
+        "title": "非機能要件",
+        "description": "システムの品質特性に関する要件",
+        "type": "requirement-category",
+        "children": [
+          {
+            "id": "nfr-001",
+            "title": "パフォーマンス要件",
+            "type": "non-functional-requirement",
+            "user_story": {
+              "as_a": "ユーザー",
+              "i_want": "大規模な要件定義でもスムーズに操作したい",
+              "so_that": "ストレスなく作業を進められる"
+            },
+            "description": "システム全体のパフォーマンス要件",
+            "priority": "high",
+            "status": "pending",
+            "business_value": "ユーザー体験向上により継続利用率を向上",
+            "risk_level": "medium",
+            "complexity": "high",
+            "acceptance_criteria": [
+              {
+                "id": "nfr-001-ac-001",
+                "condition": "WHEN 100個以上のノードがある",
+                "expected_result": "THEN 描画パフォーマンスが維持される（60FPS以上）",
+                "test_data": "100-1000ノードのマインドマップ"
+              },
+              {
+                "id": "nfr-001-ac-002",
+                "condition": "WHEN 初回起動時",
+                "expected_result": "THEN 3秒以内にアプリケーションが使用可能になる",
+                "test_data": "標準的なPC環境での起動測定"
+              },
+              {
+                "id": "nfr-001-ac-003",
+                "condition": "WHEN ファイル保存時",
+                "expected_result": "THEN 1秒以内に保存処理が完了する",
+                "test_data": "各種サイズのファイル"
+              }
+            ],
+            "test_strategy": {
+              "performance_tests": ["レスポンス時間測定", "メモリ使用量監視", "CPU使用率測定"],
+              "load_tests": ["大量データでの動作確認"],
+              "stress_tests": ["限界値での動作確認"]
+            }
+          },
+          {
+            "id": "nfr-002",
+            "title": "ユーザビリティ要件",
+            "type": "non-functional-requirement",
+            "user_story": {
+              "as_a": "パワーユーザー",
+              "i_want": "効率的な操作方法を利用したい",
+              "so_that": "作業効率を最大化できる"
+            },
+            "description": "使いやすさとアクセシビリティに関する要件",
+            "priority": "medium",
+            "status": "pending",
+            "acceptance_criteria": [
+              {
+                "id": "nfr-002-ac-001",
+                "condition": "WHEN キーボードショートカットを使用する",
+                "expected_result": "THEN 効率的な操作ができる",
+                "test_data": "一般的なショートカット操作"
+              },
+              {
+                "id": "nfr-002-ac-002",
+                "condition": "WHEN エラーが発生する",
+                "expected_result": "THEN ユーザーフレンドリーなメッセージが表示される",
+                "test_data": "各種エラーシナリオ"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "technical-requirements",
+        "title": "技術要件",
+        "description": "システムアーキテクチャと技術実装に関する要件",
+        "type": "requirement-category",
+        "children": [
+          {
+            "id": "tr-001",
+            "title": "ローカル環境実行",
+            "type": "technical-requirement",
+            "user_story": {
+              "as_a": "開発者",
+              "i_want": "インターネット接続なしでもツールを使用したい",
+              "so_that": "セキュアな環境や移動中でも作業を継続できる"
+            },
+            "description": "オフライン環境での動作保証",
+            "priority": "medium",
+            "status": "pending",
+            "business_value": "セキュリティ要件の厳しい環境での利用拡大",
+            "risk_level": "low",
+            "complexity": "medium",
+            "acceptance_criteria": [
+              {
+                "id": "tr-001-ac-001",
+                "condition": "WHEN ローカル環境でアプリケーションを起動する",
+                "expected_result": "THEN インターネット接続なしで動作する",
+                "test_data": "ネットワーク切断状態"
+              },
+              {
+                "id": "tr-001-ac-002",
+                "condition": "WHEN ローカルファイルを開く",
+                "expected_result": "THEN ファイルシステムから直接読み込める",
+                "test_data": "ローカルファイルパス"
+              },
+              {
+                "id": "tr-001-ac-003",
+                "condition": "WHEN 設定を変更する",
+                "expected_result": "THEN ローカルストレージに保存される",
+                "test_data": "各種設定項目"
+              },
+              {
+                "id": "tr-001-ac-004",
+                "condition": "WHEN アプリケーションを再起動する",
+                "expected_result": "THEN 前回の設定とファイル状態が復元される",
+                "test_data": "アプリケーション再起動シナリオ"
+              }
+            ],
+            "dependencies": [],
+            "test_strategy": {
+              "unit_tests": ["ローカルストレージ機能", "ファイルシステム操作"],
+              "integration_tests": ["オフライン環境での動作確認"],
+              "e2e_tests": ["完全なオフラインワークフロー"]
+            }
+          },
+          {
+            "id": "tr-002",
+            "title": "VSCode拡張対応準備",
+            "type": "technical-requirement",
+            "user_story": {
+              "as_a": "開発者",
+              "i_want": "将来的にVSCode拡張として使用したい",
+              "so_that": "既存の開発ワークフローに統合できる"
+            },
+            "description": "VSCode拡張としての公開に向けた設計",
+            "priority": "medium",
+            "status": "pending",
+            "business_value": "開発者コミュニティでの普及促進",
+            "risk_level": "medium",
+            "complexity": "high",
+            "acceptance_criteria": [
+              {
+                "id": "tr-002-ac-001",
+                "condition": "WHEN コードがモジュール化されている",
+                "expected_result": "THEN VSCode拡張APIとの統合が容易である",
+                "test_data": "VSCode拡張APIドキュメント"
+              },
+              {
+                "id": "tr-002-ac-002",
+                "condition": "WHEN UIコンポーネントが分離されている",
+                "expected_result": "THEN Webview内での表示に対応できる",
+                "test_data": "VSCode Webview仕様"
+              },
+              {
+                "id": "tr-002-ac-003",
+                "condition": "WHEN ファイル操作が抽象化されている",
+                "expected_result": "THEN VSCodeのファイルシステムAPIに切り替え可能である",
+                "test_data": "VSCode FileSystem API"
+              },
+              {
+                "id": "tr-002-ac-004",
+                "condition": "WHEN 設定管理が標準化されている",
+                "expected_result": "THEN VSCodeの設定システムと統合できる",
+                "test_data": "VSCode Configuration API"
+              }
+            ],
+            "dependencies": ["tr-001"],
+            "test_strategy": {
+              "unit_tests": ["モジュール分離の確認", "API抽象化レイヤーのテスト"],
+              "integration_tests": ["VSCode拡張プロトタイプでの動作確認"],
+              "compatibility_tests": ["VSCode各バージョンでの互換性確認"]
+            }
+          }
+        ]
+      },
+      {
+        "id": "mcp-agent-requirements",
+        "title": "MCPエージェント要件",
+        "description": "AI AgentのMCP統合に関する要件",
+        "type": "requirement-category",
+        "children": [
+          {
+            "id": "mcpr-001",
+            "title": "スキーマ理解機能",
+            "type": "mcp-requirement",
+            "user_story": {
+              "as_a": "AI開発者",
+              "i_want": "AgentがMCPを通じてマインドマップのスキーマを理解できるようにしたい",
+              "so_that": "Agentが適切なデータ構造でマインドマップを操作できるようになる"
+            },
+            "description": "AIエージェントがマインドマップのデータ構造を理解するための機能",
+            "priority": "high",
+            "status": "pending",
+            "business_value": "AI統合により要件定義作業の自動化を実現",
+            "risk_level": "medium",
+            "complexity": "high",
+            "acceptance_criteria": [
+              {
+                "id": "mcpr-001-ac-001",
+                "condition": "WHEN AgentがMCPツールを呼び出す",
+                "expected_result": "THEN システムはマインドマップのJSONスキーマを提供する SHALL",
+                "test_data": "標準的なマインドマップデータ構造"
+              },
+              {
+                "id": "mcpr-001-ac-002",
+                "condition": "WHEN Agentがスキーマ情報を要求する",
+                "expected_result": "THEN システムは現在のマインドマップデータ構造の詳細を返す SHALL",
+                "test_data": "各種マインドマップファイル"
+              },
+              {
+                "id": "mcpr-001-ac-003",
+                "condition": "IF マインドマップにカスタムスキーマが定義されている",
+                "expected_result": "THEN システムはカスタムスキーマ情報も含めて提供する SHALL",
+                "test_data": "カスタム属性を含むマインドマップ"
+              }
+            ],
+            "dependencies": ["fr-001"],
+            "test_strategy": {
+              "unit_tests": ["スキーマ生成ロジック", "カスタムスキーマ対応"],
+              "integration_tests": ["MCP通信の確認"],
+              "e2e_tests": ["AIエージェントとの実際の連携テスト"]
+            },
+            "children": [
+              {
+                "id": "mcpr-001-001",
+                "title": "JSONスキーマ提供",
+                "description": "MCPツール呼び出し時のJSONスキーマ提供機能",
+                "type": "sub-requirement",
+                "technical_details": "JSON Schema Draft-07準拠のスキーマ自動生成"
+              },
+              {
+                "id": "mcpr-001-002",
+                "title": "データ構造詳細返却",
+                "description": "現在のマインドマップデータ構造の詳細を返す機能",
+                "type": "sub-requirement",
+                "technical_details": "リフレクションベースの構造解析"
+              },
+              {
+                "id": "mcpr-001-003",
+                "title": "カスタムスキーマ対応",
+                "description": "カスタムスキーマ情報の含有機能",
+                "type": "sub-requirement",
+                "technical_details": "動的スキーマ拡張機能"
+              }
+            ]
+          },
+          {
+            "id": "mcpr-002",
+            "title": "コンテンツ読み取り",
+            "type": "mcp-requirement",
+            "user_story": {
+              "as_a": "AI開発者",
+              "i_want": "AgentがMCPを通じてマインドマップの内容を読み取れるようにしたい",
+              "so_that": "Agentが現在のマインドマップ状態を理解して適切な操作を判断できるようになる"
+            },
+            "priority": "high",
+            "status": "pending"
+          },
+          {
+            "id": "mcpr-003",
+            "title": "ノード追加",
+            "type": "mcp-requirement",
+            "user_story": {
+              "as_a": "AI開発者",
+              "i_want": "AgentがMCPを通じてマインドマップにノードを追加できるようにしたい", 
+              "so_that": "Agentが動的にマインドマップを拡張できるようになる"
+            },
+            "priority": "high",
+            "status": "pending"
+          },
+          {
+            "id": "mcpr-004",
+            "title": "ノード更新",
+            "type": "mcp-requirement",
+            "user_story": {
+              "as_a": "AI開発者",
+              "i_want": "AgentがMCPを通じて既存のマインドマップノードを更新できるようにしたい",
+              "so_that": "Agentがマインドマップの内容を改善・修正できるようになる"
+            },
+            "priority": "high",
+            "status": "pending"
+          },
+          {
+            "id": "mcpr-005",
+            "title": "ノード削除",
+            "type": "mcp-requirement",
+            "user_story": {
+              "as_a": "AI開発者",
+              "i_want": "AgentがMCPを通じてマインドマップからノードを削除できるようにしたい",
+              "so_that": "Agentが不要な情報を整理できるようになる"
+            },
+            "priority": "medium",
+            "status": "pending"
+          },
+          {
+            "id": "mcpr-006",
+            "title": "構造分析",
+            "type": "mcp-requirement",
+            "user_story": {
+              "as_a": "AI開発者",
+              "i_want": "AgentがMCPを通じてマインドマップの構造を分析できるようにしたい",
+              "so_that": "Agentがマインドマップの品質や完成度を評価できるようになる"
+            },
+            "priority": "medium",
+            "status": "pending"
+          },
+          {
+            "id": "mcpr-007",
+            "title": "バックアップ・復元",
+            "type": "mcp-requirement",
+            "user_story": {
+              "as_a": "AI開発者",
+              "i_want": "AgentがMCPを通じてマインドマップをバックアップ・復元できるようにしたい",
+              "so_that": "Agentが安全にマインドマップを操作できるようになる"
+            },
+            "priority": "high",
+            "status": "pending"
+          },
+          {
+            "id": "mcpr-008",
+            "title": "検索・フィルタリング",
+            "type": "mcp-requirement",
+            "user_story": {
+              "as_a": "AI開発者",
+              "i_want": "AgentがMCPを通じてマインドマップの検索・フィルタリングができるようにしたい",
+              "so_that": "Agentが大きなマインドマップから特定の情報を効率的に見つけられるようになる"
+            },
+            "priority": "medium",
+            "status": "pending"
+          },
+          {
+            "id": "mcpr-009",
+            "title": "パフォーマンス最適化",
+            "type": "mcp-requirement",
+            "user_story": {
+              "as_a": "AI開発者",
+              "i_want": "AgentがMCPを通じてマインドマップのパフォーマンス最適化機能を利用できるようにしたい",
+              "so_that": "大規模なマインドマップでも効率的に操作できるようになる"
+            },
+            "priority": "medium",
+            "status": "pending"
+          },
+          {
+            "id": "mcpr-010",
+            "title": "セキュリティ機能",
+            "type": "mcp-requirement",
+            "user_story": {
+              "as_a": "AI開発者",
+              "i_want": "AgentがMCPを通じてマインドマップのセキュリティ機能を利用できるようにしたい",
+              "so_that": "安全にマインドマップを操作できるようになる"
+            },
+            "priority": "high",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": "ai-integration-requirements",
+        "title": "AI統合要件",
+        "description": "AIアシスタント機能に関する要件",
+        "type": "requirement-category",
+        "children": [
+          {
+            "id": "air-001",
+            "title": "AIアシスタント統合",
+            "type": "ai-requirement",
+            "user_story": {
+              "as_a": "要件定義者",
+              "i_want": "AIアシスタントの支援を受けながら要件を作成したい",
+              "so_that": "より包括的で質の高い要件定義ができる"
+            },
+            "description": "要件作成時のAI支援機能",
+            "priority": "high",
+            "status": "pending",
+            "business_value": "要件品質向上によるプロジェクト成功率の改善",
+            "risk_level": "high",
+            "complexity": "very_high",
+            "acceptance_criteria": [
+              {
+                "id": "air-001-ac-001",
+                "condition": "WHEN ノード作成時にAIアシストを有効にする",
+                "expected_result": "THEN システムは関連する要件候補を提案する",
+                "test_data": "様々なドメインの要件例"
+              },
+              {
+                "id": "air-001-ac-002",
+                "condition": "WHEN 既存ノードを選択してAIに相談する",
+                "expected_result": "THEN システムは改善提案や関連要件を提示する",
+                "test_data": "既存の要件ノード"
+              },
+              {
+                "id": "air-001-ac-003",
+                "condition": "WHEN 要件の一貫性チェックを実行する",
+                "expected_result": "THEN システムは矛盾や不足を指摘する",
+                "test_data": "矛盾を含む要件セット"
+              },
+              {
+                "id": "air-001-ac-004",
+                "condition": "WHEN AIアシスタントが提案する",
+                "expected_result": "THEN ユーザーは提案を採用・修正・却下できる",
+                "test_data": "AI提案のユーザーインタラクション"
+              }
+            ],
+            "dependencies": ["mcpr-001"],
+            "test_strategy": {
+              "unit_tests": ["AI推論ロジック", "提案生成アルゴリズム"],
+              "integration_tests": ["AI APIとの連携"],
+              "user_tests": ["実際のユーザーによる使用感テスト"],
+              "accuracy_tests": ["AI提案の精度測定"]
+            }
+          }
+        ]
+      }
+    ],
+    "traceability_matrix": {
+      "business_objectives": [
+        {
+          "id": "bo-001",
+          "title": "要件定義効率化",
+          "related_requirements": ["fr-001", "fr-002", "air-001"]
+        },
+        {
+          "id": "bo-002", 
+          "title": "品質向上",
+          "related_requirements": ["air-001", "nfr-001"]
+        }
+      ],
+      "risk_mitigation": [
+        {
+          "risk": "AI精度不足",
+          "mitigation_requirements": ["air-001-ac-004"],
+          "contingency_plan": "人間による最終確認を必須とする"
+        },
+        {
+          "risk": "パフォーマンス劣化",
+          "mitigation_requirements": ["nfr-001"],
+          "contingency_plan": "段階的読み込みとキャッシュ機能"
+        }
+      ]
+    },
+    "glossary": [
+      {
+        "term": "マインドマップ",
+        "definition": "階層構造を持つ視覚的な情報整理手法"
+      },
+      {
+        "term": "MCP",
+        "definition": "Model Context Protocol - AI Agentとの標準的な通信プロトコル"
+      },
+      {
+        "term": "要件定義",
+        "definition": "システムが満たすべき機能や品質特性を明確化する活動"
+      }
+    ]
+  }
+}
