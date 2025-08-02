@@ -91,7 +91,7 @@ export class SchemaValidator {
   /**
    * マインドマップデータをバリデーション
    */
-  validateMindmapData(data: any): ValidationResult {
+  validateMindmapData(data: unknown): ValidationResult {
     const valid = this.mindmapDataValidator(data);
     
     if (valid) {
@@ -111,7 +111,7 @@ export class SchemaValidator {
   /**
    * カスタムスキーマをバリデーション
    */
-  validateCustomSchema(schema: any): ValidationResult {
+  validateCustomSchema(schema: unknown): ValidationResult {
     const valid = this.customSchemaValidator(schema);
     
     if (valid) {
@@ -200,7 +200,7 @@ export class SchemaValidator {
    * フィールド値をバリデーション
    */
   private validateFieldValue(
-    value: any, 
+    value: unknown, 
     field: import('../types').FieldDefinition, 
     path: string
   ): SchemaError[] {
@@ -257,7 +257,7 @@ export class SchemaValidator {
         break;
 
       case 'select':
-        if (field.options && !field.options.includes(value)) {
+        if (field.options && !field.options.includes(value as string)) {
           errors.push({
             path,
             message: `フィールド '${field.label}' の値は選択肢の中から選んでください`,
@@ -308,7 +308,7 @@ export class SchemaValidator {
    * バリデーションルールをチェック
    */
   private validateRule(
-    value: any, 
+    value: unknown, 
     rule: import('../types').ValidationRule, 
     field: import('../types').FieldDefinition, 
     path: string
@@ -427,31 +427,31 @@ export class SchemaValidator {
 
     switch (keyword) {
       case 'required':
-        return `必須プロパティ '${(params as any)?.missingProperty}' がありません`;
+        return `必須プロパティ '${(params as { missingProperty?: string })?.missingProperty}' がありません`;
       case 'type':
-        return `データ型が正しくありません。期待される型: ${(params as any)?.type}`;
+        return `データ型が正しくありません。期待される型: ${(params as { type?: string })?.type}`;
       case 'format':
-        return `フォーマットが正しくありません。期待されるフォーマット: ${(params as any)?.format}`;
+        return `フォーマットが正しくありません。期待されるフォーマット: ${(params as { format?: string })?.format}`;
       case 'minimum':
-        return `値が小さすぎます。最小値: ${(params as any)?.limit}`;
+        return `値が小さすぎます。最小値: ${(params as { limit?: number })?.limit}`;
       case 'maximum':
-        return `値が大きすぎます。最大値: ${(params as any)?.limit}`;
+        return `値が大きすぎます。最大値: ${(params as { limit?: number })?.limit}`;
       case 'minLength':
-        return `文字列が短すぎます。最小長: ${(params as any)?.limit}`;
+        return `文字列が短すぎます。最小長: ${(params as { limit?: number })?.limit}`;
       case 'maxLength':
-        return `文字列が長すぎます。最大長: ${(params as any)?.limit}`;
+        return `文字列が長すぎます。最大長: ${(params as { limit?: number })?.limit}`;
       case 'pattern':
-        return `パターンにマッチしません。パターン: ${(params as any)?.pattern}`;
+        return `パターンにマッチしません。パターン: ${(params as { pattern?: string })?.pattern}`;
       case 'enum':
-        return `許可されていない値です。許可される値: ${(params as any)?.allowedValues?.join(', ')}`;
+        return `許可されていない値です。許可される値: ${(params as { allowedValues?: string[] })?.allowedValues?.join(', ')}`;
       case 'additionalProperties':
-        return `追加のプロパティは許可されていません: ${(params as any)?.additionalProperty}`;
+        return `追加のプロパティは許可されていません: ${(params as { additionalProperty?: string })?.additionalProperty}`;
       case 'uniqueItems':
         return '配列内に重複する項目があります';
       case 'minItems':
-        return `配列の要素数が少なすぎます。最小要素数: ${(params as any)?.limit}`;
+        return `配列の要素数が少なすぎます。最小要素数: ${(params as { limit?: number })?.limit}`;
       case 'maxItems':
-        return `配列の要素数が多すぎます。最大要素数: ${(params as any)?.limit}`;
+        return `配列の要素数が多すぎます。最大要素数: ${(params as { limit?: number })?.limit}`;
       default:
         return message || 'バリデーションエラーが発生しました';
     }
@@ -460,7 +460,7 @@ export class SchemaValidator {
   /**
    * スキーマから型定義を生成（開発用）
    */
-  generateTypeDefinition(_schema: any): string {
+  generateTypeDefinition(): string {
     // 簡単な型定義生成（実装は省略）
     return '// 型定義は別途実装';
   }
@@ -511,11 +511,11 @@ export class SchemaValidator {
 export const schemaValidator = new SchemaValidator();
 
 // ヘルパー関数
-export const validateMindmapData = (data: any): ValidationResult => {
+export const validateMindmapData = (data: unknown): ValidationResult => {
   return schemaValidator.validateMindmapData(data);
 };
 
-export const validateCustomSchema = (schema: any): ValidationResult => {
+export const validateCustomSchema = (schema: unknown): ValidationResult => {
   return schemaValidator.validateCustomSchema(schema);
 };
 

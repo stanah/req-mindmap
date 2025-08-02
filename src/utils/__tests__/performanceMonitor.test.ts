@@ -92,18 +92,20 @@ describe('PerformanceMonitor', () => {
       expect(onWarning).not.toHaveBeenCalled();
     });
 
-    it('メモリ使用量が閾値を超えると警告が発生する', (done) => {
+    it('メモリ使用量が閾値を超えると警告が発生する', () => {
+      return new Promise<void>((resolve) => {
       // 高いメモリ使用量をシミュレート
       mockPerformance.memory.usedJSHeapSize = 90 * 1024 * 1024; // 90MB
       
-      const onWarning = vi.fn((info) => {
+      const onWarning = vi.fn((info: { usageRatio: number }) => {
         expect(info.usageRatio).toBe(0.9);
         monitor.stopMemoryMonitoring();
-        done();
+        resolve();
       });
       
       monitor.setMemoryThreshold(0.8);
       monitor.startMemoryMonitoring(10, onWarning);
+      });
     });
   });
 
@@ -145,7 +147,8 @@ describe('PerformanceMonitor', () => {
 });
 
 describe('デバウンス関数', () => {
-  it('指定時間内の連続呼び出しを1回にまとめる', (done) => {
+  it('指定時間内の連続呼び出しを1回にまとめる', () => {
+    return new Promise<void>((resolve) => {
     const mockFn = vi.fn();
     const debouncedFn = debounce(mockFn, 50);
     
@@ -161,8 +164,9 @@ describe('デバウンス関数', () => {
     setTimeout(() => {
       expect(mockFn).toHaveBeenCalledTimes(1);
       expect(mockFn).toHaveBeenCalledWith('arg3');
-      done();
+      resolve();
     }, 60);
+    });
   });
 
   it('immediate=trueの場合は最初の呼び出しが即座に実行される', () => {
@@ -178,7 +182,8 @@ describe('デバウンス関数', () => {
 });
 
 describe('スロットル関数', () => {
-  it('指定時間内に1回だけ実行される', (done) => {
+  it('指定時間内に1回だけ実行される', () => {
+    return new Promise<void>((resolve) => {
     const mockFn = vi.fn();
     const throttledFn = throttle(mockFn, 50);
     
@@ -196,8 +201,9 @@ describe('スロットル関数', () => {
       throttledFn('arg4');
       expect(mockFn).toHaveBeenCalledTimes(2);
       expect(mockFn).toHaveBeenCalledWith('arg4');
-      done();
+      resolve();
     }, 60);
+    });
   });
 });
 
@@ -223,7 +229,8 @@ describe('RAFスロットル関数', () => {
 });
 
 describe('BatchProcessor', () => {
-  it('アイテムをバッチで処理する', (done) => {
+  it('アイテムをバッチで処理する', () => {
+    return new Promise<void>((resolve) => {
     const processedBatches: number[][] = [];
     const processFn = async (items: number[]) => {
       processedBatches.push([...items]);
@@ -241,11 +248,13 @@ describe('BatchProcessor', () => {
       expect(processedBatches).toHaveLength(2);
       expect(processedBatches[0]).toEqual([1, 2, 3]);
       expect(processedBatches[1]).toEqual([4, 5]);
-      done();
+      resolve();
     }, 50);
+    });
   });
 
-  it('複数のアイテムを一度に追加できる', (done) => {
+  it('複数のアイテムを一度に追加できる', () => {
+    return new Promise<void>((resolve) => {
     const processedBatches: number[][] = [];
     const processFn = async (items: number[]) => {
       processedBatches.push([...items]);
@@ -259,12 +268,13 @@ describe('BatchProcessor', () => {
       expect(processedBatches).toHaveLength(2);
       expect(processedBatches[0]).toEqual([1, 2]);
       expect(processedBatches[1]).toEqual([3, 4]);
-      done();
+      resolve();
     }, 50);
+    });
   });
 
   it('キューをクリアできる', () => {
-    const processFn = async (items: number[]) => {};
+    const processFn = async () => {};
     const processor = new BatchProcessor(processFn, 10, 100);
     
     processor.addBatch([1, 2, 3]);

@@ -20,7 +20,7 @@ export interface PerformanceMetrics {
   /** メモリ使用量（バイト） */
   memoryUsage?: number;
   /** 追加のメタデータ */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -63,7 +63,7 @@ export class PerformanceMonitor {
   /**
    * パフォーマンス測定を開始
    */
-  public startMeasurement(name: string, metadata?: Record<string, any>): void {
+  public startMeasurement(name: string, metadata?: Record<string, unknown>): void {
     const startTime = performance.now();
     this.measurements.set(name, startTime);
     
@@ -80,7 +80,7 @@ export class PerformanceMonitor {
   /**
    * パフォーマンス測定を終了
    */
-  public endMeasurement(name: string, metadata?: Record<string, any>): PerformanceMetrics | null {
+  public endMeasurement(name: string, metadata?: Record<string, unknown>): PerformanceMetrics | null {
     const endTime = performance.now();
     const startTime = this.measurements.get(name);
     
@@ -132,7 +132,7 @@ export class PerformanceMonitor {
       return null;
     }
 
-    const memory = (performance as any).memory;
+    const memory = (performance as { memory: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
     return {
       usedJSHeapSize: memory.usedJSHeapSize,
       totalJSHeapSize: memory.totalJSHeapSize,
@@ -186,9 +186,9 @@ export class PerformanceMonitor {
    * ガベージコレクションを強制実行（可能な場合）
    */
   public forceGarbageCollection(): void {
-    if ('gc' in window && typeof (window as any).gc === 'function') {
+    if ('gc' in window && typeof (window as { gc?: () => void }).gc === 'function') {
       console.debug('[Performance] Forcing garbage collection');
-      (window as any).gc();
+      (window as { gc: () => void }).gc();
     } else {
       console.debug('[Performance] Garbage collection not available');
     }
@@ -288,7 +288,7 @@ export class PerformanceMonitor {
 /**
  * デバウンス関数（パフォーマンス最適化用）
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number,
   immediate = false
@@ -318,7 +318,7 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * スロットル関数（パフォーマンス最適化用）
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
@@ -336,7 +336,7 @@ export function throttle<T extends (...args: any[]) => any>(
 /**
  * RAF（RequestAnimationFrame）ベースのスロットル
  */
-export function rafThrottle<T extends (...args: any[]) => any>(
+export function rafThrottle<T extends (...args: unknown[]) => unknown>(
   func: T
 ): (...args: Parameters<T>) => void {
   let rafId: number | null = null;

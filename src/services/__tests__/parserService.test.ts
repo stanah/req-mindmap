@@ -338,7 +338,7 @@ title: test
 
     it('サポートされていない形式の場合エラーを投げる', async () => {
       await expect(
-        parserService.serialize(testData, 'xml' as any)
+        parserService.serialize(testData, 'xml' as 'json' | 'yaml')
       ).rejects.toThrow('サポートされていない形式');
     });
   });

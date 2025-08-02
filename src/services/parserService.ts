@@ -109,12 +109,12 @@ export class ParserServiceImpl implements ParserService {
       try {
         const data = await this.parseJSON(content);
         return { success: true, data };
-      } catch (jsonError) {
+      } catch {
         // JSONで失敗した場合、YAMLを試行
         try {
           const data = await this.parseYAML(content);
           return { success: true, data };
-        } catch (yamlError) {
+        } catch {
           // 両方失敗した場合、パースエラーを返す
           const parseErrors = this.getParseErrors(content);
           return {
@@ -146,7 +146,7 @@ export class ParserServiceImpl implements ParserService {
   /**
    * データの基本的なバリデーション
    */
-  validateData(data: any): ValidationResult {
+  validateData(data: unknown): ValidationResult {
     // null/undefinedチェック
     if (data === null || data === undefined) {
       return {
@@ -177,35 +177,37 @@ export class ParserServiceImpl implements ParserService {
     // 必須フィールドの存在チェック
     const requiredFields = ['version', 'title', 'root'];
     const errors = [];
+    const dataObj = data as Record<string, unknown>;
 
     for (const field of requiredFields) {
-      if (!(field in data) || data[field] === null || data[field] === undefined) {
+      if (!(field in dataObj) || dataObj[field] === null || dataObj[field] === undefined) {
         errors.push({
           path: field,
           message: `必須フィールド '${field}' が存在しません`,
-          value: data[field],
+          value: dataObj[field],
           code: 'REQUIRED_FIELD_MISSING'
         });
       }
     }
 
     // rootノードの基本チェック
-    if (data.root && typeof data.root === 'object') {
-      if (!data.root.id || typeof data.root.id !== 'string') {
+    if (dataObj.root && typeof dataObj.root === 'object') {
+      const rootObj = dataObj.root as Record<string, unknown>;
+      if (!rootObj.id || typeof rootObj.id !== 'string') {
         errors.push({
           path: 'root.id',
           message: 'ルートノードにはid（文字列）が必要です',
-          value: data.root.id,
+          value: rootObj.id,
           expected: 'string',
           code: 'INVALID_ROOT_ID'
         });
       }
 
-      if (!data.root.title || typeof data.root.title !== 'string') {
+      if (!rootObj.title || typeof rootObj.title !== 'string') {
         errors.push({
           path: 'root.title',
           message: 'ルートノードにはtitle（文字列）が必要です',
-          value: data.root.title,
+          value: rootObj.title,
           expected: 'string',
           code: 'INVALID_ROOT_TITLE'
         });
@@ -221,7 +223,7 @@ export class ParserServiceImpl implements ParserService {
   /**
    * JSON Schemaに基づくバリデーション
    */
-  validateSchema(data: any): ValidationResult {
+  validateSchema(data: unknown): ValidationResult {
     return schemaValidator.validateMindmapData(data);
   }
 
@@ -331,7 +333,7 @@ export class ParserServiceImpl implements ParserService {
    * 既存データからスキーマを自動生成
    */
   async generateSchema(data: MindmapData): Promise<CustomSchema> {
-    const fields = new Map<string, any[]>();
+    const fields = new Map<string, unknown[]>();
     const fieldTypes = new Map<string, Set<string>>();
     const fieldStats = new Map<string, { count: number; nullCount: number }>();
 
@@ -556,8 +558,8 @@ export class ParserServiceImpl implements ParserService {
    * ノードからカスタムフィールドを再帰的に収集
    */
   private collectCustomFields(
-    node: any, 
-    fields: Map<string, any[]>, 
+    node: import('../types').MindmapNode, 
+    fields: Map<string, unknown[]>, 
     fieldTypes: Map<string, Set<string>>,
     fieldStats?: Map<string, { count: number; nullCount: number }>
   ): void {
@@ -595,7 +597,7 @@ export class ParserServiceImpl implements ParserService {
   /**
    * 主要な型を決定
    */
-  private determinePrimaryType(types: Set<string>, examples: any[]): string {
+  private determinePrimaryType(types: Set<string>, examples: unknown[]): string {
     if (types.has('boolean')) return 'boolean';
     if (types.has('number')) return 'number';
     
@@ -633,7 +635,7 @@ export class ParserServiceImpl implements ParserService {
   /**
    * select型のオプションを生成
    */
-  private generateSelectOptions(examples: any[]): { options: string[] } {
+  private generateSelectOptions(examples: unknown[]): { options: string[] } {
     const uniqueValues = new Set(
       examples
         .filter(v => typeof v === 'string')
@@ -664,7 +666,7 @@ export class ParserServiceImpl implements ParserService {
   /**
    * 数値フィールドのバリデーションを生成
    */
-  private generateNumberValidation(examples: any[]): { validation: Array<{ type: 'min' | 'max'; value?: number }> } {
+  private generateNumberValidation(examples: unknown[]): { validation: Array<{ type: 'min' | 'max'; value?: number }> } {
     const numbers = examples.filter(v => typeof v === 'number');
     if (numbers.length === 0) return { validation: [] };
 
@@ -686,9 +688,9 @@ export class ParserServiceImpl implements ParserService {
   /**
    * select型の表示スタイルを生成
    */
-  private generateSelectDisplayStyle(options: string[]): { style: Record<string, any> } {
+  private generateSelectDisplayStyle(options: string[]): { style: Record<string, unknown> } {
     const colors = ['#e3f2fd', '#f3e5f5', '#e8f5e8', '#fff3e0', '#ffebee'];
-    const style: Record<string, any> = {};
+    const style: Record<string, unknown> = {};
 
     options.forEach((option, index) => {
       style[option] = {
@@ -721,7 +723,7 @@ export class ParserServiceImpl implements ParserService {
   /**
    * フィールドの等価性をチェック
    */
-  private areFieldsEqual(field1: any, field2: any): boolean {
+  private areFieldsEqual(field1: import('../types').FieldDefinition, field2: import('../types').FieldDefinition): boolean {
     return (
       field1.type === field2.type &&
       field1.label === field2.label &&

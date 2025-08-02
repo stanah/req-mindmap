@@ -5,7 +5,6 @@
  * 表示領域内のノードのみを描画する仮想化機能を提供します。
  */
 
-import type { MindmapNode } from '../types/mindmap';
 import type { D3Node } from '../services/mindmapRenderer';
 
 /**
@@ -287,7 +286,7 @@ export class VirtualizationManager {
     score += Math.max(0, 10 - node.depth);
     
     // 子ノードが多いほど重要
-    const childCount = (node.children || []).length + (node._children || []).length;
+    const childCount = (node.children || []).length + ((node as { _children?: unknown[] })._children || []).length;
     score += childCount * 2;
     
     // 選択されているノードは重要
@@ -308,7 +307,7 @@ export class VirtualizationManager {
    */
   private optimizeNodeForLOD(node: D3Node, detailLevel: 'simple' | 'medium' | 'detail'): D3Node {
     // ノードのクローンを作成
-    const optimizedNode = { ...node };
+    const optimizedNode = { ...node } as D3Node;
     
     switch (detailLevel) {
       case 'simple':
@@ -323,7 +322,7 @@ export class VirtualizationManager {
       case 'medium':
         // 中程度表示：タイトルと重要なメタデータのみ
         if (optimizedNode.data.customFields) {
-          const importantFields: Record<string, any> = {};
+          const importantFields: Record<string, unknown> = {};
           if (optimizedNode.data.customFields.priority) {
             importantFields.priority = optimizedNode.data.customFields.priority;
           }
@@ -367,8 +366,6 @@ export class VirtualizationManager {
   private estimateMemoryUsage(nodes: D3Node[]): number {
     // 1ノードあたりの推定メモリ使用量（バイト）
     const baseNodeSize = 1024; // 基本的なノードデータ
-    const textSize = 50; // テキストデータの平均サイズ
-    const metadataSize = 200; // メタデータの平均サイズ
     
     let totalSize = 0;
     

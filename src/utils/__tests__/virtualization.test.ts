@@ -36,16 +36,15 @@ function createTestD3Node(
     leaves: () => [],
     links: () => [],
     path: () => [],
-    sum: () => null as any,
-    sort: () => null as any,
-    count: () => null as any,
+    sum: () => null as unknown as D3Node,
+    sort: () => null as unknown as D3Node,
+    count: () => null as unknown as D3Node,
     each: () => {},
     eachAfter: () => {},
     eachBefore: () => {},
-    copy: () => null as any,
+    copy: () => null as unknown as D3Node,
     value: undefined,
-    height: 0,
-  } as D3Node;
+  } as unknown as D3Node;
 }
 
 describe('VirtualizationManager', () => {
