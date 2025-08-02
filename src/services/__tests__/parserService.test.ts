@@ -525,4 +525,301 @@ title: test
       expect(changes.addedRules).toContain('newField');
     });
   });
+
+  describe('validateCustomSchema', () => {
+    it('カスタムスキーマに基づいてデータを検証する', () => {
+      const schema: import('../../types').CustomSchema = {
+        version: '1.0',
+        fields: [
+          { name: 'priority', type: 'select', label: '優先度', options: ['high', 'medium', 'low'], required: true },
+          { name: 'status', type: 'select', label: 'ステータス', options: ['todo', 'in-progress', 'done'] },
+          { name: 'score', type: 'number', label: 'スコア', validation: [{ type: 'range', min: 0, max: 100 }] }
+        ],
+        displayRules: []
+      };
+
+      const validData: MindmapData = {
+        version: '1.0',
+        title: 'テスト',
+        root: {
+          id: 'root',
+          title: 'ルート',
+          children: [
+            {
+              id: 'child1',
+              title: '子1',
+              customFields: {
+                priority: 'high',
+                status: 'todo',
+                score: 85
+              }
+            }
+          ]
+        },
+        schema
+      };
+
+      const result = parserService.validateCustomSchema(validData);
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('必須フィールドが不足している場合エラーを返す', () => {
+      const schema: import('../../types').CustomSchema = {
+        version: '1.0',
+        fields: [
+          { name: 'priority', type: 'select', label: '優先度', options: ['high', 'medium', 'low'], required: true }
+        ],
+        displayRules: []
+      };
+
+      const invalidData: MindmapData = {
+        version: '1.0',
+        title: 'テスト',
+        root: {
+          id: 'root',
+          title: 'ルート',
+          children: [
+            {
+              id: 'child1',
+              title: '子1',
+              customFields: {
+                // priority が不足
+                status: 'todo'
+              }
+            }
+          ]
+        },
+        schema
+      };
+
+      const result = parserService.validateCustomSchema(invalidData);
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.path.includes('priority'))).toBe(true);
+    });
+
+    it('無効な選択肢の場合エラーを返す', () => {
+      const schema: import('../../types').CustomSchema = {
+        version: '1.0',
+        fields: [
+          { name: 'priority', type: 'select', label: '優先度', options: ['high', 'medium', 'low'] }
+        ],
+        displayRules: []
+      };
+
+      const invalidData: MindmapData = {
+        version: '1.0',
+        title: 'テスト',
+        root: {
+          id: 'root',
+          title: 'ルート',
+          children: [
+            {
+              id: 'child1',
+              title: '子1',
+              customFields: {
+                priority: 'invalid-option'
+              }
+            }
+          ]
+        },
+        schema
+      };
+
+      const result = parserService.validateCustomSchema(invalidData);
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.message.includes('無効な選択肢'))).toBe(true);
+    });
+
+    it('数値の範囲バリデーションを行う', () => {
+      const schema: import('../../types').CustomSchema = {
+        version: '1.0',
+        fields: [
+          { 
+            name: 'score', 
+            type: 'number', 
+            label: 'スコア', 
+            validation: [{ type: 'range', min: 0, max: 100 }] 
+          }
+        ],
+        displayRules: []
+      };
+
+      const invalidData: MindmapData = {
+        version: '1.0',
+        title: 'テスト',
+        root: {
+          id: 'root',
+          title: 'ルート',
+          children: [
+            {
+              id: 'child1',
+              title: '子1',
+              customFields: {
+                score: 150 // 範囲外
+              }
+            }
+          ]
+        },
+        schema
+      };
+
+      const result = parserService.validateCustomSchema(invalidData);
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.message.includes('範囲外'))).toBe(true);
+    });
+
+    it('日付フォーマットのバリデーションを行う', () => {
+      const schema: import('../../types').CustomSchema = {
+        version: '1.0',
+        fields: [
+          { name: 'deadline', type: 'date', label: '期限' }
+        ],
+        displayRules: []
+      };
+
+      const invalidData: MindmapData = {
+        version: '1.0',
+        title: 'テスト',
+        root: {
+          id: 'root',
+          title: 'ルート',
+          children: [
+            {
+              id: 'child1',
+              title: '子1',
+              customFields: {
+                deadline: 'invalid-date'
+              }
+            }
+          ]
+        },
+        schema
+      };
+
+      const result = parserService.validateCustomSchema(invalidData);
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.message.includes('日付形式'))).toBe(true);
+    });
+
+    it('文字列の長さバリデーションを行う', () => {
+      const schema: import('../../types').CustomSchema = {
+        version: '1.0',
+        fields: [
+          { 
+            name: 'description', 
+            type: 'string', 
+            label: '説明', 
+            validation: [{ type: 'length', min: 5, max: 50 }] 
+          }
+        ],
+        displayRules: []
+      };
+
+      const invalidData: MindmapData = {
+        version: '1.0',
+        title: 'テスト',
+        root: {
+          id: 'root',
+          title: 'ルート',
+          children: [
+            {
+              id: 'child1',
+              title: '子1',
+              customFields: {
+                description: 'abc' // 短すぎる
+              }
+            }
+          ]
+        },
+        schema
+      };
+
+      const result = parserService.validateCustomSchema(invalidData);
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.message.includes('文字数'))).toBe(true);
+    });
+
+    it('複数選択フィールドのバリデーションを行う', () => {
+      const schema: import('../../types').CustomSchema = {
+        version: '1.0',
+        fields: [
+          { 
+            name: 'tags', 
+            type: 'multiselect', 
+            label: 'タグ', 
+            options: ['urgent', 'important', 'review', 'blocked'] 
+          }
+        ],
+        displayRules: []
+      };
+
+      const validData: MindmapData = {
+        version: '1.0',
+        title: 'テスト',
+        root: {
+          id: 'root',
+          title: 'ルート',
+          children: [
+            {
+              id: 'child1',
+              title: '子1',
+              customFields: {
+                tags: ['urgent', 'important']
+              }
+            }
+          ]
+        },
+        schema
+      };
+
+      const result = parserService.validateCustomSchema(validData);
+      expect(result.valid).toBe(true);
+
+      // 無効な選択肢を含む場合
+      const invalidData: MindmapData = {
+        ...validData,
+        root: {
+          ...validData.root,
+          children: [
+            {
+              id: 'child1',
+              title: '子1',
+              customFields: {
+                tags: ['urgent', 'invalid-tag']
+              }
+            }
+          ]
+        }
+      };
+
+      const invalidResult = parserService.validateCustomSchema(invalidData);
+      expect(invalidResult.valid).toBe(false);
+      expect(invalidResult.errors.some(e => e.message.includes('無効な選択肢'))).toBe(true);
+    });
+
+    it('スキーマが定義されていない場合は検証をスキップする', () => {
+      const dataWithoutSchema: MindmapData = {
+        version: '1.0',
+        title: 'テスト',
+        root: {
+          id: 'root',
+          title: 'ルート',
+          children: [
+            {
+              id: 'child1',
+              title: '子1',
+              customFields: {
+                anyField: 'anyValue'
+              }
+            }
+          ]
+        }
+      };
+
+      const result = parserService.validateCustomSchema(dataWithoutSchema);
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+  });
 });
