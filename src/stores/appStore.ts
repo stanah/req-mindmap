@@ -766,7 +766,7 @@ export const useAppStore = create<AppStore>()(
               autoHide: true,
               duration: 2000,
             });
-          } catch (error) {
+          } catch (_error) {
             get().addNotification({
               message: '設定のインポートに失敗しました',
               type: 'error',
