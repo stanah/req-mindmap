@@ -1,9 +1,11 @@
 import React from 'react';
 import { FileToolbar } from './ui/FileToolbar';
 import { FileDropZone } from './ui/FileDropZone';
+import { StatusBar } from './ui/StatusBar';
 import './Layout.css';
 import './ui/FileToolbar.css';
 import './ui/FileDropZone.css';
+import './ui/StatusBar.css';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -20,10 +22,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         {children}
       </main>
       <footer className="layout-footer">
-        <div className="status-bar">
-          {/* TODO: ステータス情報を表示 */}
-          <span>準備完了</span>
-        </div>
+        <StatusBar />
       </footer>
     </FileDropZone>
   );

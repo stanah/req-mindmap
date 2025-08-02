@@ -1,19 +1,22 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 interface PanelResizerProps {
   onResize: (width: number) => void;
   minWidth?: number;
   maxWidth?: number;
+  className?: string;
 }
 
 export const PanelResizer: React.FC<PanelResizerProps> = ({
   onResize,
   minWidth = 300,
-  maxWidth = 70
+  maxWidth = 70,
+  className = ''
 }) => {
   const isDragging = useRef(false);
   const startX = useRef(0);
   const startWidth = useRef(0);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -31,6 +34,7 @@ export const PanelResizer: React.FC<PanelResizerProps> = ({
 
     document.body.style.cursor = 'ew-resize';
     document.body.style.userSelect = 'none';
+    document.body.classList.add('resizing');
   }, []);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
@@ -60,7 +64,13 @@ export const PanelResizer: React.FC<PanelResizerProps> = ({
     isDragging.current = false;
     document.body.style.cursor = '';
     document.body.style.userSelect = '';
+    document.body.classList.remove('resizing');
   }, []);
+
+  const handleDoubleClick = useCallback(() => {
+    // ダブルクリックで50%にリセット
+    onResize(50);
+  }, [onResize]);
 
   React.useEffect(() => {
     document.addEventListener('mousemove', handleMouseMove);
@@ -74,8 +84,20 @@ export const PanelResizer: React.FC<PanelResizerProps> = ({
 
   return (
     <div 
-      className="panel-resizer"
+      className={`panel-resizer ${className} ${isHovered ? 'panel-resizer--hovered' : ''} ${isDragging.current ? 'panel-resizer--dragging' : ''}`}
       onMouseDown={handleMouseDown}
-    />
+      onDoubleClick={handleDoubleClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      title="ドラッグしてパネルサイズを調整 | ダブルクリックで50%にリセット"
+    >
+      <div className="panel-resizer__handle">
+        <div className="panel-resizer__dots">
+          <div className="panel-resizer__dot"></div>
+          <div className="panel-resizer__dot"></div>
+          <div className="panel-resizer__dot"></div>
+        </div>
+      </div>
+    </div>
   );
 };

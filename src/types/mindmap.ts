@@ -140,6 +140,8 @@ export interface MindmapSettings {
     x: number;
     y: number;
   };
+  /** ノードサイズ */
+  nodeSize?: 'small' | 'medium' | 'large';
   /** ノードの最大幅 */
   maxNodeWidth?: number;
   /** ノード間の間隔 */
@@ -148,8 +150,12 @@ export interface MindmapSettings {
   levelSpacing?: number;
   /** アニメーション有効/無効 */
   enableAnimation?: boolean;
+  /** アニメーション有効/無効（別名） */
+  enableAnimations?: boolean;
   /** 自動レイアウト有効/無効 */
   autoLayout?: boolean;
+  /** ミニマップ表示 */
+  showMinimap?: boolean;
 }
 
 /**

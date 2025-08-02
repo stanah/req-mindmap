@@ -2,9 +2,11 @@
 import { useState, useEffect } from 'react';
 import { Layout, EditorPane, MindmapPane } from './components';
 import { PanelResizer } from './components/PanelResizer';
+import { AlertComponent } from './components/ui/AlertComponent';
 import { useAppStore } from './stores/appStore';
 import { settingsService } from './services/settingsService';
 import './App.css';
+import './components/ui/AlertComponent.css';
 
 function App() {
   const { 
@@ -112,6 +114,9 @@ function App() {
           <MindmapPane />
         </div>
       </div>
+      
+      {/* アラートコンポーネント */}
+      <AlertComponent />
     </Layout>
   );
 }
