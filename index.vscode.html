@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mindmap Tool - VSCode Extension</title>
+  
+  <!-- VSCode Webview用のCSP設定 -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'none';
+    script-src 'unsafe-inline' 'unsafe-eval' vscode-resource: https:;
+    style-src 'unsafe-inline' vscode-resource: https:;
+    img-src vscode-resource: https: data:;
+    font-src vscode-resource: https:;
+    connect-src vscode-resource: https:;
+  ">
+  
+  <!-- VSCode Webview用のスタイル -->
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--vscode-font-family);
+      font-size: var(--vscode-font-size);
+      color: var(--vscode-foreground);
+      background-color: var(--vscode-editor-background);
+    }
+    
+    #root {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    /* VSCodeテーマとの統合 */
+    .vscode-light {
+      --primary-color: var(--vscode-button-background);
+      --secondary-color: var(--vscode-button-secondaryBackground);
+      --text-color: var(--vscode-foreground);
+      --background-color: var(--vscode-editor-background);
+      --border-color: var(--vscode-panel-border);
+    }
+    
+    .vscode-dark {
+      --primary-color: var(--vscode-button-background);
+      --secondary-color: var(--vscode-button-secondaryBackground);
+      --text-color: var(--vscode-foreground);
+      --background-color: var(--vscode-editor-background);
+      --border-color: var(--vscode-panel-border);
+    }
+    
+    .vscode-high-contrast {
+      --primary-color: var(--vscode-button-background);
+      --secondary-color: var(--vscode-button-secondaryBackground);
+      --text-color: var(--vscode-foreground);
+      --background-color: var(--vscode-editor-background);
+      --border-color: var(--vscode-contrastBorder);
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <!-- VSCode API初期化スクリプト -->
+  <script>
+    // VSCode APIの初期化
+    window.vscode = acquireVsCodeApi();
+    
+    // VSCodeテーマの検出と適用
+    function applyVSCodeTheme() {
+      const body = document.body;
+      const computedStyle = getComputedStyle(body);
+      const backgroundColor = computedStyle.getPropertyValue('--vscode-editor-background');
+      
+      // テーマの判定（簡易版）
+      if (backgroundColor && backgroundColor.includes('rgb')) {
+        const rgb = backgroundColor.match(/\d+/g);
+        if (rgb) {
+          const brightness = (parseInt(rgb[0]) + parseInt(rgb[1]) + parseInt(rgb[2])) / 3;
+          if (brightness > 128) {
+            body.classList.add('vscode-light');
+          } else {
+            body.classList.add('vscode-dark');
+          }
+        }
+      }
+      
+      // ハイコントラストテーマの検出
+      const contrastBorder = computedStyle.getPropertyValue('--vscode-contrastBorder');
+      if (contrastBorder && contrastBorder !== 'transparent') {
+        body.classList.add('vscode-high-contrast');
+      }
+    }
+    
+    // 初期テーマ適用
+    applyVSCodeTheme();
+    
+    // テーマ変更の監視
+    const observer = new MutationObserver(applyVSCodeTheme);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class', 'style']
+    });
+    
+    // VSCode拡張との通信設定
+    window.addEventListener('message', (event) => {
+      const message = event.data;
+      
+      switch (message.command) {
+        case 'themeChanged':
+          applyVSCodeTheme();
+          break;
+        case 'updateContent':
+          // エディタ内容の更新
+          if (window.mindmapApp && window.mindmapApp.updateContent) {
+            window.mindmapApp.updateContent(message.content);
+          }
+          break;
+        case 'saveFile':
+          // ファイル保存の要求
+          if (window.mindmapApp && window.mindmapApp.saveFile) {
+            window.mindmapApp.saveFile();
+          }
+          break;
+      }
+    });
+    
+    // アプリケーション準備完了の通知
+    window.addEventListener('load', () => {
+      window.vscode.postMessage({
+        command: 'webviewReady'
+      });
+    });
+  </script>
+  
+  <script type="module" src="/src/main.vscode.tsx"></script>
+</body>
+</html>
