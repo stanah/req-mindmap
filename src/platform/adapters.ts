@@ -1,0 +1,139 @@
+import { PlatformAdapter } from './interfaces';
+import { BrowserPlatformAdapter } from './browser';
+
+/**
+ * プラットフォームアダプターのファクトリー
+ */
+export class PlatformAdapterFactory {
+  private static instance: PlatformAdapter | null = null;
+
+  /**
+   * 現在の環境に適したプラットフォームアダプターを取得
+   */
+  static getInstance(): PlatformAdapter {
+    if (!this.instance) {
+      this.instance = this.createAdapter();
+    }
+    return this.instance;
+  }
+
+  /**
+   * プラットフォームアダプターを作成
+   */
+  private static createAdapter(): PlatformAdapter {
+    // VSCode拡張環境の検出
+    if (this.isVSCodeEnvironment()) {
+      // VSCode拡張用のアダプターは将来実装
+      throw new Error('VSCode拡張環境はまだサポートされていません');
+    }
+
+    // デフォルトはブラウザ環境
+    return new BrowserPlatformAdapter();
+  }
+
+  /**
+   * VSCode拡張環境かどうかを判定
+   */
+  private static isVSCodeEnvironment(): boolean {
+    // VSCode Webview環境の検出ロジック
+    // 将来的にVSCode拡張APIが利用可能かどうかで判定
+    return (
+      typeof window !== 'undefined' &&
+      'acquireVsCodeApi' in window
+    );
+  }
+
+  /**
+   * インスタンスをリセット（テスト用）
+   */
+  static reset(): void {
+    if (this.instance) {
+      this.instance.dispose();
+      this.instance = null;
+    }
+  }
+
+  /**
+   * 特定のプラットフォームアダプターを強制設定（テスト用）
+   */
+  static setInstance(adapter: PlatformAdapter): void {
+    if (this.instance) {
+      this.instance.dispose();
+    }
+    this.instance = adapter;
+  }
+}
+
+/**
+ * プラットフォームアダプターのシングルトンインスタンスを取得
+ */
+export function getPlatformAdapter(): PlatformAdapter {
+  return PlatformAdapterFactory.getInstance();
+}
+
+/**
+ * プラットフォーム固有の初期化を実行
+ */
+export async function initializePlatform(): Promise<PlatformAdapter> {
+  const adapter = getPlatformAdapter();
+  await adapter.initialize();
+  return adapter;
+}
+
+/**
+ * プラットフォームアダプターを破棄
+ */
+export function disposePlatform(): void {
+  PlatformAdapterFactory.reset();
+}
+
+/**
+ * 現在のプラットフォーム種別を取得
+ */
+export function getPlatformType(): 'browser' | 'vscode' {
+  return getPlatformAdapter().getPlatformType();
+}
+
+/**
+ * プラットフォーム固有の機能が利用可能かどうかを確認
+ */
+export function isPlatformCapabilityAvailable(capability: string): boolean {
+  const adapter = getPlatformAdapter();
+  
+  // ブラウザアダプターの場合
+  if (adapter instanceof BrowserPlatformAdapter) {
+    const capabilities = adapter.getCapabilities();
+    return capabilities[capability as keyof typeof capabilities] || false;
+  }
+
+  return false;
+}
+
+/**
+ * プラットフォーム固有のエラーハンドリング
+ */
+export class PlatformError extends Error {
+  constructor(
+    message: string,
+    public readonly platform: 'browser' | 'vscode',
+    public readonly code?: string
+  ) {
+    super(message);
+    this.name = 'PlatformError';
+  }
+}
+
+/**
+ * プラットフォーム固有のエラーを処理
+ */
+export function handlePlatformError(error: Error): void {
+  const adapter = getPlatformAdapter();
+  
+  if (error instanceof PlatformError) {
+    adapter.ui.showErrorMessage(`プラットフォームエラー: ${error.message}`);
+  } else {
+    adapter.ui.showErrorMessage(`予期しないエラーが発生しました: ${error.message}`);
+  }
+  
+  console.error('プラットフォームエラー:', error);
+}
