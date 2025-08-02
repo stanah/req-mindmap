@@ -4,7 +4,7 @@ import { performanceMonitor } from '../../utils/performanceMonitor';
 import './StatusBar.css';
 
 export const StatusBar: React.FC = () => {
-  const { 
+  const {
     file: { currentFile, isDirty, fileSize },
     parse: { parseErrors, parsedData },
     ui: { selectedNodeId },
@@ -50,7 +50,7 @@ export const StatusBar: React.FC = () => {
   // パースエラーの数を取得
   const errorCount = parseErrors?.length || 0;
   const isValid = errorCount === 0;
-  
+
   // 現在のエラー通知を取得
   const currentError = notifications.find(n => n.type === 'error');
 
@@ -118,7 +118,7 @@ export const StatusBar: React.FC = () => {
         {/* パフォーマンス情報（デバッグモード時） */}
         {debugMode && memoryInfo && (
           <div className="status-item performance-info">
-            <div 
+            <div
               className={`memory-usage ${getMemoryWarningLevel(memoryInfo.usageRatio)}`}
               onClick={togglePerformanceDetails}
               title="クリックで詳細表示"
@@ -128,9 +128,9 @@ export const StatusBar: React.FC = () => {
                 {(memoryInfo.usageRatio * 100).toFixed(1)}%
               </span>
             </div>
-            
+
             {memoryInfo.usageRatio > 0.8 && (
-              <button 
+              <button
                 className="optimize-button"
                 onClick={handleOptimizeMemory}
                 title="メモリを最適化"
@@ -147,7 +147,7 @@ export const StatusBar: React.FC = () => {
             <div className="performance-popup">
               <div className="performance-header">
                 <span>パフォーマンス情報</span>
-                <button 
+                <button
                   className="close-button"
                   onClick={togglePerformanceDetails}
                 >
