@@ -3,10 +3,13 @@
  * 
  * SVGベースのマインドマップ描画機能を提供します。
  * 階層構造に基づくレイアウトアルゴリズムとノード・リンクの描画を実装。
+ * パフォーマンス最適化と仮想化機能を含みます。
  */
 
 import * as d3 from 'd3';
 import type { MindmapData, MindmapNode, MindmapSettings, CustomSchema } from '../types/mindmap';
+import { performanceMonitor, debounce, rafThrottle } from '../utils/performanceMonitor';
+import { VirtualizationManager, type Viewport, type VirtualizationResult } from '../utils/virtualization';
 
 /**
  * D3.js用の拡張ノードデータ
@@ -50,6 +53,18 @@ export class MindmapRenderer {
   private eventHandlers: RendererEventHandlers = {};
   private customSchema: CustomSchema | null = null;
   private resizeObserver: ResizeObserver | null = null;
+  
+  // パフォーマンス最適化関連
+  private virtualizationManager: VirtualizationManager;
+  private currentViewport: Viewport | null = null;
+  private lastVirtualizationResult: VirtualizationResult | null = null;
+  private enableVirtualization = true;
+  private performanceMode: 'auto' | 'performance' | 'quality' = 'auto';
+  private nodeCountThreshold = 100; // 仮想化を有効にするノード数の閾値
+  
+  // 描画最適化
+  private debouncedRender = debounce(this.performRender.bind(this), 16);
+  private throttledZoomHandler = rafThrottle(this.handleZoomChange.bind(this));
 
   // レイアウト設定
   private readonly NODE_WIDTH = 160;
@@ -76,8 +91,18 @@ export class MindmapRenderer {
     };
     this.eventHandlers = eventHandlers;
 
+    // 仮想化マネージャーの初期化
+    this.virtualizationManager = new VirtualizationManager({
+      maxVisibleNodes: 500,
+      bufferSize: 200,
+      detailMinZoom: 0.8,
+      mediumMinZoom: 0.4,
+      simpleMinZoom: 0.2,
+    });
+
     this.initializeSVG(svgElement);
     this.setupResizeObserver(svgElement);
+    this.startPerformanceMonitoring();
   }
 
   /**
@@ -119,6 +144,7 @@ export class MindmapRenderer {
       .scaleExtent([0.1, 3])
       .on('zoom', (event) => {
         this.container.attr('transform', event.transform);
+        this.throttledZoomHandler(event.transform);
       });
 
     this.svg.call(this.zoom);
@@ -139,8 +165,14 @@ export class MindmapRenderer {
    * マインドマップデータを描画
    */
   public render(data: MindmapData): void {
+    performanceMonitor.startMeasurement('mindmap-render', {
+      nodeCount: this.countNodes(data.root),
+      enableVirtualization: this.enableVirtualization,
+    });
+
     if (!data.root) {
       console.warn('マインドマップデータにルートノードがありません');
+      performanceMonitor.endMeasurement('mindmap-render');
       return;
     }
 
@@ -169,12 +201,16 @@ export class MindmapRenderer {
     // レイアウトの適用
     this.root = this.applyLayout(hierarchy as D3Node);
 
-    // 描画の実行
-    this.draw();
+    // パフォーマンスモードの自動調整
+    this.adjustPerformanceMode();
+
+    // 描画の実行（デバウンス処理）
+    this.debouncedRender();
 
     // 初期ビューの設定（少し遅延を入れて確実に描画完了を待つ）
     setTimeout(() => {
       this.centerView();
+      performanceMonitor.endMeasurement('mindmap-render');
     }, 50);
   }
 
@@ -321,19 +357,48 @@ export class MindmapRenderer {
   }
 
   /**
-   * 描画の実行
+   * 描画の実行（最適化版）
    */
-  private draw(): void {
+  private performRender(): void {
     if (!this.root) return;
 
-    const nodes = this.root.descendants() as D3Node[];
-    const links = this.root.links() as D3Link[];
+    performanceMonitor.startMeasurement('mindmap-draw');
+
+    const allNodes = this.root.descendants() as D3Node[];
+    const allLinks = this.root.links() as D3Link[];
+
+    let nodesToRender = allNodes;
+    let linksToRender = allLinks;
+
+    // 仮想化が有効で、ノード数が閾値を超える場合
+    if (this.enableVirtualization && allNodes.length > this.nodeCountThreshold && this.currentViewport) {
+      // 仮想化マネージャーでノード境界を更新
+      this.virtualizationManager.updateNodeBounds(allNodes);
+      
+      // 仮想化を実行
+      const virtualizationResult = this.virtualizationManager.virtualize(allNodes, this.currentViewport);
+      this.lastVirtualizationResult = virtualizationResult;
+      
+      nodesToRender = virtualizationResult.visibleNodes;
+      linksToRender = virtualizationResult.visibleLinks;
+      
+      console.debug(`[Renderer] Virtualization: ${nodesToRender.length}/${allNodes.length} nodes visible`);
+    }
 
     // リンクの描画
-    this.drawLinks(links);
+    this.drawLinks(linksToRender);
     
     // ノードの描画
-    this.drawNodes(nodes);
+    this.drawNodes(nodesToRender);
+
+    performanceMonitor.endMeasurement('mindmap-draw');
+  }
+
+  /**
+   * 従来の描画メソッド（後方互換性のため）
+   */
+  private draw(): void {
+    this.performRender();
   }
 
   /**
@@ -985,9 +1050,219 @@ export class MindmapRenderer {
   }
 
   /**
+   * パフォーマンス監視を開始
+   */
+  private startPerformanceMonitoring(): void {
+    performanceMonitor.startMemoryMonitoring(5000, (memoryInfo) => {
+      console.warn('[Renderer] High memory usage detected:', memoryInfo);
+      
+      // メモリ使用量が高い場合は自動的にパフォーマンスモードに切り替え
+      if (memoryInfo.usageRatio > 0.85) {
+        this.setPerformanceMode('performance');
+      }
+    });
+  }
+
+  /**
+   * ズーム変更ハンドラー
+   */
+  private handleZoomChange(transform: d3.ZoomTransform): void {
+    if (!this.svg.node()) return;
+
+    const svgRect = (this.svg.node() as SVGSVGElement).getBoundingClientRect();
+    
+    // 現在のビューポートを更新
+    this.currentViewport = {
+      x: -transform.x / transform.k,
+      y: -transform.y / transform.k,
+      width: svgRect.width / transform.k,
+      height: svgRect.height / transform.k,
+      scale: transform.k,
+    };
+
+    // 仮想化が有効な場合は再描画
+    if (this.enableVirtualization && this.root) {
+      this.debouncedRender();
+    }
+  }
+
+  /**
+   * パフォーマンスモードを自動調整
+   */
+  private adjustPerformanceMode(): void {
+    if (this.performanceMode !== 'auto' || !this.root) return;
+
+    const nodeCount = this.root.descendants().length;
+    const memoryInfo = performanceMonitor.getCurrentMemoryUsage();
+
+    // ノード数とメモリ使用量に基づいて自動調整
+    if (nodeCount > 500 || (memoryInfo && memoryInfo.usageRatio > 0.7)) {
+      this.enableVirtualization = true;
+      this.settings.enableAnimation = false;
+      console.debug('[Renderer] Auto-switched to performance mode');
+    } else if (nodeCount < 100 && (!memoryInfo || memoryInfo.usageRatio < 0.5)) {
+      this.enableVirtualization = false;
+      this.settings.enableAnimation = true;
+      console.debug('[Renderer] Auto-switched to quality mode');
+    }
+  }
+
+  /**
+   * パフォーマンスモードを設定
+   */
+  public setPerformanceMode(mode: 'auto' | 'performance' | 'quality'): void {
+    this.performanceMode = mode;
+
+    switch (mode) {
+      case 'performance':
+        this.enableVirtualization = true;
+        this.settings.enableAnimation = false;
+        this.nodeCountThreshold = 50;
+        this.virtualizationManager.updateLODSettings({
+          maxVisibleNodes: 200,
+          detailMinZoom: 1.0,
+          mediumMinZoom: 0.6,
+          simpleMinZoom: 0.3,
+        });
+        break;
+
+      case 'quality':
+        this.enableVirtualization = false;
+        this.settings.enableAnimation = true;
+        this.nodeCountThreshold = 1000;
+        break;
+
+      case 'auto':
+        this.adjustPerformanceMode();
+        break;
+    }
+
+    // 設定変更後に再描画
+    if (this.root) {
+      this.debouncedRender();
+    }
+  }
+
+  /**
+   * 仮想化の有効/無効を切り替え
+   */
+  public setVirtualizationEnabled(enabled: boolean): void {
+    this.enableVirtualization = enabled;
+    
+    if (this.root) {
+      this.debouncedRender();
+    }
+  }
+
+  /**
+   * ノード数をカウント
+   */
+  private countNodes(node: MindmapNode): number {
+    let count = 1;
+    if (node.children) {
+      for (const child of node.children) {
+        count += this.countNodes(child);
+      }
+    }
+    return count;
+  }
+
+  /**
+   * パフォーマンス統計を取得
+   */
+  public getPerformanceStats(): {
+    renderMetrics: any;
+    virtualizationStats: any;
+    memoryInfo: any;
+    currentSettings: {
+      enableVirtualization: boolean;
+      performanceMode: string;
+      nodeCountThreshold: number;
+    };
+  } {
+    return {
+      renderMetrics: performanceMonitor.getMetricsSummary('mindmap-render'),
+      virtualizationStats: this.virtualizationManager.getStats(),
+      memoryInfo: performanceMonitor.getCurrentMemoryUsage(),
+      currentSettings: {
+        enableVirtualization: this.enableVirtualization,
+        performanceMode: this.performanceMode,
+        nodeCountThreshold: this.nodeCountThreshold,
+      },
+    };
+  }
+
+  /**
+   * パフォーマンス統計をログ出力
+   */
+  public logPerformanceStats(): void {
+    console.group('[Renderer] Performance Statistics');
+    
+    const stats = this.getPerformanceStats();
+    
+    if (stats.renderMetrics) {
+      console.log('Render Metrics:', stats.renderMetrics);
+    }
+    
+    console.log('Virtualization Stats:', stats.virtualizationStats);
+    
+    if (stats.memoryInfo) {
+      console.log('Memory Usage:', {
+        used: `${(stats.memoryInfo.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`,
+        total: `${(stats.memoryInfo.totalJSHeapSize / 1024 / 1024).toFixed(2)}MB`,
+        limit: `${(stats.memoryInfo.jsHeapSizeLimit / 1024 / 1024).toFixed(2)}MB`,
+        usage: `${(stats.memoryInfo.usageRatio * 100).toFixed(1)}%`,
+      });
+    }
+    
+    console.log('Current Settings:', stats.currentSettings);
+    
+    if (this.lastVirtualizationResult) {
+      console.log('Last Virtualization Result:', {
+        visibleNodes: this.lastVirtualizationResult.visibleNodeCount,
+        totalNodes: this.lastVirtualizationResult.totalNodes,
+        culledNodes: this.lastVirtualizationResult.stats.culledNodes,
+        processingTime: `${this.lastVirtualizationResult.stats.processingTime.toFixed(2)}ms`,
+        memoryEstimate: `${(this.lastVirtualizationResult.stats.memoryEstimate / 1024).toFixed(2)}KB`,
+      });
+    }
+    
+    console.groupEnd();
+  }
+
+  /**
+   * メモリ使用量を最適化
+   */
+  public optimizeMemory(): void {
+    console.log('[Renderer] Optimizing memory usage...');
+    
+    // 仮想化キャッシュをクリア
+    this.virtualizationManager.clearCache();
+    
+    // パフォーマンス統計をクリア
+    performanceMonitor.clearMetrics();
+    
+    // ガベージコレクションを強制実行（可能な場合）
+    performanceMonitor.forceGarbageCollection();
+    
+    // パフォーマンスモードに切り替え
+    if (this.performanceMode === 'auto') {
+      this.setPerformanceMode('performance');
+    }
+    
+    console.log('[Renderer] Memory optimization completed');
+  }
+
+  /**
    * リソースのクリーンアップ
    */
   public destroy(): void {
+    // パフォーマンス監視を停止
+    performanceMonitor.stopMemoryMonitoring();
+    
+    // 仮想化マネージャーをクリア
+    this.virtualizationManager.clearCache();
+    
     // リサイズ監視を停止
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
@@ -996,5 +1271,10 @@ export class MindmapRenderer {
     
     this.svg.selectAll('*').remove();
     this.svg.on('.zoom', null);
+    
+    // 参照をクリア
+    this.root = null;
+    this.currentViewport = null;
+    this.lastVirtualizationResult = null;
   }
 }

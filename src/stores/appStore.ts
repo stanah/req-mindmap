@@ -29,6 +29,7 @@ import { DEBOUNCE_DELAY } from '../utils/constants';
 import { generateId, detectFileFormat, deepClone, findNodeById } from '../utils/helpers';
 import { createNodeMapping, getNodeIdAtCursor, getEditorPositionForNode, type NodeMappingResult } from '../utils/nodeMapping';
 import { settingsService } from '../services/settingsService';
+import { performanceMonitor } from '../utils/performanceMonitor';
 
 /**
  * 初期ファイル状態
@@ -909,6 +910,11 @@ export const useAppStore = create<AppStore>()(
             return;
           }
 
+          // パフォーマンス測定を開始
+          performanceMonitor.startMeasurement('content-parse', {
+            contentLength: content.length,
+          });
+
           set((state) => ({
             parse: {
               ...state.parse,
@@ -954,6 +960,12 @@ export const useAppStore = create<AppStore>()(
               },
             }));
 
+            // パフォーマンス測定を終了
+            performanceMonitor.endMeasurement('content-parse', {
+              success: parseErrors.length === 0,
+              nodeCount: parsedData ? get().countNodes(parsedData.root) : 0,
+            });
+
           } catch (error) {
             console.error('Parse error:', error);
             currentNodeMapping = null;
@@ -976,7 +988,91 @@ export const useAppStore = create<AppStore>()(
                 parseErrorCount: state.parse.parseErrorCount + 1,
               },
             }));
+
+            // エラー時もパフォーマンス測定を終了
+            performanceMonitor.endMeasurement('content-parse', {
+              success: false,
+              error: error instanceof Error ? error.message : '不明なエラー',
+            });
           }
+        },
+
+        // ===== パフォーマンス最適化関連 =====
+
+        /**
+         * ノード数をカウント
+         */
+        countNodes: (node: MindmapNode): number => {
+          let count = 1;
+          if (node.children) {
+            for (const child of node.children) {
+              count += get().countNodes(child);
+            }
+          }
+          return count;
+        },
+
+        /**
+         * パフォーマンス統計を取得
+         */
+        getPerformanceStats: () => {
+          const parseMetrics = performanceMonitor.getMetricsSummary('content-parse');
+          const memoryInfo = performanceMonitor.getCurrentMemoryUsage();
+          
+          return {
+            parseMetrics,
+            memoryInfo,
+            totalMetrics: performanceMonitor.getMetrics().length,
+          };
+        },
+
+        /**
+         * パフォーマンス統計をログ出力
+         */
+        logPerformanceStats: () => {
+          console.group('[AppStore] Performance Statistics');
+          
+          const stats = get().getPerformanceStats();
+          
+          if (stats.parseMetrics) {
+            console.log('Parse Metrics:', stats.parseMetrics);
+          }
+          
+          if (stats.memoryInfo) {
+            console.log('Memory Usage:', {
+              used: `${(stats.memoryInfo.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`,
+              total: `${(stats.memoryInfo.totalJSHeapSize / 1024 / 1024).toFixed(2)}MB`,
+              limit: `${(stats.memoryInfo.jsHeapSizeLimit / 1024 / 1024).toFixed(2)}MB`,
+              usage: `${(stats.memoryInfo.usageRatio * 100).toFixed(1)}%`,
+            });
+          }
+          
+          console.log('Total Metrics Collected:', stats.totalMetrics);
+          
+          console.groupEnd();
+        },
+
+        /**
+         * メモリ使用量を最適化
+         */
+        optimizeMemory: () => {
+          console.log('[AppStore] Optimizing memory usage...');
+          
+          // パフォーマンス統計をクリア
+          performanceMonitor.clearMetrics();
+          
+          // ガベージコレクションを強制実行（可能な場合）
+          performanceMonitor.forceGarbageCollection();
+          
+          // 通知を追加
+          get().addNotification({
+            message: 'メモリ使用量を最適化しました',
+            type: 'info',
+            autoHide: true,
+            duration: 2000,
+          });
+          
+          console.log('[AppStore] Memory optimization completed');
         },
       }),
     {

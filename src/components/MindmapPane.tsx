@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useMemo } from 'react';
+import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { useAppStore } from '../stores';
 import { useMindmapSync } from '../hooks';
 import { MindmapRenderer } from '../services/mindmapRenderer';
@@ -15,10 +15,17 @@ export const MindmapPane: React.FC = () => {
   const mindmapSettings = useAppStore(state => state.ui.mindmapSettings);
   const selectedNodeId = useAppStore(state => state.ui.selectedNodeId);
   const cursorCorrespondingNodeId = useAppStore(state => state.ui.cursorCorrespondingNodeId);
+  const debugMode = useAppStore(state => state.debugMode);
   const selectNode = useAppStore(state => state.selectNode);
+  const countNodes = useAppStore(state => state.countNodes);
   
   // マインドマップ同期フックの使用
   const { updateMindmapSettings: syncUpdateSettings } = useMindmapSync();
+
+  // パフォーマンス関連の状態
+  const [performanceMode, setPerformanceMode] = useState<'auto' | 'performance' | 'quality'>('auto');
+  const [showPerformancePanel, setShowPerformancePanel] = useState(false);
+  const [nodeCount, setNodeCount] = useState(0);
 
   // イベントハンドラーの定義
   const eventHandlers: RendererEventHandlers = useMemo(() => ({
@@ -78,12 +85,16 @@ export const MindmapPane: React.FC = () => {
   // データの描画
   useEffect(() => {
     if (!rendererRef.current || !parsedData) {
+      setNodeCount(0);
       return;
     }
 
-    console.log('マインドマップを描画中:', parsedData.title);
+    const count = countNodes(parsedData.root);
+    setNodeCount(count);
+
+    console.log('マインドマップを描画中:', parsedData.title, `(${count} nodes)`);
     rendererRef.current.render(parsedData);
-  }, [parsedData]);
+  }, [parsedData, countNodes]);
 
   // 設定の更新
   useEffect(() => {
@@ -178,6 +189,37 @@ export const MindmapPane: React.FC = () => {
     syncUpdateSettings({ layout });
   };
 
+  // パフォーマンスモードの変更
+  const handlePerformanceModeChange = (mode: 'auto' | 'performance' | 'quality') => {
+    setPerformanceMode(mode);
+    if (rendererRef.current) {
+      rendererRef.current.setPerformanceMode(mode);
+    }
+  };
+
+  // パフォーマンス統計の表示
+  const handleShowPerformanceStats = () => {
+    if (rendererRef.current) {
+      rendererRef.current.logPerformanceStats();
+    }
+  };
+
+  // メモリ最適化の実行
+  const handleOptimizeMemory = () => {
+    if (rendererRef.current) {
+      rendererRef.current.optimizeMemory();
+    }
+  };
+
+  // 仮想化の切り替え
+  const handleToggleVirtualization = () => {
+    if (rendererRef.current) {
+      const stats = rendererRef.current.getPerformanceStats();
+      const newEnabled = !stats.currentSettings.enableVirtualization;
+      rendererRef.current.setVirtualizationEnabled(newEnabled);
+    }
+  };
+
   return (
     <div className="mindmap-pane">
       <div className="mindmap-toolbar">
@@ -240,6 +282,37 @@ export const MindmapPane: React.FC = () => {
             放射状
           </button>
         </div>
+
+        {/* パフォーマンス制御（デバッグモード時のみ） */}
+        {debugMode && (
+          <div className="performance-controls">
+            <div className="node-count-display">
+              <span className="node-count-label">ノード数:</span>
+              <span className={`node-count-value ${nodeCount > 100 ? 'high' : nodeCount > 50 ? 'medium' : 'low'}`}>
+                {nodeCount}
+              </span>
+            </div>
+            
+            <select
+              className="performance-mode-select"
+              value={performanceMode}
+              onChange={(e) => handlePerformanceModeChange(e.target.value as any)}
+              title="パフォーマンスモード"
+            >
+              <option value="auto">自動</option>
+              <option value="performance">パフォーマンス</option>
+              <option value="quality">品質</option>
+            </select>
+            
+            <button
+              className="toolbar-btn performance-btn"
+              onClick={() => setShowPerformancePanel(!showPerformancePanel)}
+              title="パフォーマンス詳細"
+            >
+              📊
+            </button>
+          </div>
+        )}
       </div>
       
       <div className="mindmap-container">
@@ -269,6 +342,45 @@ export const MindmapPane: React.FC = () => {
             data={parsedData}
             onClose={() => selectNode(null)}
           />
+        </div>
+      )}
+
+      {/* パフォーマンスパネル（デバッグモード時のみ） */}
+      {debugMode && showPerformancePanel && (
+        <div className="performance-panel">
+          <div className="performance-panel-header">
+            <h3>パフォーマンス情報</h3>
+            <button
+              className="close-btn"
+              onClick={() => setShowPerformancePanel(false)}
+            >
+              ×
+            </button>
+          </div>
+          <div className="performance-panel-content">
+            <div className="performance-section">
+              <h4>描画統計</h4>
+              <div className="performance-stats">
+                <div>総ノード数: {nodeCount}</div>
+                <div>現在のモード: {performanceMode}</div>
+              </div>
+            </div>
+            
+            <div className="performance-section">
+              <h4>操作</h4>
+              <div className="performance-actions">
+                <button onClick={handleShowPerformanceStats}>
+                  統計をログ出力
+                </button>
+                <button onClick={handleOptimizeMemory}>
+                  メモリ最適化
+                </button>
+                <button onClick={handleToggleVirtualization}>
+                  仮想化切り替え
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
