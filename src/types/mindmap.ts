@@ -10,7 +10,7 @@
  */
 export interface ValidationRule {
   type: 'required' | 'minLength' | 'maxLength' | 'pattern' | 'min' | 'max';
-  value?: any;
+  value?: string | number | RegExp;
   message?: string;
 }
 
@@ -32,7 +32,7 @@ export interface FieldDefinition {
   /** バリデーションルール */
   validation?: ValidationRule[];
   /** デフォルト値 */
-  defaultValue?: any;
+  defaultValue?: string | number | boolean | string[];
   /** フィールドの説明 */
   description?: string;
 }
@@ -49,7 +49,7 @@ export interface DisplayRule {
   /** 表示条件（オプション） */
   condition?: string;
   /** スタイル設定 */
-  style?: Record<string, any>;
+  style?: Record<string, string | number>;
   /** 表示位置 */
   position?: 'inline' | 'tooltip' | 'sidebar';
 }
@@ -87,7 +87,7 @@ export interface MindmapNode {
   /** 子ノードの配列 */
   children?: MindmapNode[];
   /** 拡張可能なメタデータ */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   /** ノードの表示位置 */
   position?: {
     x: number;
@@ -96,7 +96,7 @@ export interface MindmapNode {
   /** 折りたたみ状態 */
   collapsed?: boolean;
   /** カスタムフィールドの値 */
-  customFields?: Record<string, any>;
+  customFields?: Record<string, unknown>;
   /** ノードの種類（オプション） */
   type?: string;
   /** ノードの色（オプション） */
@@ -182,7 +182,7 @@ export interface MindmapData {
   /** 更新日時 */
   updatedAt?: string;
   /** メタデータ */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -214,7 +214,7 @@ export interface SchemaError {
   /** エラーメッセージ */
   message: string;
   /** エラーが発生した値 */
-  value: any;
+  value: unknown;
   /** 期待される値の型や形式 */
   expected?: string;
   /** エラーコード */
@@ -269,7 +269,7 @@ export interface NodeEvent {
   /** 対象ノードのID */
   nodeId: string;
   /** イベントデータ */
-  data?: any;
+  data?: unknown;
   /** イベント発生時刻 */
   timestamp: number;
 }

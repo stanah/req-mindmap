@@ -16,7 +16,7 @@ export * from './services';
 export * from './store';
 
 // 型ガード関数
-export const isValidMindmapData = (data: any): data is import('./mindmap').MindmapData => {
+export const isValidMindmapData = (data: unknown): data is import('./mindmap').MindmapData => {
   return (
     data &&
     typeof data === 'object' &&
@@ -29,7 +29,7 @@ export const isValidMindmapData = (data: any): data is import('./mindmap').Mindm
   );
 };
 
-export const isValidMindmapNode = (node: any): node is import('./mindmap').MindmapNode => {
+export const isValidMindmapNode = (node: unknown): node is import('./mindmap').MindmapNode => {
   return (
     node &&
     typeof node === 'object' &&
@@ -38,7 +38,7 @@ export const isValidMindmapNode = (node: any): node is import('./mindmap').Mindm
   );
 };
 
-export const isParseError = (error: any): error is import('./mindmap').ParseError => {
+export const isParseError = (error: unknown): error is import('./mindmap').ParseError => {
   return (
     error &&
     typeof error === 'object' &&
@@ -49,7 +49,7 @@ export const isParseError = (error: any): error is import('./mindmap').ParseErro
   );
 };
 
-export const isSchemaError = (error: any): error is import('./mindmap').SchemaError => {
+export const isSchemaError = (error: unknown): error is import('./mindmap').SchemaError => {
   return (
     error &&
     typeof error === 'object' &&
@@ -72,9 +72,9 @@ export type Nullable<T> = T | null;
 export type Optional<T> = T | undefined;
 
 // イベント関連の型
-export type EventCallback<T = any> = (data: T) => void;
+export type EventCallback<T = unknown> = (data: T) => void;
 
-export type AsyncEventCallback<T = any> = (data: T) => Promise<void>;
+export type AsyncEventCallback<T = unknown> = (data: T) => Promise<void>;
 
 // エラー関連の型
 export type ErrorType = 'parse' | 'validation' | 'file' | 'network' | 'unknown';

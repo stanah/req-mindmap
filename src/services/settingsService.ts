@@ -149,16 +149,25 @@ export class SettingsService {
   /**
    * 設定を検証し、デフォルト値とマージする
    */
-  private validateAndMergeSettings(stored: any): AppSettings {
+  private validateAndMergeSettings(stored: unknown): AppSettings {
     const defaults = this.getDefaultSettings();
     
+    // 型安全な方法でストアドデータを検証
+    const storedObj = stored && typeof stored === 'object' ? stored as Record<string, unknown> : {};
+    
     return {
-      editor: { ...defaults.editor, ...stored.editor },
-      mindmap: { ...defaults.mindmap, ...stored.mindmap },
-      language: stored.language || defaults.language,
-      debug: typeof stored.debug === 'boolean' ? stored.debug : defaults.debug,
-      autoBackup: typeof stored.autoBackup === 'boolean' ? stored.autoBackup : defaults.autoBackup,
-      recentFiles: Array.isArray(stored.recentFiles) ? stored.recentFiles : defaults.recentFiles,
+      editor: { 
+        ...defaults.editor, 
+        ...(storedObj.editor && typeof storedObj.editor === 'object' ? storedObj.editor as Partial<typeof defaults.editor> : {})
+      },
+      mindmap: { 
+        ...defaults.mindmap, 
+        ...(storedObj.mindmap && typeof storedObj.mindmap === 'object' ? storedObj.mindmap as Partial<typeof defaults.mindmap> : {})
+      },
+      language: typeof storedObj.language === 'string' && ['ja', 'en'].includes(storedObj.language) ? storedObj.language as 'ja' | 'en' : defaults.language,
+      debug: typeof storedObj.debug === 'boolean' ? storedObj.debug : defaults.debug,
+      autoBackup: typeof storedObj.autoBackup === 'boolean' ? storedObj.autoBackup : defaults.autoBackup,
+      recentFiles: Array.isArray(storedObj.recentFiles) ? storedObj.recentFiles as string[] : defaults.recentFiles,
     };
   }
 

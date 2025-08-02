@@ -228,7 +228,7 @@ export function createSelector<T>(
 /**
  * 複数のセレクターを組み合わせるヘルパー関数
  */
-export function combineSelectors<T extends Record<string, any>>(
+export function combineSelectors<T extends Record<string, unknown>>(
   selectors: { [K in keyof T]: SelectorFunction<T[K]> }
 ): SelectorFunction<T> {
   return (state: AppState) => {

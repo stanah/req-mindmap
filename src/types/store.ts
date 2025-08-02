@@ -273,9 +273,9 @@ export interface AppActions {
   /** 設定をリセット */
   resetSettings: () => void;
   /** 設定をエクスポート */
-  exportSettings: () => Record<string, any>;
+  exportSettings: () => Record<string, unknown>;
   /** 設定をインポート */
-  importSettings: (settings: Record<string, any>) => void;
+  importSettings: (settings: Record<string, unknown>) => void;
 
   // アプリケーション操作
   /** アプリケーションを初期化 */
@@ -324,11 +324,11 @@ export interface StoreSelectors {
  */
 export interface StoreMiddleware {
   /** アクション実行前の処理 */
-  beforeAction?: (actionName: string, args: any[]) => void;
+  beforeAction?: (actionName: string, args: unknown[]) => void;
   /** アクション実行後の処理 */
-  afterAction?: (actionName: string, args: any[], result: any) => void;
+  afterAction?: (actionName: string, args: unknown[], result: unknown) => void;
   /** エラー処理 */
-  onError?: (error: Error, actionName: string, args: any[]) => void;
+  onError?: (error: Error, actionName: string, args: unknown[]) => void;
 }
 
 /**
@@ -352,7 +352,7 @@ export interface StoreEvent {
   /** イベントタイプ */
   type: string;
   /** イベントデータ */
-  data: any;
+  data: unknown;
   /** イベント発生時刻 */
   timestamp: number;
 }

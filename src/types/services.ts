@@ -84,14 +84,14 @@ export interface ParserService {
    * @param data 検証対象のデータ
    * @returns バリデーション結果
    */
-  validateData(data: any): ValidationResult;
+  validateData(data: unknown): ValidationResult;
 
   /**
    * JSON Schemaに基づくバリデーション
    * @param data 検証対象のデータ
    * @returns バリデーション結果
    */
-  validateSchema(data: any): ValidationResult;
+  validateSchema(data: unknown): ValidationResult;
 
   /**
    * カスタムスキーマに基づくバリデーション
@@ -265,7 +265,7 @@ export interface SettingsService {
    * 設定変更を監視
    * @param callback 変更時のコールバック
    */
-  onDidChange(callback: (key: string, value: any) => void): void;
+  onDidChange(callback: (key: string, value: unknown) => void): void;
 
   /**
    * 設定をリセット
@@ -276,13 +276,13 @@ export interface SettingsService {
    * 設定をエクスポート
    * @returns 設定データ
    */
-  export(): Record<string, any>;
+  export(): Record<string, unknown>;
 
   /**
    * 設定をインポート
    * @param settings 設定データ
    */
-  import(settings: Record<string, any>): void;
+  import(settings: Record<string, unknown>): void;
 }
 
 /**
@@ -301,7 +301,7 @@ export interface SyncService {
    * @param nodeId 変更されたノードID
    * @param data 変更データ
    */
-  onMindmapChange(nodeId: string, data: any): void;
+  onMindmapChange(nodeId: string, data: unknown): void;
 
   /**
    * 同期を開始
@@ -388,13 +388,13 @@ export interface UIAdapter {
 export interface SettingsAdapter {
   get<T>(key: string): T | undefined;
   set<T>(key: string, value: T): void;
-  onDidChange(callback: (key: string, value: any) => void): void;
+  onDidChange(callback: (key: string, value: unknown) => void): void;
 }
 
 /**
  * イベントエミッターインターフェース
  */
-export interface EventEmitter<T = any> {
+export interface EventEmitter<T = unknown> {
   on(event: string, listener: (data: T) => void): void;
   off(event: string, listener: (data: T) => void): void;
   emit(event: string, data: T): void;
@@ -405,10 +405,10 @@ export interface EventEmitter<T = any> {
  * ログサービスインターフェース
  */
 export interface LogService {
-  debug(message: string, ...args: any[]): void;
-  info(message: string, ...args: any[]): void;
-  warn(message: string, ...args: any[]): void;
-  error(message: string, ...args: any[]): void;
+  debug(message: string, ...args: unknown[]): void;
+  info(message: string, ...args: unknown[]): void;
+  warn(message: string, ...args: unknown[]): void;
+  error(message: string, ...args: unknown[]): void;
   setLevel(level: 'debug' | 'info' | 'warn' | 'error'): void;
   getLevel(): 'debug' | 'info' | 'warn' | 'error';
 }

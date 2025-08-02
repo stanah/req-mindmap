@@ -23,7 +23,8 @@ import type {
   MindmapSettings, 
   AppSettings,
   MindmapData,
-  ParseError
+  ParseError,
+  MindmapNode
 } from '../types/mindmap';
 import { DEBOUNCE_DELAY } from '../utils/constants';
 import { generateId, detectFileFormat, deepClone, findNodeById } from '../utils/helpers';
@@ -743,7 +744,7 @@ export const useAppStore = create<AppStore>()(
           return JSON.parse(exportedData);
         },
 
-        importSettings: (settings: Record<string, any>) => {
+        importSettings: (settings: Record<string, unknown>) => {
           try {
             settingsService.importSettings(JSON.stringify(settings));
             
