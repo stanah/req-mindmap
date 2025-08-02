@@ -1,148 +1,55 @@
 /**
- * スキーマバリデーションユーティリティ
- * 
- * このファイルは、JSON SchemaとAjvを使用したデータバリデーション機能を提供します。
+ * スキーマバリデーション機能
  */
 
-import Ajv, { type ValidateFunction, type ErrorObject } from 'ajv';
-import addFormats from 'ajv-formats';
-import type { 
-  MindmapData, 
-  CustomSchema, 
-  ValidationResult, 
-  SchemaError,
-  MindmapNode 
-} from '../types';
+import type { MindmapData, CustomSchema, ValidationResult, SchemaError } from '../types';
 
-// JSON Schemaファイルをインポート
-import mindmapDataSchema from '../schemas/mindmap-data.schema.json';
-import customSchemaSchema from '../schemas/custom-schema.schema.json';
-
-/**
- * スキーマバリデータークラス
- */
 export class SchemaValidator {
-  private ajv: Ajv;
-  private mindmapDataValidator: ValidateFunction;
-  private customSchemaValidator: ValidateFunction;
+  private customSchema: CustomSchema | null = null;
 
-  constructor() {
-    // Ajvインスタンスを初期化
-    this.ajv = new Ajv({
-      allErrors: true,
-      verbose: true,
-      strict: false,
-      removeAdditional: false
-    });
-
-    // フォーマットバリデーターを追加
-    addFormats(this.ajv);
-
-    // カスタムフォーマットを追加
-    this.addCustomFormats();
-
-    // スキーマをコンパイル
-    this.mindmapDataValidator = this.ajv.compile(mindmapDataSchema);
-    this.customSchemaValidator = this.ajv.compile(customSchemaSchema);
+  /**
+   * カスタムスキーマを設定
+   */
+  setCustomSchema(schema: CustomSchema): void {
+    this.customSchema = schema;
   }
 
   /**
-   * カスタムフォーマットを追加
+   * マインドマップデータを検証
    */
-  private addCustomFormats(): void {
-    // 日本語の日付フォーマット
-    this.ajv.addFormat('japanese-date', {
-      type: 'string',
-      validate: (dateString: string) => {
-        const japaneseDate = /^\d{4}年\d{1,2}月\d{1,2}日$/;
-        const isoDate = /^\d{4}-\d{2}-\d{2}$/;
-        return japaneseDate.test(dateString) || isoDate.test(dateString);
-      }
-    });
-
-    // 色コード（hex、rgb、色名）
-    this.ajv.addFormat('color', {
-      type: 'string',
-      validate: (colorString: string) => {
-        const hex = /^#[0-9a-fA-F]{6}$/;
-        const rgb = /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/;
-        const rgba = /^rgba\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*[01]?\.?\d*\s*\)$/;
-        const colorNames = [
-          'red', 'green', 'blue', 'yellow', 'orange', 'purple', 'pink',
-          'brown', 'black', 'white', 'gray', 'grey', 'cyan', 'magenta'
-        ];
-        
-        return hex.test(colorString) || 
-               rgb.test(colorString) || 
-               rgba.test(colorString) ||
-               colorNames.includes(colorString.toLowerCase());
-      }
-    });
-
-    // ノードID形式
-    this.ajv.addFormat('node-id', {
-      type: 'string',
-      validate: (id: string) => {
-        return /^[a-zA-Z0-9_-]+$/.test(id) && id.length >= 1 && id.length <= 100;
-      }
-    });
-  }
-
-  /**
-   * マインドマップデータをバリデーション
-   */
-  validateMindmapData(data: unknown): ValidationResult {
-    const valid = this.mindmapDataValidator(data);
-    
-    if (valid) {
-      return {
-        valid: true,
-        errors: []
-      };
-    }
-
-    const errors = this.convertAjvErrors(this.mindmapDataValidator.errors || []);
-    return {
-      valid: false,
-      errors
-    };
-  }
-
-  /**
-   * カスタムスキーマをバリデーション
-   */
-  validateCustomSchema(schema: unknown): ValidationResult {
-    const valid = this.customSchemaValidator(schema);
-    
-    if (valid) {
-      return {
-        valid: true,
-        errors: []
-      };
-    }
-
-    const errors = this.convertAjvErrors(this.customSchemaValidator.errors || []);
-    return {
-      valid: false,
-      errors
-    };
-  }
-
-  /**
-   * カスタムスキーマに基づいてマインドマップデータをバリデーション
-   */
-  validateWithCustomSchema(data: MindmapData, customSchema: CustomSchema): ValidationResult {
+  validateMindmapData(data: MindmapData): ValidationResult {
     const errors: SchemaError[] = [];
 
-    // まず基本スキーマでバリデーション
-    const basicValidation = this.validateMindmapData(data);
-    if (!basicValidation.valid) {
-      errors.push(...basicValidation.errors);
+    // 基本構造の検証
+    if (!data.version) {
+      errors.push({
+        path: 'version',
+        message: 'バージョンが必要です',
+        value: data.version
+      });
     }
 
-    // カスタムスキーマでバリデーション
-    if (customSchema && customSchema.fields) {
-      this.validateNodeWithCustomSchema(data.root, customSchema, '', errors);
+    if (!data.title) {
+      errors.push({
+        path: 'title',
+        message: 'タイトルが必要です',
+        value: data.title
+      });
+    }
+
+    if (!data.root) {
+      errors.push({
+        path: 'root',
+        message: 'ルートノードが必要です',
+        value: data.root
+      });
+    } else {
+      this.validateNode(data.root, 'root', errors);
+    }
+
+    // カスタムスキーマの検証
+    if (this.customSchema && data.root) {
+      this.validateCustomFields(data.root, 'root', errors);
     }
 
     return {
@@ -152,82 +59,274 @@ export class SchemaValidator {
   }
 
   /**
-   * ノードをカスタムスキーマでバリデーション（再帰的）
+   * カスタムスキーマを検証
    */
-  private validateNodeWithCustomSchema(
-    node: MindmapNode, 
-    schema: CustomSchema, 
-    path: string, 
-    errors: SchemaError[]
-  ): void {
-    const nodePath = path ? `${path}.${node.id}` : node.id;
+  validateCustomSchema(schema: CustomSchema): ValidationResult {
+    const errors: SchemaError[] = [];
 
-    // カスタムフィールドをバリデーション
+    if (!schema.version) {
+      errors.push({
+        path: 'version',
+        message: 'スキーマバージョンが必要です',
+        value: schema.version
+      });
+    }
+
+    if (!schema.fields || !Array.isArray(schema.fields)) {
+      errors.push({
+        path: 'fields',
+        message: 'フィールド定義が必要です',
+        value: schema.fields
+      });
+    } else {
+      schema.fields.forEach((field, index) => {
+        this.validateFieldDefinition(field, `fields[${index}]`, errors);
+      });
+    }
+
+    if (schema.displayRules && Array.isArray(schema.displayRules)) {
+      schema.displayRules.forEach((rule, index) => {
+        this.validateDisplayRule(rule, `displayRules[${index}]`, schema.fields || [], errors);
+      });
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * カスタムフィールドの値を検証
+   */
+  validateCustomFields(fields: Record<string, any>, nodeId: string): ValidationResult {
+    const errors: SchemaError[] = [];
+
+    if (!this.customSchema) {
+      return { valid: true, errors: [] };
+    }
+
+    // 必須フィールドのチェック
+    this.customSchema.fields.forEach(fieldDef => {
+      if (fieldDef.required && !fields.hasOwnProperty(fieldDef.name)) {
+        errors.push({
+          path: `${nodeId}.${fieldDef.name}`,
+          message: `必須フィールド '${fieldDef.label}' が不足しています`,
+          value: undefined
+        });
+      }
+    });
+
+    // フィールド値の検証
+    Object.entries(fields).forEach(([fieldName, value]) => {
+      const fieldDef = this.customSchema!.fields.find(f => f.name === fieldName);
+      if (fieldDef) {
+        this.validateFieldValue(value, fieldDef, `${nodeId}.${fieldName}`, errors);
+      }
+    });
+
+    return {
+      valid: errors.length === 0,
+      errors
+    };
+  }
+
+  private validateNode(node: any, path: string, errors: SchemaError[]): void {
+    if (!node.id) {
+      errors.push({
+        path: `${path}.id`,
+        message: 'ノードIDが必要です',
+        value: node.id
+      });
+    }
+
+    if (!node.title) {
+      errors.push({
+        path: `${path}.title`,
+        message: 'ノードタイトルが必要です',
+        value: node.title
+      });
+    }
+
+    if (node.children && Array.isArray(node.children)) {
+      node.children.forEach((child: any, index: number) => {
+        this.validateNode(child, `${path}.children[${index}]`, errors);
+      });
+    }
+  }
+
+  private validateCustomFields(node: any, path: string, errors: SchemaError[]): void {
     if (node.customFields) {
-      for (const field of schema.fields) {
-        const fieldValue = node.customFields[field.name];
-        const fieldPath = `${nodePath}.customFields.${field.name}`;
+      const fieldValidation = this.validateCustomFields(node.customFields, path);
+      errors.push(...fieldValidation.errors);
+    }
 
-        // 必須フィールドのチェック
-        if (field.required && (fieldValue === undefined || fieldValue === null || fieldValue === '')) {
-          errors.push({
-            path: fieldPath,
-            message: `必須フィールド '${field.label}' が設定されていません`,
-            value: fieldValue,
-            expected: `${field.type}型の値`,
-            code: 'REQUIRED_FIELD_MISSING'
-          });
-          continue;
-        }
+    if (node.children && Array.isArray(node.children)) {
+      node.children.forEach((child: any, index: number) => {
+        this.validateCustomFields(child, `${path}.children[${index}]`, errors);
+      });
+    }
+  }
 
-        // 値が存在する場合の型チェック
-        if (fieldValue !== undefined && fieldValue !== null) {
-          const fieldErrors = this.validateFieldValue(fieldValue, field, fieldPath);
-          errors.push(...fieldErrors);
-        }
+  private validateFieldDefinition(field: any, path: string, errors: SchemaError[]): void {
+    if (!field.name) {
+      errors.push({
+        path: `${path}.name`,
+        message: 'フィールド名が必要です',
+        value: field.name
+      });
+    }
+
+    if (!field.type) {
+      errors.push({
+        path: `${path}.type`,
+        message: 'フィールドタイプが必要です',
+        value: field.type
+      });
+    }
+
+    if (!field.label) {
+      errors.push({
+        path: `${path}.label`,
+        message: 'フィールドラベルが必要です',
+        value: field.label
+      });
+    }
+
+    if ((field.type === 'select' || field.type === 'multiselect') && !field.options) {
+      errors.push({
+        path: `${path}.options`,
+        message: '選択肢フィールドにはoptionsが必要です',
+        value: field.options
+      });
+    }
+
+    if (field.validation && Array.isArray(field.validation)) {
+      field.validation.forEach((rule: any, index: number) => {
+        this.validateValidationRule(rule, `${path}.validation[${index}]`, errors);
+      });
+    }
+  }
+
+  private validateDisplayRule(rule: any, path: string, fields: any[], errors: SchemaError[]): void {
+    if (!rule.field) {
+      errors.push({
+        path: `${path}.field`,
+        message: 'フィールド名が必要です',
+        value: rule.field
+      });
+    } else {
+      const fieldExists = fields.some(f => f.name === rule.field);
+      if (!fieldExists) {
+        errors.push({
+          path: `${path}.field`,
+          message: `存在しないフィールド '${rule.field}' が参照されています`,
+          value: rule.field
+        });
       }
     }
 
-    // 子ノードを再帰的にバリデーション
-    if (node.children) {
-      for (const child of node.children) {
-        this.validateNodeWithCustomSchema(child, schema, nodePath, errors);
+    if (!rule.displayType) {
+      errors.push({
+        path: `${path}.displayType`,
+        message: '表示タイプが必要です',
+        value: rule.displayType
+      });
+    }
+  }
+
+  private validateValidationRule(rule: any, path: string, errors: SchemaError[]): void {
+    if (rule.type === 'range') {
+      if (typeof rule.min === 'number' && typeof rule.max === 'number' && rule.min > rule.max) {
+        errors.push({
+          path: `${path}`,
+          message: '範囲の最小値が最大値より大きくなっています',
+          value: rule
+        });
       }
     }
   }
 
-  /**
-   * フィールド値をバリデーション
-   */
-  private validateFieldValue(
-    value: unknown, 
-    field: import('../types').FieldDefinition, 
-    path: string
-  ): SchemaError[] {
-    const errors: SchemaError[] = [];
-
-    // 型チェック
-    switch (field.type) {
-      case 'string':
-        if (typeof value !== 'string') {
+  private validateFieldValue(value: any, fieldDef: any, path: string, errors: SchemaError[]): void {
+    switch (fieldDef.type) {
+      case 'select':
+        if (fieldDef.options && !fieldDef.options.includes(value)) {
           errors.push({
             path,
-            message: `フィールド '${field.label}' は文字列である必要があります`,
-            value,
-            expected: 'string',
-            code: 'INVALID_TYPE'
+            message: `無効な選択肢: ${value}`,
+            value
+          });
+        }
+        break;
+
+      case 'multiselect':
+        if (Array.isArray(value)) {
+          value.forEach(v => {
+            if (fieldDef.options && !fieldDef.options.includes(v)) {
+              errors.push({
+                path,
+                message: `無効な選択肢: ${v}`,
+                value: v
+              });
+            }
           });
         }
         break;
 
       case 'number':
-        if (typeof value !== 'number' || isNaN(value)) {
+        if (typeof value !== 'number') {
           errors.push({
             path,
-            message: `フィールド '${field.label}' は数値である必要があります`,
-            value,
-            expected: 'number',
-            code: 'INVALID_TYPE'
+            message: '数値が必要です',
+            value
+          });
+        } else if (fieldDef.validation) {
+          fieldDef.validation.forEach((rule: any) => {
+            if (rule.type === 'range') {
+              if (typeof rule.min === 'number' && value < rule.min) {
+                errors.push({
+                  path,
+                  message: `値が範囲外です (最小: ${rule.min})`,
+                  value
+                });
+              }
+              if (typeof rule.max === 'number' && value > rule.max) {
+                errors.push({
+                  path,
+                  message: `値が範囲外です (最大: ${rule.max})`,
+                  value
+                });
+              }
+            }
+          });
+        }
+        break;
+
+      case 'string':
+        if (typeof value !== 'string') {
+          errors.push({
+            path,
+            message: '文字列が必要です',
+            value
+          });
+        } else if (fieldDef.validation) {
+          fieldDef.validation.forEach((rule: any) => {
+            if (rule.type === 'length') {
+              if (typeof rule.min === 'number' && value.length < rule.min) {
+                errors.push({
+                  path,
+                  message: `文字数が不足しています (最小: ${rule.min})`,
+                  value
+                });
+              }
+              if (typeof rule.max === 'number' && value.length > rule.max) {
+                errors.push({
+                  path,
+                  message: `文字数が超過しています (最大: ${rule.max})`,
+                  value
+                });
+              }
+            }
           });
         }
         break;
@@ -236,289 +335,30 @@ export class SchemaValidator {
         if (typeof value !== 'boolean') {
           errors.push({
             path,
-            message: `フィールド '${field.label}' は真偽値である必要があります`,
-            value,
-            expected: 'boolean',
-            code: 'INVALID_TYPE'
+            message: 'ブール値が必要です',
+            value
           });
         }
         break;
 
       case 'date':
-        if (typeof value !== 'string' || !this.isValidDate(value)) {
-          errors.push({
-            path,
-            message: `フィールド '${field.label}' は有効な日付形式である必要があります`,
-            value,
-            expected: 'YYYY-MM-DD形式の日付',
-            code: 'INVALID_DATE'
-          });
-        }
-        break;
-
-      case 'select':
-        if (field.options && !field.options.includes(value as string)) {
-          errors.push({
-            path,
-            message: `フィールド '${field.label}' の値は選択肢の中から選んでください`,
-            value,
-            expected: `次のいずれか: ${field.options.join(', ')}`,
-            code: 'INVALID_OPTION'
-          });
-        }
-        break;
-
-      case 'multiselect':
-        if (!Array.isArray(value)) {
-          errors.push({
-            path,
-            message: `フィールド '${field.label}' は配列である必要があります`,
-            value,
-            expected: 'array',
-            code: 'INVALID_TYPE'
-          });
-        } else if (field.options) {
-          for (const item of value) {
-            if (!field.options.includes(item)) {
-              errors.push({
-                path,
-                message: `フィールド '${field.label}' の値 '${item}' は選択肢にありません`,
-                value: item,
-                expected: `次のいずれか: ${field.options.join(', ')}`,
-                code: 'INVALID_OPTION'
-              });
-            }
-          }
-        }
-        break;
-    }
-
-    // バリデーションルールをチェック
-    if (field.validation) {
-      for (const rule of field.validation) {
-        const ruleErrors = this.validateRule(value, rule, field, path);
-        errors.push(...ruleErrors);
-      }
-    }
-
-    return errors;
-  }
-
-  /**
-   * バリデーションルールをチェック
-   */
-  private validateRule(
-    value: unknown, 
-    rule: import('../types').ValidationRule, 
-    field: import('../types').FieldDefinition, 
-    path: string
-  ): SchemaError[] {
-    const errors: SchemaError[] = [];
-
-    switch (rule.type) {
-      case 'minLength':
-        if (typeof value === 'string' && value.length < (rule.value as number)) {
-          errors.push({
-            path,
-            message: rule.message || `フィールド '${field.label}' は${rule.value}文字以上である必要があります`,
-            value,
-            expected: `${rule.value}文字以上`,
-            code: 'MIN_LENGTH'
-          });
-        }
-        break;
-
-      case 'maxLength':
-        if (typeof value === 'string' && value.length > (rule.value as number)) {
-          errors.push({
-            path,
-            message: rule.message || `フィールド '${field.label}' は${rule.value}文字以下である必要があります`,
-            value,
-            expected: `${rule.value}文字以下`,
-            code: 'MAX_LENGTH'
-          });
-        }
-        break;
-
-      case 'min':
-        if (typeof value === 'number' && value < (rule.value as number)) {
-          errors.push({
-            path,
-            message: rule.message || `フィールド '${field.label}' は${rule.value}以上である必要があります`,
-            value,
-            expected: `${rule.value}以上`,
-            code: 'MIN_VALUE'
-          });
-        }
-        break;
-
-      case 'max':
-        if (typeof value === 'number' && value > (rule.value as number)) {
-          errors.push({
-            path,
-            message: rule.message || `フィールド '${field.label}' は${rule.value}以下である必要があります`,
-            value,
-            expected: `${rule.value}以下`,
-            code: 'MAX_VALUE'
-          });
-        }
-        break;
-
-      case 'pattern':
-        if (typeof value === 'string' && rule.value) {
-          const regex = new RegExp(rule.value as string);
-          if (!regex.test(value)) {
+        if (typeof value === 'string') {
+          const date = new Date(value);
+          if (isNaN(date.getTime())) {
             errors.push({
               path,
-              message: rule.message || `フィールド '${field.label}' の形式が正しくありません`,
-              value,
-              expected: `パターン: ${rule.value}`,
-              code: 'PATTERN_MISMATCH'
+              message: '有効な日付形式が必要です',
+              value
             });
           }
+        } else {
+          errors.push({
+            path,
+            message: '日付形式が必要です',
+            value
+          });
         }
         break;
     }
-
-    return errors;
-  }
-
-  /**
-   * 日付の妥当性をチェック
-   */
-  private isValidDate(dateString: string): boolean {
-    // ISO 8601形式 (YYYY-MM-DD)
-    const isoDate = /^\d{4}-\d{2}-\d{2}$/;
-    if (isoDate.test(dateString)) {
-      const date = new Date(dateString);
-      return date instanceof Date && !isNaN(date.getTime());
-    }
-
-    // 日本語形式 (YYYY年MM月DD日)
-    const japaneseDate = /^(\d{4})年(\d{1,2})月(\d{1,2})日$/;
-    const match = dateString.match(japaneseDate);
-    if (match) {
-      const [, year, month, day] = match;
-      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      return date instanceof Date && !isNaN(date.getTime());
-    }
-
-    return false;
-  }
-
-  /**
-   * AjvのエラーをSchemaErrorに変換
-   */
-  private convertAjvErrors(ajvErrors: ErrorObject[]): SchemaError[] {
-    return ajvErrors.map(error => ({
-      path: error.instancePath || error.schemaPath,
-      message: this.getJapaneseErrorMessage(error),
-      value: error.data,
-      expected: error.schema?.toString(),
-      code: error.keyword?.toUpperCase()
-    }));
-  }
-
-  /**
-   * エラーメッセージを日本語に変換
-   */
-  private getJapaneseErrorMessage(error: ErrorObject): string {
-    const { keyword, message, params } = error;
-
-    switch (keyword) {
-      case 'required':
-        return `必須プロパティ '${(params as { missingProperty?: string })?.missingProperty}' がありません`;
-      case 'type':
-        return `データ型が正しくありません。期待される型: ${(params as { type?: string })?.type}`;
-      case 'format':
-        return `フォーマットが正しくありません。期待されるフォーマット: ${(params as { format?: string })?.format}`;
-      case 'minimum':
-        return `値が小さすぎます。最小値: ${(params as { limit?: number })?.limit}`;
-      case 'maximum':
-        return `値が大きすぎます。最大値: ${(params as { limit?: number })?.limit}`;
-      case 'minLength':
-        return `文字列が短すぎます。最小長: ${(params as { limit?: number })?.limit}`;
-      case 'maxLength':
-        return `文字列が長すぎます。最大長: ${(params as { limit?: number })?.limit}`;
-      case 'pattern':
-        return `パターンにマッチしません。パターン: ${(params as { pattern?: string })?.pattern}`;
-      case 'enum':
-        return `許可されていない値です。許可される値: ${(params as { allowedValues?: string[] })?.allowedValues?.join(', ')}`;
-      case 'additionalProperties':
-        return `追加のプロパティは許可されていません: ${(params as { additionalProperty?: string })?.additionalProperty}`;
-      case 'uniqueItems':
-        return '配列内に重複する項目があります';
-      case 'minItems':
-        return `配列の要素数が少なすぎます。最小要素数: ${(params as { limit?: number })?.limit}`;
-      case 'maxItems':
-        return `配列の要素数が多すぎます。最大要素数: ${(params as { limit?: number })?.limit}`;
-      default:
-        return message || 'バリデーションエラーが発生しました';
-    }
-  }
-
-  /**
-   * スキーマから型定義を生成（開発用）
-   */
-  generateTypeDefinition(): string {
-    // 簡単な型定義生成（実装は省略）
-    return '// 型定義は別途実装';
-  }
-
-  /**
-   * バリデーションエラーをフォーマット
-   */
-  formatValidationErrors(errors: SchemaError[]): string {
-    if (errors.length === 0) {
-      return 'バリデーションエラーはありません';
-    }
-
-    return errors.map((error, index) => 
-      `${index + 1}. ${error.path}: ${error.message}`
-    ).join('\n');
-  }
-
-  /**
-   * バリデーション統計を取得
-   */
-  getValidationStats(result: ValidationResult): {
-    totalErrors: number;
-    errorsByType: Record<string, number>;
-    errorsByPath: Record<string, number>;
-  } {
-    const stats = {
-      totalErrors: result.errors.length,
-      errorsByType: {} as Record<string, number>,
-      errorsByPath: {} as Record<string, number>
-    };
-
-    for (const error of result.errors) {
-      // エラータイプ別の統計
-      const errorType = error.code || 'UNKNOWN';
-      stats.errorsByType[errorType] = (stats.errorsByType[errorType] || 0) + 1;
-
-      // パス別の統計
-      const pathParts = error.path.split('.');
-      const rootPath = pathParts[0] || 'root';
-      stats.errorsByPath[rootPath] = (stats.errorsByPath[rootPath] || 0) + 1;
-    }
-
-    return stats;
   }
 }
-
-// シングルトンインスタンス
-export const schemaValidator = new SchemaValidator();
-
-// ヘルパー関数
-export const validateMindmapData = (data: unknown): ValidationResult => {
-  return schemaValidator.validateMindmapData(data);
-};
-
-export const validateCustomSchema = (schema: unknown): ValidationResult => {
-  return schemaValidator.validateCustomSchema(schema);
-};
-
-export const validateWithCustomSchema = (data: MindmapData, customSchema: CustomSchema): ValidationResult => {
-  return schemaValidator.validateWithCustomSchema(data, customSchema);
-};
