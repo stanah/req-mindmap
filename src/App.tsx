@@ -19,11 +19,14 @@ function App() {
   
   const [editorWidth, setEditorWidth] = useState(panelSizes?.editor || 50); // パーセント
 
-  // アプリケーション初期化
+  // アプリケーション初期化（VSCode環境では既に初期化済みなので通知なしで復元処理のみ）
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        await initialize();
+        // VSCode環境以外でのみ初期化を実行
+        if (!initialized) {
+          await initialize();
+        }
         
         // セッション状態からパネルサイズを復元
         const sessionState = settingsService.loadSessionState();
@@ -65,7 +68,7 @@ function App() {
     };
 
     initializeApp();
-  }, [initialize, addNotification, editorWidth]);
+  }, [initialize, addNotification, editorWidth, initialized]);
 
   // パネルサイズ変更時の処理
   const handleResize = (width: number) => {

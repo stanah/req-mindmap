@@ -778,6 +778,11 @@ export const useAppStore = create<AppStore>()(
         // ===== アプリケーション操作 =====
 
         initialize: async () => {
+          // 既に初期化済みの場合はスキップ
+          if (get().initialized) {
+            return;
+          }
+
           try {
             set((state) => ({
               ui: {
