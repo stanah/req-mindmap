@@ -1,0 +1,173 @@
+{
+	"meta": {
+		"generatedAt": "2025-08-03T03:20:08.092Z",
+		"tasksAnalyzed": 20,
+		"totalTasks": 20,
+		"analysisCount": 20,
+		"thresholdScore": 5,
+		"projectName": "Taskmaster",
+		"usedResearch": true
+	},
+	"complexityAnalysis": [
+		{
+			"taskId": 1,
+			"taskTitle": "プロジェクト基盤のセットアップと開発環境構築",
+			"complexityScore": 3,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "TypeScriptプロジェクトの初期化、package.jsonとtsconfig.jsonの設定、必要な依存関係のインストール、プロジェクトディレクトリ構造の作成、開発ツール（ESLint、Prettier、Git hooks）の設定を個別のサブタスクとして展開してください。",
+			"reasoning": "標準的なTypeScriptプロジェクトのセットアップ作業で、手順は確立されており複雑度は低い。ただし、適切な設定と構造化が必要。"
+		},
+		{
+			"taskId": 2,
+			"taskTitle": "データモデルとスキーマ定義の実装",
+			"complexityScore": 5,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "MindMapNodeインターフェースの定義、JSON Schema定義の作成、ajvを使用したバリデーション実装、YAML/JSONパーサーの実装、エラーハンドリングとリカバリー機能の実装を個別のサブタスクとして展開してください。",
+			"reasoning": "データ構造の設計とスキーマバリデーションの実装が必要で、エラーハンドリングも含めると中程度の複雑度。"
+		},
+		{
+			"taskId": 3,
+			"taskTitle": "エディタコンポーネントの実装",
+			"complexityScore": 7,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Monaco Editorの基本統合、YAML/JSON言語サポートの設定、カスタムテーマの適用、リアルタイムバリデーション機能の実装、エラー表示機能の実装、インテリセンスと自動補完の設定を個別のサブタスクとして展開してください。",
+			"reasoning": "Monaco Editorの統合は複雑で、リアルタイムバリデーションとエラー表示の実装には高度な技術が必要。"
+		},
+		{
+			"taskId": 4,
+			"taskTitle": "マインドマップレンダリングエンジンの実装",
+			"complexityScore": 9,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "D3.js基本セットアップ、力指向グラフの実装、ノードのSVG描画実装、エッジ（リンク）の描画実装、ズーム・パン機能の実装、ノードのドラッグ機能実装、折りたたみ・展開アニメーションの実装を個別のサブタスクとして展開してください。",
+			"reasoning": "D3.jsを使用した複雑なビジュアライゼーションの実装で、インタラクション機能も含めると非常に高度な技術が必要。"
+		},
+		{
+			"taskId": 5,
+			"taskTitle": "リアルタイム同期システムの構築",
+			"complexityScore": 8,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Zustandストアの基本実装、エディタからマインドマップへの同期実装、マインドマップからエディタへの同期実装、差分検出アルゴリズムの実装、デバウンス処理の実装、エラーリカバリー機能の実装を個別のサブタスクとして展開してください。",
+			"reasoning": "双方向データ同期の実装は複雑で、パフォーマンスとエラーハンドリングを考慮すると高度な設計が必要。"
+		},
+		{
+			"taskId": 6,
+			"taskTitle": "ローカルストレージとファイル操作の実装",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "File System Access APIの基本実装、ファイル読み込み機能の実装、ファイル保存機能の実装、ローカルストレージによる設定管理と自動保存機能の実装を個別のサブタスクとして展開してください。",
+			"reasoning": "Web APIを使用した標準的なファイル操作実装で、中程度の複雑度。"
+		},
+		{
+			"taskId": 7,
+			"taskTitle": "UIテーマとカスタマイズ機能の実装",
+			"complexityScore": 4,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "CSS変数ベースのテーマシステム構築、ダークモード実装、システム設定の自動検出機能、レイアウトカスタマイズ機能の実装を個別のサブタスクとして展開してください。",
+			"reasoning": "CSS変数を使用した標準的なテーマシステムの実装で、比較的シンプル。"
+		},
+		{
+			"taskId": 8,
+			"taskTitle": "高度な機能群の実装（タグ、進捗管理、テンプレート）",
+			"complexityScore": 8,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "タグシステムの基本実装、タグフィルタリング機能、進捗率計算ロジックの実装、進捗ダッシュボードUI実装、組み込みテンプレートの作成、カスタムテンプレート管理機能、テンプレートギャラリーUIの実装を個別のサブタスクとして展開してください。",
+			"reasoning": "複数の独立した機能を実装する必要があり、それぞれが中程度の複雑度を持つため全体として高い複雑度。"
+		},
+		{
+			"taskId": 9,
+			"taskTitle": "エクスポート機能とショートカットシステムの実装",
+			"complexityScore": 6,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "PDF エクスポート機能の実装、SVGエクスポート機能の実装、Mermaid記法変換の実装、ショートカットキーシステムの基本実装、Excel/CSV出力機能の実装を個別のサブタスクとして展開してください。",
+			"reasoning": "複数の形式へのエクスポート実装が必要で、それぞれ異なるライブラリや技術を使用するため中程度の複雑度。"
+		},
+		{
+			"taskId": 10,
+			"taskTitle": "VSCode拡張対応とパフォーマンス最適化",
+			"complexityScore": 9,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "コアロジックの分離とモジュール化、VSCode拡張アダプターの実装、仮想スクロールの実装、Web Workerの統合、React最適化（memo、useMemo）の適用、バンドルサイズ最適化、PWA対応の実装を個別のサブタスクとして展開してください。",
+			"reasoning": "VSCode拡張化とパフォーマンス最適化は両方とも高度な技術が必要で、アーキテクチャの再設計も含む。"
+		},
+		{
+			"taskId": 11,
+			"taskTitle": "プロジェクトセットアップとMCP基盤構築",
+			"complexityScore": 4,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "TypeScriptプロジェクトの初期化、MCPサーバー基本構造の実装、必要な依存関係のインストール、エラーハンドリングとロギング基盤の実装を個別のサブタスクとして展開してください。",
+			"reasoning": "MCPサーバーの基本的なセットアップで、ドキュメントに従えば比較的簡単に実装可能。"
+		},
+		{
+			"taskId": 12,
+			"taskTitle": "マインドマップスキーマ定義と検証システム",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Zodを使用した基本スキーマ定義、ノード構造の詳細定義、スキーマバリデーション関数の実装、スキーマ情報を返すMCPツールの実装を個別のサブタスクとして展開してください。",
+			"reasoning": "Zodを使用したスキーマ定義は標準的な作業だが、マインドマップ特有の再帰的構造に対応する必要がある。"
+		},
+		{
+			"taskId": 13,
+			"taskTitle": "マインドマップ読み取り機能の実装",
+			"complexityScore": 4,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "ファイル読み取り基本機能の実装、JSON解析とスキーマ検証の統合、特定ノードの検索機能実装、MCPツールとしての公開を個別のサブタスクとして展開してください。",
+			"reasoning": "基本的なファイル読み取りとJSON解析で、複雑度は低い。"
+		},
+		{
+			"taskId": 14,
+			"taskTitle": "ノード追加機能の実装",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "ノード追加の基本ロジック実装、ID生成と重複チェック機能、親ノード検証機能、ファイル更新とバックアップ機能の実装を個別のサブタスクとして展開してください。",
+			"reasoning": "ノード追加は基本的な操作だが、IDの一意性保証とトランザクション処理が必要。"
+		},
+		{
+			"taskId": 15,
+			"taskTitle": "ノード更新・削除機能の実装",
+			"complexityScore": 6,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "ノード属性更新機能の実装、ノード移動機能の実装、ノード削除機能の実装、子ノード処理ロジックの実装、ルートノード保護機能の実装を個別のサブタスクとして展開してください。",
+			"reasoning": "複数の操作タイプを実装する必要があり、特に移動と削除は複雑な処理が必要。"
+		},
+		{
+			"taskId": 16,
+			"taskTitle": "検索・フィルタリング機能の実装",
+			"complexityScore": 6,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "キーワード検索エンジンの基本実装、属性ベースフィルタリング機能、階層レベル絞り込み機能、正規表現サポートの実装、検索結果のランキング実装を個別のサブタスクとして展開してください。",
+			"reasoning": "効率的な検索アルゴリズムの実装と複数の検索条件の組み合わせ処理が必要。"
+		},
+		{
+			"taskId": 17,
+			"taskTitle": "構造分析とバリデーション機能",
+			"complexityScore": 7,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "ノード統計情報の集計機能実装、循環参照検出アルゴリズムの実装、孤立ノード検出機能、構造の深さ分析機能、問題レポート生成機能、MCPツールとしての公開を個別のサブタスクとして展開してください。",
+			"reasoning": "グラフ理論に基づく分析アルゴリズムの実装が必要で、特に循環参照検出は複雑。"
+		},
+		{
+			"taskId": 18,
+			"taskTitle": "バックアップとバージョン管理システム",
+			"complexityScore": 7,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "自動バックアップ機能の基本実装、バージョン履歴管理機能、差分検出アルゴリズムの実装、ロールバック機能の実装、バックアップ圧縮機能、MCPツールとしての公開を個別のサブタスクとして展開してください。",
+			"reasoning": "バージョン管理と差分検出は複雑で、データの整合性を保証する必要がある。"
+		},
+		{
+			"taskId": 19,
+			"taskTitle": "セキュリティとアクセス制御の実装",
+			"complexityScore": 8,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "パストラバーサル攻撃防止の実装、入力データサニタイゼーション機能、アクセス権限管理システム、操作監査ログ機能、機密情報マスキング機能、セキュリティミドルウェアの統合を個別のサブタスクとして展開してください。",
+			"reasoning": "セキュリティは重要かつ複雑で、複数の攻撃ベクトルに対する防御が必要。"
+		},
+		{
+			"taskId": 20,
+			"taskTitle": "パフォーマンス最適化とスケーラビリティ",
+			"complexityScore": 8,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "LRUキャッシュの実装、遅延読み込み機能の実装、バッチ処理最適化、ストリーミング処理の実装、インデックス構造の導入、パフォーマンス測定ツールの実装を個別のサブタスクとして展開してください。",
+			"reasoning": "大規模データに対応するための高度な最適化技術が必要で、複数の最適化手法を組み合わせる必要がある。"
+		}
+	]
+}

@@ -1,0 +1,1382 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "プロジェクト基盤のセットアップと開発環境構築",
+        "description": "TypeScriptプロジェクトの初期化、必要な依存関係のインストール、開発環境の構築を行う",
+        "details": "1. TypeScriptプロジェクトの初期化\n   - package.jsonの作成\n   - tsconfig.jsonの設定（strict: true、module: esnext、target: es2022）\n   - 必要な依存関係：typescript、@types/node、vite、vitest\n\n2. プロジェクト構造の作成\n   ```\n   src/\n     ├── core/           # コアロジック\n     ├── parsers/        # JSON/YAMLパーサー\n     ├── renderers/      # マインドマップレンダリング\n     ├── editors/        # エディタコンポーネント\n     ├── types/          # TypeScript型定義\n     └── utils/          # ユーティリティ関数\n   ```\n\n3. 開発ツールの設定\n   - ESLint、Prettier設定\n   - Git hooks（husky、lint-staged）\n   - VSCode設定ファイル",
+        "testStrategy": "1. package.jsonのスクリプトが正しく動作することを確認\n2. TypeScriptのコンパイルが成功することを確認\n3. 開発サーバーが起動することを確認\n4. テストランナーが動作することを確認",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "TypeScriptプロジェクトの初期化とpnpm設定",
+            "description": "pnpmを使用してTypeScriptプロジェクトを初期化し、package.jsonとtsconfig.jsonを適切に設定する",
+            "dependencies": [],
+            "details": "1. pnpm initでpackage.jsonを作成\n2. TypeScriptと基本的な型定義をインストール（typescript、@types/node）\n3. tsconfig.jsonの作成と設定：\n   - strict: true\n   - module: esnext\n   - target: es2022\n   - moduleResolution: bundler\n   - allowJs: false\n   - skipLibCheck: true\n4. package.jsonにscriptsを追加（build、dev、test）",
+            "status": "pending",
+            "testStrategy": "1. pnpm installが正常に完了することを確認\n2. tscコマンドでTypeScriptのコンパイルが成功することを確認\n3. tsconfig.jsonの設定が正しく適用されることを確認"
+          },
+          {
+            "id": 2,
+            "title": "開発用依存関係のインストールと設定",
+            "description": "Vite、Vitest、およびその他の開発ツールをインストールし、基本的な設定を行う",
+            "dependencies": [
+              "1.1"
+            ],
+            "details": "1. 開発用依存関係のインストール：\n   - vite（ビルドツール）\n   - vitest（テストフレームワーク）\n   - @vitest/ui（テストUI）\n2. vite.config.tsの作成：\n   - TypeScriptサポートの設定\n   - ソースマップの有効化\n   - 開発サーバーの設定\n3. vitest.config.tsの作成：\n   - テスト環境の設定\n   - カバレッジレポートの設定",
+            "status": "pending",
+            "testStrategy": "1. pnpm devで開発サーバーが起動することを確認\n2. pnpm testでテストが実行されることを確認\n3. vite buildでビルドが成功することを確認"
+          },
+          {
+            "id": 3,
+            "title": "プロジェクトディレクトリ構造の作成",
+            "description": "srcディレクトリ配下に必要なフォルダ構造を作成し、各モジュールの基本ファイルを配置する",
+            "dependencies": [
+              "1.1"
+            ],
+            "details": "1. ディレクトリ構造の作成：\n   - src/core/（コアロジック）\n   - src/parsers/（JSON/YAMLパーサー）\n   - src/renderers/（マインドマップレンダリング）\n   - src/editors/（エディタコンポーネント）\n   - src/types/（TypeScript型定義）\n   - src/utils/（ユーティリティ関数）\n2. 各ディレクトリにindex.tsを作成\n3. src/main.tsをエントリーポイントとして作成",
+            "status": "pending",
+            "testStrategy": "1. すべてのディレクトリが正しく作成されていることを確認\n2. 各index.tsファイルが存在することを確認\n3. TypeScriptのパス解決が正しく機能することを確認"
+          },
+          {
+            "id": 4,
+            "title": "ESLintとPrettierの設定",
+            "description": "コード品質とフォーマットを統一するためのESLintとPrettierを設定する",
+            "dependencies": [
+              "1.1",
+              "1.2"
+            ],
+            "details": "1. ESLint関連パッケージのインストール：\n   - eslint\n   - @typescript-eslint/parser\n   - @typescript-eslint/eslint-plugin\n   - eslint-config-prettier\n2. Prettierのインストール\n3. .eslintrc.jsonの作成（TypeScript推奨設定）\n4. .prettierrcの作成（コードフォーマット設定）\n5. .eslintignoreと.prettierignoreの作成\n6. package.jsonにlintスクリプトを追加",
+            "status": "pending",
+            "testStrategy": "1. pnpm lintでESLintが正常に実行されることを確認\n2. pnpm formatでPrettierが正常に実行されることを確認\n3. ESLintとPrettierの設定が競合しないことを確認"
+          },
+          {
+            "id": 5,
+            "title": "Git hooksとVSCode設定の構成",
+            "description": "コミット前の自動チェックとVSCodeの推奨設定を構成する",
+            "dependencies": [
+              "1.4"
+            ],
+            "details": "1. Git hooks関連パッケージのインストール：\n   - husky（Git hooks管理）\n   - lint-staged（ステージングファイルのlint）\n2. huskyの初期化：pnpm exec husky init\n3. pre-commitフックの設定（lint-staged実行）\n4. .lintstagedrc.jsonの作成\n5. .vscode/settings.jsonの作成：\n   - 保存時の自動フォーマット\n   - ESLint統合\n   - TypeScript設定\n6. .vscode/extensions.jsonで推奨拡張機能を定義",
+            "status": "pending",
+            "testStrategy": "1. git commitでpre-commitフックが動作することを確認\n2. VSCodeで保存時に自動フォーマットが実行されることを確認\n3. lint-stagedが変更されたファイルのみを処理することを確認"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "データモデルとスキーマ定義の実装",
+        "description": "マインドマップのデータ構造を定義し、JSON/YAMLのスキーマバリデーションを実装する",
+        "details": "1. TypeScript型定義の作成\n   ```typescript\n   interface MindMapNode {\n     id: string;\n     title: string;\n     description?: string;\n     children?: MindMapNode[];\n     metadata?: {\n       priority?: 'high' | 'medium' | 'low';\n       status?: string;\n       assignee?: string;\n       tags?: string[];\n       progress?: number;\n       dueDate?: string;\n     };\n     collapsed?: boolean;\n   }\n   ```\n\n2. JSON Schemaの定義\n   - ajvを使用したスキーマバリデーション\n   - エラーメッセージのローカライズ\n\n3. YAML/JSONパーサーの実装\n   - js-yamlを使用したYAML解析\n   - エラーハンドリングとリカバリー機能",
+        "testStrategy": "1. 各種データ構造の単体テスト\n2. スキーマバリデーションのテスト（正常系・異常系）\n3. YAML/JSON相互変換のテスト\n4. 大規模データでのパフォーマンステスト",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "TypeScript型定義とインターフェースの実装",
+            "description": "マインドマップノードの基本的なTypeScript型定義を作成し、拡張可能な構造を設計する",
+            "dependencies": [],
+            "details": "MindMapNodeインターフェースの完全な実装を行い、メタデータの拡張性を考慮した型定義を作成します。ジェネリック型を使用して柔軟な拡張を可能にし、型安全性を確保します。また、ユーティリティ型（DeepPartial、RequiredKeysなど）も定義します。",
+            "status": "pending",
+            "testStrategy": "型定義の完全性テスト、型推論の正確性テスト、型ガードの動作確認テスト"
+          },
+          {
+            "id": 2,
+            "title": "JSON Schema定義とバリデーション実装",
+            "description": "ajvライブラリを使用してJSON Schemaを定義し、バリデーション機能を実装する",
+            "dependencies": [
+              "2.1"
+            ],
+            "details": "MindMapNodeの構造に基づいたJSON Schemaを作成し、ajvを使用したバリデーターを実装します。カスタムキーワードの定義、エラーメッセージの日本語化、スキーマの動的生成機能も含みます。また、バリデーションエラーの詳細な情報を提供する仕組みを構築します。",
+            "status": "pending",
+            "testStrategy": "正常系・異常系のバリデーションテスト、カスタムバリデーターのテスト、エラーメッセージの正確性テスト、境界値テスト"
+          },
+          {
+            "id": 3,
+            "title": "YAML/JSONパーサーとシリアライザーの実装",
+            "description": "js-yamlを使用したYAML解析機能と、JSON/YAML間の相互変換機能を実装する",
+            "dependencies": [
+              "2.1",
+              "2.2"
+            ],
+            "details": "js-yamlライブラリを使用してYAMLの解析・生成機能を実装し、JSONとの相互変換を可能にします。エラーハンドリング、部分的な解析エラーからのリカバリー機能、フォーマット保持機能、コメント保持機能も実装します。大規模ファイルのストリーミング処理にも対応します。",
+            "status": "pending",
+            "testStrategy": "各種フォーマットの解析テスト、エラーリカバリーテスト、相互変換の整合性テスト、大規模データのパフォーマンステスト"
+          },
+          {
+            "id": 4,
+            "title": "スキーマバージョニングとマイグレーション機能",
+            "description": "スキーマのバージョン管理とデータマイグレーション機能を実装する",
+            "dependencies": [
+              "2.2",
+              "2.3"
+            ],
+            "details": "スキーマバージョンの管理システムを構築し、古いバージョンのデータを新しいスキーマに自動的に変換するマイグレーション機能を実装します。バージョン間の互換性チェック、段階的なマイグレーション、ロールバック機能も含みます。マイグレーション履歴の記録も行います。",
+            "status": "pending",
+            "testStrategy": "バージョン間マイグレーションテスト、互換性チェックテスト、データ整合性テスト、ロールバックテスト"
+          },
+          {
+            "id": 5,
+            "title": "データ検証ユーティリティとヘルパー関数の実装",
+            "description": "データ操作のための汎用的なユーティリティ関数とヘルパー関数を実装する",
+            "dependencies": [
+              "2.1",
+              "2.2",
+              "2.3"
+            ],
+            "details": "ノードID生成、ツリー構造の検証、循環参照チェック、データ正規化、デフォルト値の適用、データマージ機能などの汎用的なユーティリティ関数を実装します。また、デバッグ用のデータ可視化ヘルパーも提供します。",
+            "status": "pending",
+            "testStrategy": "各ユーティリティ関数の単体テスト、エッジケースのテスト、パフォーマンステスト、統合テスト"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "エディタコンポーネントの実装",
+        "description": "JSON/YAML編集用のコードエディタを実装し、リアルタイム構文チェックと自動補完機能を提供する",
+        "details": "1. Monaco Editorの統合\n   - @monaco-editor/reactを使用\n   - JSON/YAML言語サポートの設定\n   - カスタムテーマの適用\n\n2. リアルタイムバリデーション\n   ```typescript\n   const validateContent = debounce((content: string) => {\n     try {\n       const parsed = parseYAML(content);\n       validateSchema(parsed);\n       updateMindMap(parsed);\n     } catch (error) {\n       showError(error);\n     }\n   }, 300);\n   ```\n\n3. エディタ機能の実装\n   - 構文ハイライト\n   - 自動インデント\n   - エラー箇所のマーキング\n   - インテリセンス（自動補完）",
+        "testStrategy": "1. エディタの基本動作テスト\n2. 構文エラー検出のテスト\n3. デバウンス処理のテスト\n4. 大量テキスト編集時のパフォーマンステスト",
+        "priority": "high",
+        "dependencies": [
+          1,
+          2
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Monaco Editorの基本統合",
+            "description": "@monaco-editor/reactを使用してエディタコンポーネントを作成し、JSON/YAML言語サポートを設定する",
+            "dependencies": [],
+            "details": "1. @monaco-editor/reactパッケージのインストール\n2. MonacoEditorWrapperコンポーネントの作成\n3. JSON/YAML言語モードの設定\n4. エディタの基本オプション設定（フォントサイズ、テーマ、行番号表示など）\n5. エディタのサイズレスポンシブ対応",
+            "status": "pending",
+            "testStrategy": "1. エディタコンポーネントのレンダリングテスト\n2. 言語モード切り替えのテスト\n3. エディタオプションの適用確認テスト"
+          },
+          {
+            "id": 2,
+            "title": "カスタムテーマとUIの実装",
+            "description": "Monaco Editorのカスタムテーマを定義し、アプリケーションのデザインに統合する",
+            "dependencies": [
+              "3.1"
+            ],
+            "details": "1. ダークモード/ライトモード対応のカスタムテーマ定義\n2. シンタックスハイライトのカラー設定\n3. エディタ周辺のUI要素（ツールバー、ステータスバー）の実装\n4. テーマ切り替え機能の実装\n5. カスタムフォントとアイコンの適用",
+            "status": "pending",
+            "testStrategy": "1. テーマ切り替えの動作テスト\n2. カラーコントラストのアクセシビリティテスト\n3. UI要素の表示/非表示テスト"
+          },
+          {
+            "id": 3,
+            "title": "リアルタイムバリデーション機能",
+            "description": "入力内容をリアルタイムで検証し、エラーをエディタ上に表示する機能を実装する",
+            "dependencies": [
+              "3.1"
+            ],
+            "details": "1. デバウンス処理付きバリデーション関数の実装\n2. JSON/YAMLパースエラーの検出\n3. スキーマバリデーションの統合\n4. Monaco Editorのマーカー機能を使用したエラー表示\n5. エラーメッセージのローカライズ対応",
+            "status": "pending",
+            "testStrategy": "1. 構文エラー検出の精度テスト\n2. デバウンス処理のタイミングテスト\n3. エラーマーカーの表示位置テスト\n4. パフォーマンステスト（大量エラー時）"
+          },
+          {
+            "id": 4,
+            "title": "自動補完とインテリセンス",
+            "description": "スキーマに基づく自動補完機能とコード補完候補の提供を実装する",
+            "dependencies": [
+              "3.3"
+            ],
+            "details": "1. Monaco EditorのCompletionItemProviderの実装\n2. スキーマ定義からの補完候補生成\n3. コンテキストに応じた補完候補のフィルタリング\n4. 補完候補のドキュメント表示\n5. スニペット機能の実装（よく使うパターンのテンプレート）",
+            "status": "pending",
+            "testStrategy": "1. 補完候補の正確性テスト\n2. 補完トリガーのタイミングテスト\n3. 大規模スキーマでのパフォーマンステスト"
+          },
+          {
+            "id": 5,
+            "title": "エディタとマインドマップの双方向同期",
+            "description": "エディタの変更をマインドマップに反映し、マインドマップの操作をエディタに反映する機能を実装する",
+            "dependencies": [
+              "3.3",
+              "3.4"
+            ],
+            "details": "1. エディタ変更イベントのハンドリング\n2. マインドマップ更新処理の実装\n3. マインドマップ操作からのエディタ更新\n4. 同期処理の最適化（差分更新）\n5. 同期エラー時のロールバック処理",
+            "status": "pending",
+            "testStrategy": "1. 双方向同期の整合性テスト\n2. 同期タイミングのテスト\n3. エラー発生時の復旧テスト\n4. 並行編集時の競合解決テスト"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "マインドマップレンダリングエンジンの実装",
+        "description": "D3.jsを使用してインタラクティブなマインドマップの描画エンジンを実装する",
+        "details": "1. D3.js力指向グラフの実装\n   ```typescript\n   const simulation = d3.forceSimulation(nodes)\n     .force('link', d3.forceLink(links).distance(100))\n     .force('charge', d3.forceManyBody().strength(-300))\n     .force('center', d3.forceCenter(width/2, height/2));\n   ```\n\n2. ノードレンダリング\n   - SVGベースの描画\n   - ノードの形状・色のカスタマイズ\n   - テキストの自動折り返し\n   - アイコン・バッジの表示\n\n3. インタラクション機能\n   - ズーム・パン（d3.zoom）\n   - ノードのドラッグ\n   - 折りたたみ・展開アニメーション\n   - ホバー時のツールチップ",
+        "testStrategy": "1. レンダリング結果のスナップショットテスト\n2. インタラクション機能の統合テスト\n3. 100ノード以上でのパフォーマンステスト\n4. レスポンシブデザインのテスト",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "D3.js力指向グラフレイアウトエンジンの実装",
+            "description": "D3.jsのforceSimulationを使用して、ノードとリンクの動的配置を管理するレイアウトエンジンを実装する",
+            "dependencies": [],
+            "details": "1. forceSimulationの初期化と設定\n   - ノード間の反発力（charge）の調整\n   - リンクの距離と強度の設定\n   - 中心力と境界制約の実装\n   - アルファ値の減衰率の最適化\n\n2. 動的レイアウト更新機能\n   - ノード追加・削除時の再計算\n   - リアルタイムレイアウト調整\n   - フォース値の動的変更API\n\n3. パフォーマンス最適化\n   - クアッドツリーの活用\n   - 計算頻度の調整\n   - 大規模グラフ対応",
+            "status": "pending",
+            "testStrategy": "1. 各種フォース設定の動作確認テスト\n2. ノード配置の収束性テスト\n3. 1000ノード以上での計算速度測定\n4. レイアウトの安定性検証"
+          },
+          {
+            "id": 2,
+            "title": "SVGベースのノードレンダリングシステム",
+            "description": "カスタマイズ可能なノード形状、スタイル、テキスト表示を含むSVGレンダリングシステムを構築する",
+            "dependencies": [
+              "4.1"
+            ],
+            "details": "1. ノード形状のレンダリング\n   - 矩形、円形、楕円形のサポート\n   - カスタムパスによる特殊形状\n   - グラデーション、影、境界線の適用\n\n2. テキストレンダリング機能\n   - 自動テキスト折り返しアルゴリズム\n   - フォントサイズの動的調整\n   - マルチライン対応\n   - テキストのトリミングと省略表示\n\n3. アイコン・バッジシステム\n   - SVGアイコンライブラリの統合\n   - ステータスバッジの表示\n   - プログレスインジケーター\n   - カスタムシンボルのサポート",
+            "status": "pending",
+            "testStrategy": "1. 各種ノード形状の描画テスト\n2. テキスト折り返しの境界値テスト\n3. SVG要素のDOMスナップショットテスト\n4. レンダリング品質の視覚的検証"
+          },
+          {
+            "id": 3,
+            "title": "インタラクティブ操作コントローラーの実装",
+            "description": "ズーム、パン、ドラッグなどのユーザーインタラクションを管理するコントローラーを開発する",
+            "dependencies": [
+              "4.2"
+            ],
+            "details": "1. ズーム・パン機能\n   - d3.zoomの実装と設定\n   - スムーズなズームトランジション\n   - ズーム範囲の制限設定\n   - ダブルクリックでのズームリセット\n\n2. ノードドラッグ機能\n   - ドラッグイベントハンドラー\n   - 物理シミュレーションとの統合\n   - ドラッグ中の視覚フィードバック\n   - マルチセレクションドラッグ\n\n3. タッチデバイス対応\n   - タッチイベントの処理\n   - ピンチズームの実装\n   - タッチドラッグの最適化",
+            "status": "pending",
+            "testStrategy": "1. マウスイベントのシミュレーションテスト\n2. タッチイベントの動作確認\n3. ズーム範囲制限のテスト\n4. ドラッグ操作の精度測定"
+          },
+          {
+            "id": 4,
+            "title": "アニメーションエンジンの開発",
+            "description": "ノードの展開・折りたたみ、トランジション効果を管理するアニメーションシステムを構築する",
+            "dependencies": [
+              "4.3"
+            ],
+            "details": "1. 展開・折りたたみアニメーション\n   - スムーズな展開トランジション\n   - 子ノードのフェードイン/アウト\n   - レイアウトの再計算と補間\n   - イージング関数の適用\n\n2. ホバーエフェクト\n   - ツールチップの表示アニメーション\n   - ノードのハイライト効果\n   - 関連リンクの強調表示\n   - プレビューカードの実装\n\n3. トランジション管理\n   - アニメーションキューの実装\n   - 並行アニメーションの制御\n   - パフォーマンス最適化\n   - requestAnimationFrameの活用",
+            "status": "pending",
+            "testStrategy": "1. アニメーション完了タイミングのテスト\n2. 60FPS維持の性能テスト\n3. 複数アニメーション同時実行テスト\n4. メモリリークの検証"
+          },
+          {
+            "id": 5,
+            "title": "レンダリングパフォーマンス最適化システム",
+            "description": "大規模マインドマップでも高速に動作する最適化システムを実装する",
+            "dependencies": [
+              "4.4"
+            ],
+            "details": "1. 仮想化レンダリング\n   - ビューポート内のノードのみ描画\n   - オフスクリーンノードの軽量化\n   - LOD（Level of Detail）システム\n   - プログレッシブレンダリング\n\n2. WebGLレンダラーの統合\n   - Three.jsとの連携オプション\n   - GPUアクセラレーション\n   - インスタンスレンダリング\n   - テクスチャアトラスの活用\n\n3. キャッシング戦略\n   - レンダリング結果のキャッシュ\n   - 計算結果のメモ化\n   - 差分レンダリングの実装\n   - Web Workerでの並列処理",
+            "status": "pending",
+            "testStrategy": "1. 10000ノードでのFPS測定\n2. メモリ使用量の監視テスト\n3. 初期レンダリング時間の測定\n4. スクロール時のパフォーマンステスト"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "リアルタイム同期システムの構築",
+        "description": "エディタとマインドマップ間のリアルタイム同期機能を実装する",
+        "details": "1. 状態管理の実装（Zustand）\n   ```typescript\n   interface AppState {\n     mindMapData: MindMapNode;\n     editorContent: string;\n     selectedNode: string | null;\n     updateMindMap: (data: MindMapNode) => void;\n     updateEditor: (content: string) => void;\n   }\n   ```\n\n2. 双方向同期の実装\n   - エディタ→マインドマップ：デバウンス付き更新\n   - マインドマップ→エディタ：ノードクリック時のハイライト\n   - 差分検出と最小限の再描画\n\n3. エラーリカバリー\n   - 一時的な構文エラー時の状態保持\n   - 最後の有効な状態へのロールバック",
+        "testStrategy": "1. 同期タイミングのテスト\n2. 双方向データフローのテスト\n3. エラー発生時の状態保持テスト\n4. メモリリークの検証",
+        "priority": "high",
+        "dependencies": [
+          3,
+          4
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Zustand状態管理システムの実装",
+            "description": "エディタとマインドマップの状態を管理するZustandストアを実装する",
+            "dependencies": [],
+            "details": "AppStateインターフェースに基づいたZustandストアの実装。mindMapData、editorContent、selectedNodeの状態管理と、updateMindMap、updateEditor、selectNode、clearSelectionなどのアクションを実装。状態の永続化（localStorage）とハイドレーション機能も含む。",
+            "status": "pending",
+            "testStrategy": "ストアの初期化テスト、各アクションの動作確認テスト、状態の永続化と復元のテスト、複数コンポーネント間での状態共有テスト"
+          },
+          {
+            "id": 2,
+            "title": "エディタからマインドマップへの同期機能",
+            "description": "エディタの変更をリアルタイムでマインドマップに反映する機能を実装する",
+            "dependencies": [
+              "5.1"
+            ],
+            "details": "エディタのonChangeイベントをデバウンス（300ms）で処理し、パース処理を実行。差分検出アルゴリズムを使用して変更箇所のみを更新。構文エラー時は最後の有効な状態を保持し、エラーインジケーターを表示。React.memoとuseMemoを使用した再レンダリング最適化。",
+            "status": "pending",
+            "testStrategy": "デバウンス動作の検証、差分検出の正確性テスト、構文エラー時の状態保持テスト、パフォーマンステスト（1000ノード以上での動作確認）"
+          },
+          {
+            "id": 3,
+            "title": "マインドマップからエディタへの同期機能",
+            "description": "マインドマップのノード操作をエディタに反映する機能を実装する",
+            "dependencies": [
+              "5.1"
+            ],
+            "details": "ノードクリック時のエディタ内該当箇所へのスクロールとハイライト機能。ノードのドラッグ＆ドロップによる構造変更のエディタ反映。ノード編集（インライン編集）の双方向バインディング。選択ノードの視覚的フィードバック（エディタ側でのハイライト表示）。",
+            "status": "pending",
+            "testStrategy": "ノード選択時のスクロール位置の正確性テスト、ドラッグ＆ドロップ後のエディタコンテンツ整合性テスト、インライン編集の同期テスト、複数ノード選択時の動作テスト"
+          },
+          {
+            "id": 4,
+            "title": "エラーリカバリーとコンフリクト解決",
+            "description": "同期エラー発生時のリカバリー機能とコンフリクト解決メカニズムを実装する",
+            "dependencies": [
+              "5.2",
+              "5.3"
+            ],
+            "details": "一時的な構文エラー時の状態保持とエラー表示。最後の有効な状態へのロールバック機能（Undo/Redo）。同時編集によるコンフリクト検出と解決UI。エラー発生時の自動リトライメカニズム（exponential backoff）。エラーログの収集と分析機能。",
+            "status": "pending",
+            "testStrategy": "各種エラーパターンでのリカバリーテスト、ロールバック機能の動作確認、コンフリクト検出の精度テスト、リトライメカニズムのテスト"
+          },
+          {
+            "id": 5,
+            "title": "パフォーマンス最適化と監視",
+            "description": "大規模データでの同期パフォーマンスを最適化し、監視機能を実装する",
+            "dependencies": [
+              "5.2",
+              "5.3",
+              "5.4"
+            ],
+            "details": "仮想スクロール（react-window）を使用した大規模ノードの効率的レンダリング。Web Workerを使用したパース処理のオフロード。RequestIdleCallbackを使用した非同期更新。パフォーマンスメトリクスの収集（同期遅延、メモリ使用量）。メモリリーク検出とクリーンアップ機能。",
+            "status": "pending",
+            "testStrategy": "10000ノード以上での同期速度テスト、メモリリーク検出テスト、Web Worker通信のテスト、パフォーマンスメトリクスの正確性テスト"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "ローカルストレージとファイル操作の実装",
+        "description": "ローカル環境でのファイル読み書きとアプリケーション状態の永続化を実装する",
+        "details": "1. File System Access APIの実装\n   ```typescript\n   async function openFile() {\n     const [fileHandle] = await window.showOpenFilePicker({\n       types: [{\n         description: 'Mind Map Files',\n         accept: {\n           'application/json': ['.json'],\n           'text/yaml': ['.yaml', '.yml']\n         }\n       }]\n     });\n     return fileHandle;\n   }\n   ```\n\n2. ローカルストレージ管理\n   - 最近使用したファイルの記録\n   - アプリケーション設定の保存\n   - 自動保存の実装\n\n3. ファイル監視機能\n   - 外部変更の検出\n   - リロード確認ダイアログ",
+        "testStrategy": "1. ファイル読み書きの単体テスト\n2. ローカルストレージのCRUDテスト\n3. ファイル形式変換のテスト\n4. 権限エラーハンドリングのテスト",
+        "priority": "medium",
+        "dependencies": [
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "File System Access APIの実装とファイルハンドリング",
+            "description": "ブラウザのFile System Access APIを使用してファイルの読み書き機能を実装する",
+            "dependencies": [],
+            "details": "1. showOpenFilePicker/showSaveFilePickerの実装\n2. FileHandleの管理とキャッシュ\n3. ファイル読み込み時のエラーハンドリング\n4. ファイル書き込み時の権限確認\n5. 対応ファイル形式（.json, .yaml, .yml）の処理",
+            "status": "pending",
+            "testStrategy": "1. モックを使用したFile System APIのテスト\n2. 各種ファイル形式の読み込みテスト\n3. 権限エラー時の挙動テスト"
+          },
+          {
+            "id": 2,
+            "title": "ローカルストレージ管理システムの構築",
+            "description": "アプリケーション設定と最近使用したファイルの情報をローカルストレージで管理する",
+            "dependencies": [
+              "6.1"
+            ],
+            "details": "1. LocalStorageラッパークラスの実装\n2. 最近使用したファイル一覧の管理（最大10件）\n3. アプリケーション設定の保存・読み込み\n4. データ容量制限の監視\n5. 破損データの検出と復旧処理",
+            "status": "pending",
+            "testStrategy": "1. LocalStorage APIのモックテスト\n2. 容量制限時の動作テスト\n3. データ破損時の復旧テスト"
+          },
+          {
+            "id": 3,
+            "title": "自動保存機能の実装",
+            "description": "ユーザーの変更を検知して定期的に自動保存する機能を実装する",
+            "dependencies": [
+              "6.1",
+              "6.2"
+            ],
+            "details": "1. 変更検知システムの実装（debounce付き）\n2. 自動保存インターバルの設定（デフォルト30秒）\n3. 保存状態インジケーターの実装\n4. 保存失敗時のリトライ機構\n5. 未保存変更の警告ダイアログ",
+            "status": "pending",
+            "testStrategy": "1. 変更検知の精度テスト\n2. 自動保存タイミングのテスト\n3. 保存失敗時のリトライテスト"
+          },
+          {
+            "id": 4,
+            "title": "ファイル監視システムの実装",
+            "description": "外部でのファイル変更を検知してユーザーに通知する機能を実装する",
+            "dependencies": [
+              "6.1"
+            ],
+            "details": "1. ファイルの最終更新時刻の監視\n2. ポーリング間隔の最適化（1-5秒）\n3. 変更検知時の差分比較\n4. リロード確認ダイアログの実装\n5. マージ競合の検出と解決UI",
+            "status": "pending",
+            "testStrategy": "1. ファイル変更検知の精度テスト\n2. 同時編集シナリオのテスト\n3. マージ競合解決のテスト"
+          },
+          {
+            "id": 5,
+            "title": "ファイル操作の状態管理とエラーハンドリング",
+            "description": "ファイル操作全体の状態管理とエラー処理を統合的に実装する",
+            "dependencies": [
+              "6.1",
+              "6.2",
+              "6.3",
+              "6.4"
+            ],
+            "details": "1. ファイル操作状態のグローバル管理\n2. エラーメッセージのローカライズ\n3. リトライ可能なエラーの自動リトライ\n4. ユーザーへの通知システム（トースト/モーダル）\n5. 操作履歴とアンドゥ機能の連携",
+            "status": "pending",
+            "testStrategy": "1. 各種エラーシナリオのテスト\n2. 状態遷移の整合性テスト\n3. エラーリカバリーのテスト"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "UIテーマとカスタマイズ機能の実装",
+        "description": "ダークモード対応とカスタマイズ可能なUIテーマシステムを構築する",
+        "details": "1. CSS変数ベースのテーマシステム\n   ```css\n   :root {\n     --bg-primary: #ffffff;\n     --text-primary: #333333;\n     --node-bg: #f0f0f0;\n     --link-color: #666666;\n   }\n   \n   [data-theme=\"dark\"] {\n     --bg-primary: #1a1a1a;\n     --text-primary: #e0e0e0;\n     --node-bg: #2a2a2a;\n     --link-color: #888888;\n   }\n   ```\n\n2. テーマ切り替え機能\n   - システム設定の自動検出\n   - 手動切り替えオプション\n   - カスタムテーマの作成・保存\n\n3. レイアウトカスタマイズ\n   - パネルサイズの調整\n   - レイアウトプリセット",
+        "testStrategy": "1. テーマ切り替えの動作テスト\n2. カスタムテーマの保存・読み込みテスト\n3. レイアウト変更の永続化テスト\n4. アクセシビリティテスト",
+        "priority": "medium",
+        "dependencies": [
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "CSS変数ベースのテーマシステムの実装",
+            "description": "CSS変数を使用した柔軟なテーマシステムの基盤を構築し、ライトモードとダークモードの基本テーマを定義する",
+            "dependencies": [],
+            "details": "CSS変数を使用してテーマシステムの基盤を実装します。色、フォント、スペーシング、影などのデザイントークンを定義し、:root と [data-theme] セレクタを使用してテーマの切り替えを可能にします。基本的なライトテーマとダークテーマに加え、ハイコントラストモードやカラーブラインドフレンドリーなテーマオプションも検討します。",
+            "status": "pending",
+            "testStrategy": "CSS変数の適用確認、テーマ切り替え時のスタイル変更テスト、異なるブラウザでの互換性テスト"
+          },
+          {
+            "id": 2,
+            "title": "テーマ切り替え機能とシステム設定連携",
+            "description": "ユーザーのシステム設定を検出して自動的にテーマを適用し、手動切り替えUIを実装する",
+            "dependencies": [
+              "7.1"
+            ],
+            "details": "prefers-color-scheme メディアクエリを使用してユーザーのシステム設定を検出し、自動的に適切なテーマを適用します。また、ユーザーが手動でテーマを切り替えられるトグルスイッチやドロップダウンメニューを実装し、選択したテーマをlocalStorageに保存して永続化します。テーマ切り替え時のトランジション効果も実装します。",
+            "status": "pending",
+            "testStrategy": "システム設定の自動検出テスト、手動切り替えの動作確認、localStorage保存・読み込みテスト、トランジション効果のテスト"
+          },
+          {
+            "id": 3,
+            "title": "カスタムテーマエディタの開発",
+            "description": "ユーザーがカスタムテーマを作成・編集・保存できるインターフェースを実装する",
+            "dependencies": [
+              "7.1",
+              "7.2"
+            ],
+            "details": "カラーピッカー、プレビュー機能、リアルタイム更新を備えたテーマエディタを開発します。ユーザーは各UI要素の色、フォント、境界線などをカスタマイズでき、作成したテーマにはname、author、descriptionなどのメタデータを付与できます。テーマのインポート/エクスポート機能（JSON形式）も実装し、テーマの共有を可能にします。",
+            "status": "pending",
+            "testStrategy": "カラーピッカーの動作テスト、リアルタイムプレビューの更新テスト、テーマの保存・読み込みテスト、インポート/エクスポート機能のテスト"
+          },
+          {
+            "id": 4,
+            "title": "レイアウトカスタマイズシステムの構築",
+            "description": "パネルサイズの調整、レイアウトプリセット、ドラッグ&ドロップによる配置変更機能を実装する",
+            "dependencies": [],
+            "details": "ResizeObserver APIとドラッグ&ドロップAPIを使用して、ユーザーがパネルのサイズや位置を自由に調整できる機能を実装します。一般的なレイアウトプリセット（シングルペイン、サイドバー付き、3カラムなど）を用意し、ユーザーが独自のレイアウトを保存・管理できるようにします。レスポンシブデザインにも対応し、画面サイズに応じた最適なレイアウトを提供します。",
+            "status": "pending",
+            "testStrategy": "リサイズ機能の動作テスト、ドラッグ&ドロップのテスト、レイアウトプリセットの適用テスト、レスポンシブ動作の確認"
+          },
+          {
+            "id": 5,
+            "title": "アクセシビリティとパフォーマンスの最適化",
+            "description": "テーマシステムのアクセシビリティ対応とパフォーマンス最適化を実施する",
+            "dependencies": [
+              "7.1",
+              "7.2",
+              "7.3",
+              "7.4"
+            ],
+            "details": "WCAG 2.1ガイドラインに準拠したコントラスト比の確保、キーボードナビゲーション対応、スクリーンリーダー対応を実装します。また、CSS変数の効率的な管理、不要な再レンダリングの防止、テーマ切り替え時のパフォーマンス最適化を行います。reduced-motionメディアクエリに対応し、アニメーションを無効化するオプションも提供します。",
+            "status": "pending",
+            "testStrategy": "コントラスト比の自動チェック、キーボードナビゲーションテスト、スクリーンリーダーでの動作確認、パフォーマンス測定（FCP、LCP、CLS）"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "高度な機能群の実装（タグ、進捗管理、テンプレート）",
+        "description": "タグシステム、進捗管理、テンプレート機能などの高度な機能を実装する",
+        "details": "1. タグ・ラベルシステム\n   ```typescript\n   interface TagSystem {\n     tags: Map<string, TagDefinition>;\n     addTag(node: string, tag: string): void;\n     filterByTag(tag: string): MindMapNode[];\n     getTagStats(): TagStatistics;\n   }\n   ```\n\n2. 進捗管理機能\n   - ノード単位の進捗率設定\n   - 親ノードの自動集計\n   - 進捗ダッシュボード\n   - ガントチャート表示\n\n3. テンプレートシステム\n   - 組み込みテンプレート\n   - カスタムテンプレートの作成・管理\n   - テンプレートギャラリー",
+        "testStrategy": "1. タグフィルタリングのテスト\n2. 進捗計算ロジックのテスト\n3. テンプレート適用のテスト\n4. 機能間の統合テスト",
+        "priority": "medium",
+        "dependencies": [
+          5,
+          6
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "タグシステムの基本実装",
+            "description": "タグの定義、追加、削除、フィルタリングなどの基本的なタグ管理機能を実装する",
+            "dependencies": [],
+            "details": "TagDefinitionインターフェースの定義、タグの追加・削除メソッド、タグによるノードフィルタリング機能、タグの統計情報取得機能を実装。タグの色分けやアイコン設定、タグの階層構造サポート、タグのバリデーション機能も含む",
+            "status": "pending",
+            "testStrategy": "タグの追加・削除の単体テスト、フィルタリング機能の正確性テスト、複数タグの組み合わせフィルタリングテスト、タグ統計の計算テスト"
+          },
+          {
+            "id": 2,
+            "title": "進捗管理システムの実装",
+            "description": "ノード単位の進捗率設定と親ノードへの自動集計機能を実装する",
+            "dependencies": [],
+            "details": "ノードごとの進捗率プロパティの追加、子ノードの進捗から親ノードの進捗を自動計算するロジック、進捗の可視化用データ構造、進捗変更時のイベント通知システム、進捗の履歴管理機能を実装",
+            "status": "pending",
+            "testStrategy": "進捗計算ロジックの単体テスト、階層構造での進捗集計テスト、循環参照時の処理テスト、大規模データでのパフォーマンステスト"
+          },
+          {
+            "id": 3,
+            "title": "進捗ダッシュボードとガントチャートの実装",
+            "description": "進捗管理の可視化機能としてダッシュボードとガントチャート表示を実装する",
+            "dependencies": [
+              "8.2"
+            ],
+            "details": "進捗ダッシュボードコンポーネントの作成、全体進捗の集計表示、カテゴリ別進捗表示、ガントチャート用のデータ変換処理、タイムライン表示機能、マイルストーン管理、クリティカルパスの可視化を実装",
+            "status": "pending",
+            "testStrategy": "ダッシュボードのレンダリングテスト、ガントチャートのデータ変換テスト、大規模データでの描画パフォーマンステスト、インタラクティブ機能のテスト"
+          },
+          {
+            "id": 4,
+            "title": "テンプレートシステムの基盤実装",
+            "description": "テンプレートの定義、保存、読み込み、適用の基本機能を実装する",
+            "dependencies": [],
+            "details": "テンプレート構造の定義、テンプレートのシリアライズ・デシリアライズ機能、テンプレートメタデータ管理、テンプレート適用時の変数置換機能、テンプレートのバリデーション、カスタムテンプレートの保存・読み込み機能を実装",
+            "status": "pending",
+            "testStrategy": "テンプレート適用の単体テスト、変数置換の正確性テスト、不正なテンプレートのバリデーションテスト、テンプレートの永続化テスト"
+          },
+          {
+            "id": 5,
+            "title": "テンプレートギャラリーと組み込みテンプレートの実装",
+            "description": "組み込みテンプレートの作成とテンプレートギャラリー機能を実装する",
+            "dependencies": [
+              "8.4"
+            ],
+            "details": "プロジェクト管理、要件定義、SWOT分析などの組み込みテンプレートの作成、テンプレートギャラリーUI、テンプレートのプレビュー機能、テンプレートの検索・フィルタリング機能、テンプレートのインポート・エクスポート機能、テンプレートの評価・共有機能を実装",
+            "status": "pending",
+            "testStrategy": "組み込みテンプレートの構造テスト、ギャラリーUIの機能テスト、テンプレートのインポート・エクスポートテスト、検索機能の精度テスト"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "エクスポート機能とショートカットシステムの実装",
+        "description": "様々な形式へのエクスポート機能とカスタマイズ可能なショートカットキーシステムを実装する",
+        "details": "1. エクスポート機能\n   ```typescript\n   class ExportManager {\n     async exportToPDF(mindmap: MindMapNode): Promise<Blob> {\n       // html2canvasとjsPDFを使用\n     }\n     \n     exportToSVG(mindmap: MindMapNode): string {\n       // D3.jsのSVG出力を利用\n     }\n     \n     exportToMermaid(mindmap: MindMapNode): string {\n       // Mermaid記法への変換\n     }\n   }\n   ```\n\n2. ショートカットキーシステム\n   - Mousetrapを使用したキーバインディング\n   - カスタマイズ可能なキーマップ\n   - コンフリクト検出\n   - ショートカット一覧表示\n\n3. Excel/CSV出力\n   - 階層構造の保持\n   - メタデータの列マッピング",
+        "testStrategy": "1. 各種エクスポート形式の出力テスト\n2. ショートカットキーの動作テスト\n3. キーバインディングの競合テスト\n4. 大規模データのエクスポートテスト",
+        "priority": "low",
+        "dependencies": [
+          4,
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "PDFエクスポート機能の実装",
+            "description": "html2canvasとjsPDFを使用してマインドマップをPDF形式でエクスポートする機能を実装する",
+            "dependencies": [],
+            "details": "html2canvasでマインドマップのDOM要素をcanvasに変換し、jsPDFでPDF化する。大きなマインドマップの場合は複数ページに分割する処理も実装。ページサイズ（A4、A3等）や向き（縦・横）の選択機能、フォント埋め込み、圧縮オプションも提供する",
+            "status": "pending",
+            "testStrategy": "様々なサイズのマインドマップでPDF出力をテストし、レイアウト崩れがないことを確認。日本語フォントの表示、大規模データでのメモリ使用量、出力速度を測定"
+          },
+          {
+            "id": 2,
+            "title": "SVG/Mermaidエクスポート機能の実装",
+            "description": "D3.jsを活用したSVG出力とMermaid記法への変換機能を実装する",
+            "dependencies": [],
+            "details": "D3.jsで生成されたSVG要素を直接エクスポートする機能と、マインドマップ構造をMermaid記法のフローチャート形式に変換する機能を実装。SVGはスタイル情報を含む完全な形式で出力し、Mermaidは階層構造を保持した読みやすい記法に変換する",
+            "status": "pending",
+            "testStrategy": "SVG出力の完全性テスト（スタイル、アニメーション属性の保持）、Mermaid記法の構文エラーチェック、変換後の構造の正確性検証"
+          },
+          {
+            "id": 3,
+            "title": "Excel/CSV出力機能の実装",
+            "description": "階層構造とメタデータを保持したExcel/CSV形式でのエクスポート機能を実装する",
+            "dependencies": [],
+            "details": "SheetJSを使用してExcel形式（.xlsx）での出力を実装。階層をインデントや列で表現し、メタデータ（優先度、ステータス、担当者、タグ等）を個別の列にマッピング。CSV出力では階層レベルを示す列を追加し、文字エンコーディングはUTF-8 BOM付きで日本語対応",
+            "status": "pending",
+            "testStrategy": "階層構造の正確な出力テスト、メタデータの完全性確認、大規模データでのメモリ効率テスト、Excel/CSVインポート時の互換性テスト"
+          },
+          {
+            "id": 4,
+            "title": "ショートカットキーシステムの基盤実装",
+            "description": "Mousetrapを使用したカスタマイズ可能なキーバインディングシステムを構築する",
+            "dependencies": [],
+            "details": "Mousetrapライブラリを統合し、デフォルトのキーマップ定義、ユーザーカスタマイズ機能、キーバインディングの登録・解除システムを実装。モーダル状態やフォーカス状態に応じたコンテキスト別キーマップの切り替え機能も含む。設定はlocalStorageに保存",
+            "status": "pending",
+            "testStrategy": "各種ショートカットキーの動作確認、モーダル時のキー無効化テスト、カスタムキーバインディングの永続化テスト、ブラウザ標準ショートカットとの競合回避テスト"
+          },
+          {
+            "id": 5,
+            "title": "ショートカット管理UIとエクスポート統合",
+            "description": "ショートカット一覧表示・編集UIとエクスポート機能の統合インターフェースを実装する",
+            "dependencies": [
+              "9.1",
+              "9.2",
+              "9.3",
+              "9.4"
+            ],
+            "details": "ショートカットキーの一覧表示モーダル、キーバインディングエディタ、コンフリクト検出・警告機能を実装。エクスポート機能は統一されたダイアログUIで各形式を選択可能にし、エクスポート前のプレビュー機能も提供。よく使うエクスポート形式へのクイックアクセスショートカットも設定可能",
+            "status": "pending",
+            "testStrategy": "UI操作の統合テスト、ショートカット編集時のリアルタイム反映テスト、エクスポートダイアログの各オプション動作確認、プレビュー機能の精度テスト"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "VSCode拡張対応とパフォーマンス最適化",
+        "description": "VSCode拡張として動作するための準備とアプリケーション全体のパフォーマンス最適化を行う",
+        "details": "1. VSCode拡張アーキテクチャ\n   ```typescript\n   // コアロジックの分離\n   export class MindMapCore {\n     // プラットフォーム非依存のロジック\n   }\n   \n   // VSCode拡張アダプター\n   export class VSCodeAdapter {\n     constructor(private core: MindMapCore) {}\n     // VSCode API統合\n   }\n   ```\n\n2. パフォーマンス最適化\n   - 仮想スクロール実装（大量ノード対応）\n   - Web Workerでの重い処理\n   - React.memoとuseMemoの活用\n   - バンドルサイズの最適化\n\n3. プログレッシブ機能\n   - 段階的な機能読み込み\n   - オフライン対応（Service Worker）\n   - インストール可能なPWA",
+        "testStrategy": "1. VSCode拡張としての動作確認\n2. 1000ノード以上でのパフォーマンステスト\n3. メモリ使用量のプロファイリング\n4. バンドルサイズの検証",
+        "priority": "medium",
+        "dependencies": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "コアロジックの分離とプラットフォーム非依存アーキテクチャの設計",
+            "description": "VSCode拡張とWebアプリケーションで共有可能なコアロジックを分離し、プラットフォーム非依存のアーキテクチャを構築する",
+            "dependencies": [],
+            "details": "MindMapCoreクラスの実装：マインドマップのデータ構造管理、ノード操作API、イベントシステム、状態管理ロジックをプラットフォーム固有の実装から完全に分離。インターフェースベースの設計でアダプターパターンを適用し、VSCode拡張とWebアプリケーションの両方から利用可能な構造を実現",
+            "status": "pending",
+            "testStrategy": "コアロジックの単体テスト、プラットフォーム非依存性の確認テスト、APIインターフェースの整合性テスト"
+          },
+          {
+            "id": 2,
+            "title": "VSCode拡張アダプターとAPI統合の実装",
+            "description": "VSCode Extension APIと統合するアダプター層を実装し、エディタ機能との連携を確立する",
+            "dependencies": [
+              "10.1"
+            ],
+            "details": "VSCodeAdapterクラスの実装：VSCode APIとの統合（TextDocument、TreeDataProvider、WebviewPanel）、コマンドパレット統合、エディタとの双方向通信、ファイルシステムアクセス、拡張機能の設定管理。manifest（package.json）の構成とアクティベーションイベントの定義",
+            "status": "pending",
+            "testStrategy": "VSCode Extension Testフレームワークを使用した統合テスト、モックを使用したAPI呼び出しテスト、拡張機能のアクティベーションテスト"
+          },
+          {
+            "id": 3,
+            "title": "仮想スクロールとReact最適化の実装",
+            "description": "大量ノードに対応する仮想スクロール機能を実装し、React.memoとuseMemoを活用してレンダリングパフォーマンスを最適化する",
+            "dependencies": [
+              "10.1"
+            ],
+            "details": "react-windowまたはreact-virtualizeを使用した仮想スクロールの実装、可視領域のみのノードレンダリング、React.memoによるコンポーネントの再レンダリング抑制、useMemoを使用した計算結果のメモ化、useCallbackによるイベントハンドラの最適化、React DevToolsプロファイラーを使用したパフォーマンス測定",
+            "status": "pending",
+            "testStrategy": "1000ノード以上でのレンダリングパフォーマンステスト、メモリ使用量のプロファイリング、スクロール動作の滑らかさテスト、React DevToolsでの再レンダリング回数の測定"
+          },
+          {
+            "id": 4,
+            "title": "Web Workerによる重い処理の非同期化とバンドル最適化",
+            "description": "計算量の多い処理をWeb Workerに移行し、バンドルサイズを最適化して初期読み込み時間を短縮する",
+            "dependencies": [
+              "10.3"
+            ],
+            "details": "Web Worker実装：大規模JSONのパース処理、マインドマップのレイアウト計算、ファイルの検証処理。バンドル最適化：動的インポートによるコード分割、Tree Shakingの最適化、terserによる圧縮設定、webpack-bundle-analyzerでの分析、不要な依存関係の削除",
+            "status": "pending",
+            "testStrategy": "Web Worker通信のユニットテスト、バンドルサイズの計測（目標: 初期バンドル < 200KB）、Lighthouseスコアの測定、並列処理のパフォーマンステスト"
+          },
+          {
+            "id": 5,
+            "title": "PWA対応とオフライン機能の実装",
+            "description": "Service Workerを使用したオフライン対応とPWAとしてのインストール機能を実装する",
+            "dependencies": [
+              "10.4"
+            ],
+            "details": "Service Worker実装：静的アセットのキャッシュ戦略、オフライン時のフォールバック、バックグラウンド同期。PWAマニフェスト：アイコン設定、スプラッシュスクリーン、インストールプロンプト。段階的機能読み込み：重要度に応じた機能の遅延読み込み、プログレッシブエンハンスメント",
+            "status": "pending",
+            "testStrategy": "オフライン動作テスト、Service Workerのライフサイクルテスト、PWAインストールフローのテスト、キャッシュ戦略の検証、Lighthouse PWA監査"
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "プロジェクトセットアップとMCP基盤構築",
+        "description": "MCPサーバーの基本構造を構築し、マインドマップ操作のための基盤を整備する",
+        "details": "1. TypeScriptプロジェクトの初期化\n2. MCPサーバーの基本構造を実装\n3. 必要な依存関係のインストール（@modelcontextprotocol/sdk、zod、winston等）\n4. 基本的なツール定義インターフェースの作成\n5. エラーハンドリングとロギングの基盤を実装\n\n```typescript\n// server.ts\nimport { Server } from '@modelcontextprotocol/sdk/server/index.js';\nimport { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';\n\nconst server = new Server({\n  name: 'mindmap-mcp-server',\n  version: '1.0.0'\n});\n\n// ツール登録\nserver.setRequestHandler(ListToolsRequestSchema, async () => ({\n  tools: [\n    // マインドマップ操作ツールを定義\n  ]\n}));\n```",
+        "testStrategy": "1. MCPサーバーの起動確認テスト\n2. 基本的なツール登録の動作確認\n3. エラーハンドリングのユニットテスト\n4. ロギング機能の動作確認",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "TypeScriptプロジェクトの初期化と基本設定",
+            "description": "TypeScriptプロジェクトを初期化し、MCPサーバー開発に必要な基本設定を行う",
+            "dependencies": [],
+            "details": "package.jsonの作成、tsconfig.jsonの設定（strict: true、module: esnext、target: es2022、esModuleInterop: true）、.gitignoreの作成、プロジェクトディレクトリ構造の作成（src/、dist/、tests/）、npm scriptsの設定（build、dev、test、lint）",
+            "status": "pending",
+            "testStrategy": "npm installが正常に完了すること、tscコマンドでコンパイルエラーが発生しないこと、プロジェクト構造が正しく作成されていることを確認"
+          },
+          {
+            "id": 2,
+            "title": "MCP SDK依存関係のインストールと設定",
+            "description": "@modelcontextprotocol/sdkとその関連パッケージをインストールし、必要な設定を行う",
+            "dependencies": [
+              "11.1"
+            ],
+            "details": "@modelcontextprotocol/sdk、@modelcontextprotocol/sdk/server、@modelcontextprotocol/sdk/server/stdioのインストール、zod、winston、dotenvなどの必要なライブラリのインストール、型定義ファイル（@types/*）のインストール、package.jsonのtype: moduleの設定確認",
+            "status": "pending",
+            "testStrategy": "すべての依存関係が正しくインストールされていること、importステートメントが正常に機能すること、型チェックが正常に動作することを確認"
+          },
+          {
+            "id": 3,
+            "title": "MCPサーバーの基本構造実装",
+            "description": "MCPサーバーのメインエントリーポイントとなるserver.tsを実装し、基本的なサーバー構造を構築する",
+            "dependencies": [
+              "11.2"
+            ],
+            "details": "server.tsの作成、Serverインスタンスの初期化（name: 'mindmap-mcp-server'、version: '1.0.0'）、StdioServerTransportの設定、基本的なリクエストハンドラーの実装（ListToolsRequestSchema）、サーバー起動処理の実装、package.jsonにbinフィールドを追加してCLIとして実行可能にする",
+            "status": "pending",
+            "testStrategy": "MCPサーバーが正常に起動すること、標準入出力での通信が可能なこと、ListToolsリクエストに応答できること、エラーなくプロセスが終了すること"
+          },
+          {
+            "id": 4,
+            "title": "ツール定義インターフェースとスキーマの作成",
+            "description": "マインドマップ操作用のツール定義インターフェースとZodスキーマを作成する",
+            "dependencies": [
+              "11.3"
+            ],
+            "details": "src/types/tools.tsの作成、マインドマップ操作ツールのインターフェース定義（create、read、update、delete、search、export）、各ツールのZodスキーマ定義、入力パラメータと出力形式の型定義、ツール登録用のヘルパー関数の実装",
+            "status": "pending",
+            "testStrategy": "すべてのツール定義が正しくコンパイルされること、Zodスキーマのバリデーションが正常に動作すること、型の整合性が保たれていることを確認"
+          },
+          {
+            "id": 5,
+            "title": "エラーハンドリングとロギング基盤の実装",
+            "description": "堅牢なエラーハンドリング機構とWinstonを使用したロギングシステムを実装する",
+            "dependencies": [
+              "11.4"
+            ],
+            "details": "src/utils/logger.tsの作成（Winstonロガーの設定）、src/utils/errors.tsの作成（カスタムエラークラスの定義）、グローバルエラーハンドラーの実装、非同期エラーのキャッチ機構、ログレベルの設定（debug、info、warn、error）、ログファイルのローテーション設定",
+            "status": "pending",
+            "testStrategy": "各種エラーが適切にキャッチされログに記録されること、ログファイルが正しく生成されること、エラー時にサーバーがクラッシュしないこと、ログレベルが正しく機能することを確認"
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "マインドマップスキーマ定義と検証システム",
+        "description": "マインドマップのJSONスキーマを定義し、データ構造の検証システムを実装する",
+        "details": "1. Zodを使用したマインドマップスキーマの定義\n2. ノード構造（ID、タイトル、説明、タイプ、カスタム属性）の定義\n3. スキーマバリデーション関数の実装\n4. カスタムスキーマのサポート機能\n5. スキーマ情報を返すMCPツールの実装\n\n```typescript\nimport { z } from 'zod';\n\nconst NodeSchema = z.object({\n  id: z.string(),\n  title: z.string(),\n  description: z.string().optional(),\n  type: z.string(),\n  children: z.array(z.lazy(() => NodeSchema)).optional(),\n  customAttributes: z.record(z.any()).optional(),\n  metadata: z.object({\n    createdAt: z.string().datetime(),\n    updatedAt: z.string().datetime(),\n    version: z.number()\n  })\n});\n\nconst MindmapSchema = z.object({\n  version: z.string(),\n  root: NodeSchema,\n  metadata: z.object({\n    lastModified: z.string().datetime(),\n    author: z.string().optional()\n  })\n});\n```",
+        "testStrategy": "1. 有効なマインドマップデータの検証テスト\n2. 無効なデータに対するエラー検出テスト\n3. カスタムスキーマの適用テスト\n4. スキーマ情報取得ツールの統合テスト",
+        "priority": "high",
+        "dependencies": [
+          11
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Zodスキーマの基本定義と型構造の実装",
+            "description": "マインドマップの基本的なデータ構造をZodで定義し、TypeScript型を生成する",
+            "dependencies": [],
+            "details": "NodeSchemaとMindmapSchemaの基本構造を定義し、再帰的な子ノード構造をサポート。メタデータフィールド（createdAt、updatedAt、version）を含む完全な型定義を実装。z.infer<>を使用してTypeScript型を自動生成し、型の再利用性を確保",
+            "status": "pending",
+            "testStrategy": "基本的なノード構造の検証テスト、再帰的な子ノードの検証テスト、メタデータフィールドの必須項目チェック"
+          },
+          {
+            "id": 2,
+            "title": "カスタム属性とスキーマ拡張システムの実装",
+            "description": "ユーザー定義のカスタム属性をサポートし、スキーマを動的に拡張できる仕組みを構築",
+            "dependencies": [
+              "12.1"
+            ],
+            "details": "customAttributesフィールドにz.record()を使用し、任意のキー・バリューペアを許可。スキーマ継承システムを実装し、ベーススキーマを拡張してドメイン固有のスキーマを作成可能に。スキーママージ機能とコンフリクト解決ロジックを含む",
+            "status": "pending",
+            "testStrategy": "カスタム属性の追加・更新テスト、スキーマ継承の動作確認、互換性のないスキーママージのエラーハンドリングテスト"
+          },
+          {
+            "id": 3,
+            "title": "バリデーション関数とエラーハンドリングの実装",
+            "description": "Zodスキーマを使用した包括的なバリデーション関数とユーザーフレンドリーなエラーメッセージシステムを構築",
+            "dependencies": [
+              "12.1",
+              "12.2"
+            ],
+            "details": "validateMindmap()関数でスキーマ全体の検証を実行。エラーメッセージの日本語ローカライズ対応。パスベースのエラー位置特定機能（例：root.children[2].metadata.version）。部分検証とストリクトモードのオプション提供",
+            "status": "pending",
+            "testStrategy": "有効なデータの成功ケース、各種バリデーションエラーの検出、エラーメッセージの正確性確認、パフォーマンステスト（1000ノード以上）"
+          },
+          {
+            "id": 4,
+            "title": "スキーマバージョニングとマイグレーションシステム",
+            "description": "スキーマのバージョン管理と自動マイグレーション機能を実装",
+            "dependencies": [
+              "12.3"
+            ],
+            "details": "バージョンフィールドを使用したスキーマバージョン管理。古いバージョンから新しいバージョンへの自動変換ルール定義。後方互換性の維持とdeprecationの警告機能。マイグレーション履歴の記録とロールバック機能",
+            "status": "pending",
+            "testStrategy": "バージョン間のマイグレーションテスト、後方互換性の確認、マイグレーションエラーのハンドリング、大規模データのマイグレーションパフォーマンス"
+          },
+          {
+            "id": 5,
+            "title": "MCPツール実装とスキーマ情報API",
+            "description": "スキーマ情報を返すMCPツールを実装し、外部システムとの連携を可能にする",
+            "dependencies": [
+              "12.3",
+              "12.4"
+            ],
+            "details": "getSchemaInfo()ツールでスキーマ定義をJSON形式で返却。validateMindmapData()ツールでリアルタイムバリデーション。getAvailableNodeTypes()でサポートされるノードタイプ一覧を提供。スキーマドキュメントの自動生成機能を含む",
+            "status": "pending",
+            "testStrategy": "MCPツールのレスポンス形式テスト、大規模スキーマ情報の取得パフォーマンス、エラーケースのハンドリング確認、統合テスト"
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "title": "マインドマップ読み取り機能の実装",
+        "description": "マインドマップファイルの読み取りとデータ取得機能を実装する",
+        "details": "1. ファイル読み取り機能の実装\n2. JSON解析とスキーマ検証の統合\n3. 特定ノード検索機能の実装\n4. メタデータ取得機能の実装\n5. MCPツールとしての公開\n\n```typescript\nconst readMindmapTool = {\n  name: 'read_mindmap',\n  description: 'マインドマップデータを読み取る',\n  inputSchema: z.object({\n    filePath: z.string(),\n    nodeId: z.string().optional()\n  }),\n  handler: async ({ filePath, nodeId }) => {\n    const data = await fs.readFile(filePath, 'utf-8');\n    const mindmap = MindmapSchema.parse(JSON.parse(data));\n    \n    if (nodeId) {\n      return findNodeById(mindmap.root, nodeId);\n    }\n    return mindmap;\n  }\n};\n```",
+        "testStrategy": "1. 正常なファイル読み取りテスト\n2. 不正なファイルパスのエラーハンドリングテスト\n3. ノード検索機能のテスト\n4. 大規模マインドマップのパフォーマンステスト",
+        "priority": "high",
+        "dependencies": [
+          12
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "ファイル読み取り基盤機能の実装",
+            "description": "マインドマップファイルを安全に読み取るための基盤機能を実装する",
+            "dependencies": [],
+            "details": "Node.jsのfsモジュールを使用してファイルを非同期で読み取る機能を実装。ファイルパスの検証、ファイル存在確認、読み取り権限チェック、エラーハンドリング（ファイルが存在しない、権限がない、破損している等）を含む。UTF-8エンコーディングでの読み取りを保証し、大きなファイルに対応するためのストリーミング読み取りオプションも検討する。",
+            "status": "pending",
+            "testStrategy": "正常なファイル読み取りテスト、存在しないファイルのエラーテスト、権限エラーテスト、空ファイルの処理テスト、大容量ファイル（10MB以上）の読み取りパフォーマンステスト"
+          },
+          {
+            "id": 2,
+            "title": "JSON解析とスキーマ検証の統合",
+            "description": "読み取ったJSONデータを解析し、定義済みのMindmapSchemaで検証する機能を実装する",
+            "dependencies": [
+              "13.1"
+            ],
+            "details": "JSON.parseでデータを解析し、zodライブラリのMindmapSchemaを使用して構造を検証。不正なJSON形式、スキーマ違反、循環参照の検出を実装。バリデーションエラーの詳細なメッセージを生成し、どのフィールドが問題なのかを明確に示す。パーシャルバリデーションモードも実装し、一部のフィールドが欠落していても動作するようにする。",
+            "status": "pending",
+            "testStrategy": "正常なマインドマップデータの検証テスト、不正なJSON形式のエラーテスト、スキーマ違反の各種パターンテスト、循環参照データの検出テスト、パーシャルデータの検証テスト"
+          },
+          {
+            "id": 3,
+            "title": "特定ノード検索機能の実装",
+            "description": "マインドマップ内の特定のノードをIDで効率的に検索する再帰的探索機能を実装する",
+            "dependencies": [
+              "13.2"
+            ],
+            "details": "findNodeById関数を実装し、ルートノードから開始して全ての子ノードを再帰的に探索。深さ優先探索（DFS）アルゴリズムを使用し、見つかり次第早期リターンで効率化。ノードが見つからない場合のnull返却、循環参照対策として訪問済みノードのトラッキング、大規模マインドマップでの検索パフォーマンス最適化（インデックスキャッシュの検討）を実装。",
+            "status": "pending",
+            "testStrategy": "ルートノードの検索テスト、深い階層のノード検索テスト、存在しないIDの検索テスト、複数の同一IDが存在する場合の動作テスト、1000ノード以上の大規模データでの検索パフォーマンステスト"
+          },
+          {
+            "id": 4,
+            "title": "メタデータ取得機能の実装",
+            "description": "マインドマップ全体やノードのメタデータを効率的に取得・集計する機能を実装する",
+            "dependencies": [
+              "13.3"
+            ],
+            "details": "マインドマップ全体の統計情報（総ノード数、最大深度、タグ一覧、ステータス別集計）を取得する機能を実装。特定ノードのメタデータ（作成日時、更新日時、優先度、進捗率等）を取得し、必要に応じて親ノードや子ノードの情報も含めた拡張メタデータを提供。メタデータのフィルタリングやソート機能も実装し、特定条件に合致するノードの一覧取得を可能にする。",
+            "status": "pending",
+            "testStrategy": "全体統計情報の正確性テスト、ノードメタデータの取得テスト、フィルタリング機能のテスト、空のメタデータ処理テスト、集計パフォーマンステスト"
+          },
+          {
+            "id": 5,
+            "title": "MCPツールとしての統合と公開",
+            "description": "実装した機能をMCPツールとして統合し、適切なインターフェースで公開する",
+            "dependencies": [
+              "13.4"
+            ],
+            "details": "read_mindmapツールの完全な実装。zodスキーマによる入力検証（filePath必須、nodeIdオプション）、非同期ハンドラーの実装、エラーハンドリングとユーザーフレンドリーなエラーメッセージの返却、成功時のレスポンス形式の統一化。ツールの説明文書の作成、使用例の提供、MCPサーバーへの登録処理を含む。キャッシュ機能の実装により、同一ファイルへの連続アクセスを高速化。",
+            "status": "pending",
+            "testStrategy": "MCPツールインターフェースの動作テスト、入力検証のテスト、エラーレスポンスの形式テスト、キャッシュ機能の有効性テスト、並行リクエスト処理のテスト"
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "title": "ノード追加機能の実装",
+        "description": "マインドマップに新しいノードを追加する機能を実装する",
+        "details": "1. ノード追加ロジックの実装\n2. 親ノードの検証と子ノード配列への追加\n3. ID重複チェック機能\n4. ファイル更新とバックアップ機能\n5. トランザクション的な更新の実装\n\n```typescript\nconst addNodeTool = {\n  name: 'add_node',\n  description: '新しいノードを追加',\n  inputSchema: z.object({\n    filePath: z.string(),\n    parentId: z.string(),\n    node: z.object({\n      title: z.string(),\n      description: z.string().optional(),\n      type: z.string(),\n      customAttributes: z.record(z.any()).optional()\n    })\n  }),\n  handler: async ({ filePath, parentId, node }) => {\n    const mindmap = await readMindmap(filePath);\n    const newNode = {\n      id: generateUniqueId(),\n      ...node,\n      metadata: {\n        createdAt: new Date().toISOString(),\n        updatedAt: new Date().toISOString(),\n        version: 1\n      },\n      children: []\n    };\n    \n    const parent = findNodeById(mindmap.root, parentId);\n    if (!parent) throw new Error('親ノードが見つかりません');\n    \n    parent.children = parent.children || [];\n    parent.children.push(newNode);\n    \n    await saveMindmap(filePath, mindmap);\n    return { success: true, nodeId: newNode.id };\n  }\n};\n```",
+        "testStrategy": "1. 正常なノード追加のテスト\n2. 無効な親ノードIDのエラーテスト\n3. ID重複検出のテスト\n4. ファイル更新の整合性テスト",
+        "priority": "high",
+        "dependencies": [
+          13
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "ユニークID生成機能の実装",
+            "description": "ノードに割り当てるユニークなIDを生成する機能を実装し、ID重複を防ぐメカニズムを構築する",
+            "dependencies": [],
+            "details": "1. UUID v4またはnanoidを使用したID生成関数の実装\n2. 既存IDとの重複チェック機能の実装\n3. IDのフォーマット検証（例：'node_' プレフィックス付き）\n4. 生成されたIDのキャッシュ管理\n5. 同時実行時のID衝突防止機構",
+            "status": "pending",
+            "testStrategy": "1. ID生成の一意性テスト（10万回生成して重複なし）\n2. 並行処理時のID衝突テスト\n3. IDフォーマットの検証テスト\n4. パフォーマンステスト（1秒間の生成数）"
+          },
+          {
+            "id": 2,
+            "title": "ノード検索とツリー走査機能の実装",
+            "description": "マインドマップ内の特定ノードを効率的に検索し、親子関係を辿る機能を実装する",
+            "dependencies": [],
+            "details": "1. findNodeById関数の実装（深さ優先探索）\n2. 親ノード検索機能の実装\n3. パスベースでのノード検索（例：/root/child1/child2）\n4. ノードの階層レベル取得機能\n5. 検索結果のキャッシング機構",
+            "status": "pending",
+            "testStrategy": "1. 深い階層構造での検索パフォーマンステスト\n2. 存在しないノードIDでのエラーハンドリングテスト\n3. 循環参照検出テスト\n4. 大規模ツリー（1000ノード以上）での検索速度テスト"
+          },
+          {
+            "id": 3,
+            "title": "ノード追加のコアロジック実装",
+            "description": "新しいノードを親ノードの子要素として追加する中核機能を実装する",
+            "dependencies": [
+              "14.1",
+              "14.2"
+            ],
+            "details": "1. addNodeTool のハンドラー関数実装\n2. 入力スキーマのバリデーション（zod使用）\n3. ノードのメタデータ自動生成（createdAt、updatedAt、version）\n4. 親ノードのchildren配列への安全な追加処理\n5. カスタム属性のマージ処理",
+            "status": "pending",
+            "testStrategy": "1. 正常系：ルートノードへの追加テスト\n2. 正常系：深い階層への追加テスト\n3. 異常系：無効な親ノードIDテスト\n4. 異常系：必須フィールド欠落テスト"
+          },
+          {
+            "id": 4,
+            "title": "ファイル操作とトランザクション管理の実装",
+            "description": "マインドマップファイルの読み書きを安全に行い、エラー時のロールバック機能を実装する",
+            "dependencies": [
+              "14.3"
+            ],
+            "details": "1. readMindmap関数の実装（ファイルロック機能付き）\n2. saveMindmap関数の実装（アトミックな書き込み）\n3. トランザクションマネージャーの実装\n4. 一時ファイルを使用した安全な更新処理\n5. ファイル破損検出とリカバリー機能",
+            "status": "pending",
+            "testStrategy": "1. 同時書き込み時のファイルロックテスト\n2. 書き込み中断時のロールバックテスト\n3. ファイル破損時の自動リカバリーテスト\n4. 大容量ファイルの読み書きパフォーマンステスト"
+          },
+          {
+            "id": 5,
+            "title": "バックアップと変更履歴の実装",
+            "description": "ノード追加時の自動バックアップと変更履歴の記録機能を実装する",
+            "dependencies": [
+              "14.4"
+            ],
+            "details": "1. ノード追加前の自動バックアップ作成\n2. 変更履歴のタイムスタンプ記録\n3. 差分データの生成と保存\n4. バックアップファイルの世代管理（最大5世代）\n5. 変更内容のサマリー生成機能",
+            "status": "pending",
+            "testStrategy": "1. バックアップファイルの自動生成テスト\n2. 世代管理のローテーションテスト\n3. 差分データの正確性テスト\n4. バックアップからの復元テスト"
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "title": "ノード更新・削除機能の実装",
+        "description": "既存ノードの更新と削除機能を実装する",
+        "details": "1. ノード更新機能の実装（タイトル、説明、属性）\n2. ノード移動機能（親子関係の変更）\n3. ノード削除機能と子ノードの処理\n4. 削除前の確認と警告機能\n5. ルートノード保護機能\n\n```typescript\nconst updateNodeTool = {\n  name: 'update_node',\n  inputSchema: z.object({\n    filePath: z.string(),\n    nodeId: z.string(),\n    updates: z.object({\n      title: z.string().optional(),\n      description: z.string().optional(),\n      customAttributes: z.record(z.any()).optional()\n    })\n  }),\n  handler: async ({ filePath, nodeId, updates }) => {\n    const mindmap = await readMindmap(filePath);\n    const node = findNodeById(mindmap.root, nodeId);\n    \n    if (!node) throw new Error('ノードが見つかりません');\n    \n    Object.assign(node, updates);\n    node.metadata.updatedAt = new Date().toISOString();\n    node.metadata.version++;\n    \n    await saveMindmap(filePath, mindmap);\n    return { success: true };\n  }\n};\n\nconst deleteNodeTool = {\n  name: 'delete_node',\n  handler: async ({ filePath, nodeId, deleteChildren = true }) => {\n    if (nodeId === 'root') throw new Error('ルートノードは削除できません');\n    // 削除ロジック\n  }\n};\n```",
+        "testStrategy": "1. ノード属性更新のテスト\n2. ノード移動の整合性テスト\n3. 子ノード含む削除のテスト\n4. ルートノード保護のテスト",
+        "priority": "medium",
+        "dependencies": [
+          14
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "ノード更新機能の基本実装",
+            "description": "既存ノードのタイトル、説明、カスタム属性を更新する基本機能を実装する",
+            "dependencies": [],
+            "details": "updateNodeToolの実装を完成させ、ノードIDによる検索、更新対象フィールドの部分更新、メタデータ（updatedAt、version）の自動更新機能を含める。zodスキーマによる入力検証も実装する。",
+            "status": "pending",
+            "testStrategy": "単体テストで正常な更新、存在しないノードIDへの更新、不正な入力値の検証、メタデータの自動更新を確認する"
+          },
+          {
+            "id": 2,
+            "title": "ノード移動機能の実装",
+            "description": "マインドマップ内でノードの親子関係を変更し、階層構造を再編成する機能を実装する",
+            "dependencies": [
+              "15.1"
+            ],
+            "details": "moveNodeToolを作成し、ノードを別の親ノードに移動する機能を実装。循環参照の検出、移動先の妥当性検証、子ノードを含む移動処理、移動後のパスやレベルの再計算を含める。",
+            "status": "pending",
+            "testStrategy": "正常な移動、循環参照の検出、ルートノードへの移動制限、子ノードを含む移動の整合性をテストする"
+          },
+          {
+            "id": 3,
+            "title": "ノード削除機能の実装",
+            "description": "ノードとその子ノードを削除する機能を実装し、削除オプションによる動作の制御を可能にする",
+            "dependencies": [
+              "15.1"
+            ],
+            "details": "deleteNodeToolの完全な実装。deleteChildrenオプションによる子ノードの処理（削除または親ノードへの昇格）、削除対象ノードの親からの参照削除、削除履歴の記録機能を含める。",
+            "status": "pending",
+            "testStrategy": "単一ノード削除、子ノード含む削除、子ノード昇格オプション、ルートノード削除の防止をテストする"
+          },
+          {
+            "id": 4,
+            "title": "削除確認と警告機能の実装",
+            "description": "重要なノードの削除前に確認ダイアログを表示し、誤操作を防ぐ機能を実装する",
+            "dependencies": [
+              "15.3"
+            ],
+            "details": "削除前の確認プロンプト機能、影響を受ける子ノード数の表示、重要度の高いノード（多数の子ノードを持つ、特定の属性を持つ）の検出と警告、削除の取り消し可能期間の実装。",
+            "status": "pending",
+            "testStrategy": "確認ダイアログの表示条件、警告メッセージの内容、削除キャンセル機能、一括削除時の確認処理をテストする"
+          },
+          {
+            "id": 5,
+            "title": "ルートノード保護とエラーハンドリングの実装",
+            "description": "ルートノードの保護機能と、更新・削除操作全体のエラーハンドリングを実装する",
+            "dependencies": [
+              "15.2",
+              "15.3",
+              "15.4"
+            ],
+            "details": "ルートノードの更新制限（特定フィールドのみ許可）、削除完全禁止、エラーメッセージの統一化、トランザクション的な操作（失敗時のロールバック）、操作ログの記録機能を実装する。",
+            "status": "pending",
+            "testStrategy": "ルートノード操作の制限、エラー時のロールバック、ログ記録の正確性、並行操作時の整合性をテストする"
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "title": "検索・フィルタリング機能の実装",
+        "description": "マインドマップ内の効率的な検索とフィルタリング機能を実装する",
+        "details": "1. キーワード検索エンジンの実装\n2. 属性ベースのフィルタリング機能\n3. 階層レベルによる絞り込み\n4. 正規表現サポート\n5. 検索結果のランキング機能\n\n```typescript\nconst searchNodesTool = {\n  name: 'search_nodes',\n  inputSchema: z.object({\n    filePath: z.string(),\n    query: z.string().optional(),\n    filters: z.object({\n      type: z.string().optional(),\n      level: z.number().optional(),\n      attributes: z.record(z.any()).optional()\n    }).optional()\n  }),\n  handler: async ({ filePath, query, filters }) => {\n    const mindmap = await readMindmap(filePath);\n    const results = [];\n    \n    const searchRecursive = (node, level = 0) => {\n      const matches = (\n        (!query || node.title.includes(query) || node.description?.includes(query)) &&\n        (!filters?.type || node.type === filters.type) &&\n        (!filters?.level || level === filters.level)\n      );\n      \n      if (matches) {\n        results.push({ ...node, level, path: getNodePath(mindmap.root, node.id) });\n      }\n      \n      node.children?.forEach(child => searchRecursive(child, level + 1));\n    };\n    \n    searchRecursive(mindmap.root);\n    return results;\n  }\n};\n```",
+        "testStrategy": "1. キーワード検索の精度テスト\n2. 複数条件フィルタリングのテスト\n3. 大規模データでのパフォーマンステスト\n4. 検索結果の妥当性検証",
+        "priority": "medium",
+        "dependencies": [
+          15
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "基本的なキーワード検索エンジンの実装",
+            "description": "マインドマップノードのタイトルと説明文に対する基本的なキーワード検索機能を実装する",
+            "dependencies": [],
+            "details": "1. 検索インデックスの構築\n   - ノードのタイトルと説明文をインデックス化\n   - 日本語対応のトークナイザー実装\n   - 部分一致・完全一致の切り替え機能\n\n2. 検索アルゴリズムの実装\n   - Boyer-Moore法による高速文字列検索\n   - 大文字小文字を区別しない検索オプション\n   - ひらがな・カタカナの正規化処理\n\n3. 検索結果の構造化\n   - マッチした箇所のハイライト情報\n   - ノードまでのパス情報\n   - 検索スコアの計算",
+            "status": "pending",
+            "testStrategy": "1. 日本語・英語混在テキストでの検索精度テスト\n2. 大規模ノード（10,000件以上）での検索速度測定\n3. 特殊文字・記号を含む検索クエリのテスト\n4. 部分一致・完全一致の動作確認"
+          },
+          {
+            "id": 2,
+            "title": "高度な属性ベースフィルタリング機能の実装",
+            "description": "ノードのメタデータや属性に基づく柔軟なフィルタリング機能を実装する",
+            "dependencies": [],
+            "details": "1. フィルタリングエンジンの実装\n   - 複数条件のAND/OR結合\n   - ネストされた条件の処理\n   - 動的なフィルタ生成機能\n\n2. 属性フィルタの種類\n   - priority（優先度）でのフィルタ\n   - status（ステータス）でのフィルタ\n   - assignee（担当者）でのフィルタ\n   - tags（タグ）での複数条件フィルタ\n   - progress（進捗率）での範囲フィルタ\n   - dueDate（期限）での日付範囲フィルタ\n\n3. フィルタのプリセット機能\n   - よく使うフィルタの保存\n   - フィルタのエクスポート/インポート",
+            "status": "pending",
+            "testStrategy": "1. 複雑な条件組み合わせでのフィルタリング精度テスト\n2. 1万件以上のノードでのフィルタリング性能測定\n3. 不正な条件入力に対するエラーハンドリングテスト\n4. フィルタプリセットの保存・読み込みテスト"
+          },
+          {
+            "id": 3,
+            "title": "階層レベルによる絞り込みと正規表現サポートの実装",
+            "description": "マインドマップの階層構造を活用した絞り込み機能と、高度な正規表現検索を実装する",
+            "dependencies": [
+              "16.1"
+            ],
+            "details": "1. 階層レベル絞り込み機能\n   - 特定の深さまでのノード検索\n   - 階層範囲指定（例：レベル2-4のみ）\n   - 親子関係を考慮した検索\n   - サブツリー内検索機能\n\n2. 正規表現エンジンの統合\n   - ECMAScript正規表現のフルサポート\n   - 名前付きキャプチャグループ対応\n   - 後方参照・先読み・後読みのサポート\n   - 正規表現のバリデーション機能\n\n3. 検索モードの切り替え\n   - 通常検索/正規表現検索の切り替えUI\n   - 検索履歴の保存\n   - よく使う正規表現パターンのライブラリ",
+            "status": "pending",
+            "testStrategy": "1. 複雑な階層構造での絞り込み精度テスト\n2. 正規表現パターンの妥当性検証テスト\n3. 悪意のある正規表現（ReDoS）への対策テスト\n4. 検索モード切り替えの動作確認"
+          },
+          {
+            "id": 4,
+            "title": "検索結果のランキングとスコアリングシステムの実装",
+            "description": "検索結果の関連性を評価し、最適な順序で表示するランキングシステムを実装する",
+            "dependencies": [
+              "16.1",
+              "16.2",
+              "16.3"
+            ],
+            "details": "1. スコアリングアルゴリズムの実装\n   - TF-IDF（単語頻度・逆文書頻度）の計算\n   - BM25アルゴリズムの実装\n   - ノードの重要度（階層、リンク数）の考慮\n   - メタデータの重み付け\n\n2. ランキング要素\n   - 完全一致 > 部分一致の優先度\n   - タイトル > 説明文の重み付け\n   - 最近更新されたノードの優先\n   - ユーザーの閲覧履歴の考慮\n\n3. 検索結果の最適化\n   - ページネーション機能\n   - 検索結果のグルーピング\n   - 類似ノードの提案機能",
+            "status": "pending",
+            "testStrategy": "1. スコアリングアルゴリズムの妥当性検証\n2. 大規模データでのランキング性能測定\n3. ユーザビリティテスト（検索結果の適切性）\n4. A/Bテストによるランキング品質の評価"
+          },
+          {
+            "id": 5,
+            "title": "統合検索インターフェースとパフォーマンス最適化の実装",
+            "description": "すべての検索機能を統合した高性能な検索インターフェースを実装する",
+            "dependencies": [
+              "16.1",
+              "16.2",
+              "16.3",
+              "16.4"
+            ],
+            "details": "1. 統合検索API の実装\n   - GraphQLによる柔軟なクエリインターフェース\n   - リアルタイム検索（インクリメンタルサーチ）\n   - 検索サジェスト機能\n   - ファセット検索の実装\n\n2. パフォーマンス最適化\n   - 検索インデックスのキャッシング\n   - 並列検索処理の実装\n   - Web Workerを使用したバックグラウンド処理\n   - 検索結果の遅延読み込み\n\n3. 高度な機能\n   - 検索結果のエクスポート機能\n   - 保存された検索条件の管理\n   - 検索アナリティクスの収集\n   - 検索APIのレート制限",
+            "status": "pending",
+            "testStrategy": "1. 統合APIのエンドツーエンドテスト\n2. 同時検索リクエストの負荷テスト\n3. キャッシュヒット率の測定\n4. リアルタイム検索のレスポンステスト"
+          }
+        ]
+      },
+      {
+        "id": 17,
+        "title": "構造分析とバリデーション機能",
+        "description": "マインドマップの構造分析と整合性チェック機能を実装する",
+        "details": "1. ノード統計情報の集計機能\n2. 循環参照検出アルゴリズム\n3. 孤立ノード検出機能\n4. 構造最適化の提案機能\n5. 分析レポート生成機能\n\n```typescript\nconst analyzeMindmapTool = {\n  name: 'analyze_mindmap',\n  handler: async ({ filePath }) => {\n    const mindmap = await readMindmap(filePath);\n    const stats = {\n      totalNodes: 0,\n      maxDepth: 0,\n      averageBranching: 0,\n      nodeTypes: {},\n      issues: []\n    };\n    \n    // 循環参照チェック\n    const visited = new Set();\n    const detectCycles = (node, path = []) => {\n      if (path.includes(node.id)) {\n        stats.issues.push({\n          type: 'circular_reference',\n          nodeId: node.id,\n          path: [...path, node.id]\n        });\n      }\n      visited.add(node.id);\n      node.children?.forEach(child => detectCycles(child, [...path, node.id]));\n    };\n    \n    detectCycles(mindmap.root);\n    return stats;\n  }\n};\n```",
+        "testStrategy": "1. 統計情報の正確性テスト\n2. 循環参照検出のテスト\n3. 複雑な構造での分析テスト\n4. パフォーマンスベンチマーク",
+        "priority": "medium",
+        "dependencies": [
+          16
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "ノード統計情報集計機能の実装",
+            "description": "マインドマップ内の全ノードを走査し、総ノード数、最大深度、平均分岐数、ノードタイプ別統計などの基本的な統計情報を収集する機能を実装する",
+            "dependencies": [],
+            "details": "再帰的にノードツリーを走査し、各種統計情報を効率的に集計する。メモリ効率を考慮し、大規模なマインドマップでも高速に動作するよう実装する。統計情報には、ノード数、深度、分岐数、メタデータの利用状況（優先度、ステータス、タグの分布）などを含める",
+            "status": "pending",
+            "testStrategy": "様々な構造のマインドマップ（深い階層、広い階層、不均一な構造）での統計精度を検証。10,000ノード以上の大規模データでのパフォーマンステストを実施"
+          },
+          {
+            "id": 2,
+            "title": "循環参照検出アルゴリズムの実装",
+            "description": "マインドマップ内のノード間で循環参照が発生していないかを検出し、問題のあるノードと循環パスを特定する機能を実装する",
+            "dependencies": [
+              "17.1"
+            ],
+            "details": "深さ優先探索（DFS）を使用して訪問済みノードを追跡し、同一パス内での重複訪問を検出。循環が検出された場合は、循環に含まれる全ノードIDとパスを記録。並列処理や非同期処理に対応し、リアルタイムでの循環参照チェックも可能にする",
+            "status": "pending",
+            "testStrategy": "意図的に循環参照を含むテストケースの作成。複雑な循環パターン（自己参照、相互参照、多段階循環）の検出テスト。エッジケースとして、削除されたノードへの参照も検証"
+          },
+          {
+            "id": 3,
+            "title": "孤立ノード検出機能の開発",
+            "description": "ルートノードから到達できない孤立したノードや、親を持たない浮遊ノードを検出し、構造の整合性を確認する機能を実装する",
+            "dependencies": [
+              "17.1"
+            ],
+            "details": "ルートノードからの到達可能性分析を実行し、全ノードの接続状態を検証。孤立ノードが検出された場合は、その原因（削除された親ノード、不正なインポートなど）を推定。修復提案機能も含め、孤立ノードを適切な位置に再配置する候補を提示",
+            "status": "pending",
+            "testStrategy": "孤立ノードを含むテストデータの作成。ノード削除操作後の整合性チェック。インポート/エクスポート時の孤立ノード発生シナリオのテスト"
+          },
+          {
+            "id": 4,
+            "title": "構造最適化提案エンジンの構築",
+            "description": "マインドマップの構造を分析し、可読性や管理性を向上させるための最適化提案を生成する機能を実装する",
+            "dependencies": [
+              "17.1",
+              "17.2",
+              "17.3"
+            ],
+            "details": "深すぎる階層の平坦化提案、類似ノードのグループ化提案、バランスの悪い分岐の再構成提案などを生成。認知科学的な観点から、7±2の法則に基づく分岐数の最適化も提案。各提案には、実行前後の構造比較プレビューを含める",
+            "status": "pending",
+            "testStrategy": "様々な問題を含むマインドマップでの提案精度検証。提案実行後の構造改善度の定量的評価。ユーザビリティテストによる提案の有用性検証"
+          },
+          {
+            "id": 5,
+            "title": "分析レポート生成・出力機能の実装",
+            "description": "収集した統計情報、検出した問題、最適化提案を統合し、視覚的に理解しやすい分析レポートを生成する機能を実装する",
+            "dependencies": [
+              "17.1",
+              "17.2",
+              "17.3",
+              "17.4"
+            ],
+            "details": "HTML/PDF/Markdownフォーマットでのレポート出力に対応。グラフやチャートを使用した視覚化（ノード分布ヒートマップ、深度分布グラフ、問題箇所のハイライト表示）を実装。レポートテンプレートのカスタマイズ機能と、定期的な自動レポート生成機能も含める",
+            "status": "pending",
+            "testStrategy": "各出力フォーマットの正確性検証。大規模データでのレポート生成パフォーマンステスト。視覚化要素の正確性とアクセシビリティテスト"
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "title": "バックアップとバージョン管理システム",
+        "description": "マインドマップのバックアップとバージョン管理機能を実装する",
+        "details": "1. 自動バックアップ機能の実装\n2. バージョン履歴の管理\n3. 差分検出と保存\n4. ロールバック機能\n5. バックアップの圧縮と最適化\n\n```typescript\nconst backupManager = {\n  createBackup: async (filePath: string) => {\n    const timestamp = new Date().toISOString();\n    const backupPath = `${filePath}.backup.${timestamp}`;\n    const mindmap = await readMindmap(filePath);\n    \n    const backup = {\n      timestamp,\n      originalPath: filePath,\n      data: mindmap,\n      checksum: calculateChecksum(mindmap)\n    };\n    \n    await fs.writeFile(backupPath, JSON.stringify(backup));\n    return backupPath;\n  },\n  \n  restore: async (backupPath: string, targetPath: string) => {\n    const backup = JSON.parse(await fs.readFile(backupPath, 'utf-8'));\n    const currentData = await readMindmap(targetPath);\n    \n    // 現在のデータをバックアップ\n    await this.createBackup(targetPath);\n    \n    // 復元実行\n    await fs.writeFile(targetPath, JSON.stringify(backup.data));\n    return { success: true, previousBackup: backupPath };\n  }\n};\n```",
+        "testStrategy": "1. バックアップ作成と復元のテスト\n2. バージョン間の差分検出テスト\n3. 破損データの検出テスト\n4. 並行アクセス時の整合性テスト",
+        "priority": "high",
+        "dependencies": [
+          17
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "バックアップシステムのコア実装",
+            "description": "基本的なバックアップ作成・復元機能とファイルシステム操作の実装",
+            "dependencies": [],
+            "details": "1. バックアップファイルの命名規則とディレクトリ構造の設計\n2. createBackup関数の実装（タイムスタンプ、チェックサム生成含む）\n3. restore関数の実装（現在データの自動バックアップ機能含む）\n4. バックアップメタデータの管理（作成日時、サイズ、チェックサム）\n5. エラーハンドリングとトランザクション処理の実装",
+            "status": "pending",
+            "testStrategy": "1. バックアップファイルの作成・読み取りテスト\n2. 復元処理の正確性テスト\n3. 異常系のエラーハンドリングテスト\n4. ファイルシステムの権限エラーテスト"
+          },
+          {
+            "id": 2,
+            "title": "バージョン履歴管理システムの構築",
+            "description": "マインドマップの変更履歴を追跡し、バージョン間の関係を管理するシステムの実装",
+            "dependencies": [
+              "18.1"
+            ],
+            "details": "1. バージョン番号の採番ルールとブランチ管理の設計\n2. 変更履歴のデータ構造定義（作成者、変更内容、タイムスタンプ）\n3. バージョングラフの構築と親子関係の管理\n4. バージョン間のマージ・分岐機能の実装\n5. バージョン履歴のクエリAPIの開発",
+            "status": "pending",
+            "testStrategy": "1. バージョン番号の一意性と順序性テスト\n2. 履歴グラフの整合性テスト\n3. マージ・分岐処理の正確性テスト\n4. 大量バージョンでのパフォーマンステスト"
+          },
+          {
+            "id": 3,
+            "title": "差分検出エンジンの開発",
+            "description": "マインドマップ構造の効率的な差分検出と差分データの保存機能の実装",
+            "dependencies": [
+              "18.1",
+              "18.2"
+            ],
+            "details": "1. 構造化差分アルゴリズムの実装（ノードの追加・削除・変更検出）\n2. 差分データの最適化（パッチ形式での保存）\n3. 増分バックアップシステムの構築\n4. 差分の可視化とプレビュー機能\n5. 差分適用エンジンの開発",
+            "status": "pending",
+            "testStrategy": "1. 各種変更パターンでの差分検出精度テスト\n2. 差分サイズの最適化テスト\n3. 差分適用の可逆性テスト\n4. 複雑な構造変更での正確性テスト"
+          },
+          {
+            "id": 4,
+            "title": "ロールバック機能の実装",
+            "description": "任意のバージョンへの安全なロールバック機能とコンフリクト解決機能の開発",
+            "dependencies": [
+              "18.2",
+              "18.3"
+            ],
+            "details": "1. ロールバック対象バージョンの選択UI\n2. ロールバック前の状態保存と確認機能\n3. 部分的ロールバック（特定ノードのみ）の実装\n4. ロールバック時のコンフリクト検出と解決\n5. ロールバック履歴の記録と取り消し機能",
+            "status": "pending",
+            "testStrategy": "1. 単純なロールバックの動作テスト\n2. コンフリクト発生時の解決テスト\n3. 部分ロールバックの正確性テスト\n4. 連続ロールバックの整合性テスト"
+          },
+          {
+            "id": 5,
+            "title": "バックアップの圧縮と最適化",
+            "description": "ストレージ効率を高めるための圧縮機能と古いバックアップの自動管理機能の実装",
+            "dependencies": [
+              "18.1",
+              "18.3"
+            ],
+            "details": "1. 圧縮アルゴリズムの選定と実装（gzip/brotli）\n2. 重複排除システムの構築（同一ノードの共有）\n3. バックアップの自動クリーンアップポリシー\n4. アーカイブシステムの実装（古いバックアップの長期保存）\n5. ストレージ使用量の監視とアラート機能",
+            "status": "pending",
+            "testStrategy": "1. 圧縮率と圧縮速度のベンチマークテスト\n2. 重複排除の効果測定テスト\n3. 自動クリーンアップの動作テスト\n4. 圧縮データの復元整合性テスト"
+          }
+        ]
+      },
+      {
+        "id": 19,
+        "title": "セキュリティとアクセス制御の実装",
+        "description": "マインドマップ操作のセキュリティ機能を実装する",
+        "details": "1. パストラバーサル攻撃の防止\n2. 入力データのサニタイゼーション\n3. アクセス権限の管理\n4. 操作ログの記録\n5. 機密情報のマスキング機能\n\n```typescript\nimport path from 'path';\nimport { createHash } from 'crypto';\n\nconst securityMiddleware = {\n  validatePath: (filePath: string, basePath: string) => {\n    const resolved = path.resolve(filePath);\n    const base = path.resolve(basePath);\n    \n    if (!resolved.startsWith(base)) {\n      throw new Error('不正なファイルパスです');\n    }\n    return resolved;\n  },\n  \n  sanitizeInput: (input: any) => {\n    if (typeof input === 'string') {\n      return input.replace(/<script[^>]*>.*?<\\/script>/gi, '')\n                  .replace(/[\\x00-\\x1F\\x7F]/g, '');\n    }\n    return input;\n  },\n  \n  auditLog: async (operation: string, params: any, result: any) => {\n    const log = {\n      timestamp: new Date().toISOString(),\n      operation,\n      params: { ...params, sensitive: '[REDACTED]' },\n      result: result.success ? 'SUCCESS' : 'FAILURE',\n      hash: createHash('sha256').update(JSON.stringify(params)).digest('hex')\n    };\n    await appendToAuditLog(log);\n  }\n};\n```",
+        "testStrategy": "1. パストラバーサル攻撃のテスト\n2. XSS攻撃防止のテスト\n3. 監査ログの完全性テスト\n4. アクセス制御のテスト",
+        "priority": "high",
+        "dependencies": [
+          18
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "パストラバーサル攻撃防止機能の実装",
+            "description": "ファイルパスの検証とサニタイゼーション機能を実装し、ディレクトリトラバーサル攻撃を防止する",
+            "dependencies": [],
+            "details": "path.resolve()を使用した絶対パス変換、ベースディレクトリ外へのアクセス制御、シンボリックリンクの検証、..や./を含むパスの正規化、ホワイトリスト方式での許可パス管理を実装。セキュリティ監査ログへの記録機能も含む",
+            "status": "pending",
+            "testStrategy": "様々な悪意のあるパスパターン（../../../etc/passwd等）でのテスト、シンボリックリンク経由のアクセステスト、正常なパスが誤って拒否されないことの確認、境界値テスト"
+          },
+          {
+            "id": 2,
+            "title": "入力データサニタイゼーションとXSS対策",
+            "description": "マインドマップデータの入力値検証とサニタイゼーション処理を実装し、XSS攻撃を防止する",
+            "dependencies": [],
+            "details": "HTMLエスケープ処理、スクリプトタグの除去、制御文字のフィルタリング、JSONスキーマによる型検証、DOMPurifyライブラリの統合、Content Security Policy (CSP)ヘッダーの設定、マークダウンパーサーのセキュアな設定を実装",
+            "status": "pending",
+            "testStrategy": "各種XSSペイロードでの侵入テスト、エスケープ処理の網羅性確認、正常なHTMLコンテンツが破壊されないことの確認、パフォーマンス影響の測定"
+          },
+          {
+            "id": 3,
+            "title": "ロールベースアクセス制御（RBAC）システムの構築",
+            "description": "マインドマップの操作権限を管理するロールベースのアクセス制御システムを実装する",
+            "dependencies": [
+              "19.1",
+              "19.2"
+            ],
+            "details": "ユーザーロール定義（管理者、編集者、閲覧者）、権限マトリックスの実装、JWT/セッションベース認証との統合、リソースレベルの権限制御、権限継承メカニズム、APIエンドポイントごとの権限チェックミドルウェアを実装",
+            "status": "pending",
+            "testStrategy": "各ロールでの操作権限テスト、権限昇格攻撃のテスト、権限継承の正確性確認、パフォーマンスへの影響測定"
+          },
+          {
+            "id": 4,
+            "title": "セキュリティ監査ログシステムの実装",
+            "description": "すべてのセキュリティ関連イベントと操作を記録する包括的な監査ログシステムを構築する",
+            "dependencies": [
+              "19.3"
+            ],
+            "details": "構造化ログフォーマット（JSON）の実装、タイムスタンプとユーザー情報の記録、操作種別とパラメータの記録、ログの改ざん防止（ハッシュチェーン）、ログローテーション機能、検索可能なインデックス作成、SIEM統合のためのエクスポート機能を実装",
+            "status": "pending",
+            "testStrategy": "ログの完全性テスト、改ざん検出機能のテスト、ログローテーションの動作確認、大量ログ生成時のパフォーマンステスト"
+          },
+          {
+            "id": 5,
+            "title": "機密情報マスキングとデータ保護機能",
+            "description": "マインドマップ内の機密情報を自動検出し、適切にマスキングする機能を実装する",
+            "dependencies": [
+              "19.3",
+              "19.4"
+            ],
+            "details": "正規表現による機密情報パターン検出（クレジットカード番号、SSN、APIキー等）、可逆/不可逆マスキングオプション、ロールベースのマスキング解除権限、暗号化による保護、エクスポート時の自動マスキング、マスキングルールのカスタマイズ機能を実装",
+            "status": "pending",
+            "testStrategy": "各種機密情報パターンの検出精度テスト、誤検出率の測定、マスキング/アンマスキングの正確性確認、パフォーマンスへの影響測定"
+          }
+        ]
+      },
+      {
+        "id": 20,
+        "title": "パフォーマンス最適化とスケーラビリティ",
+        "description": "大規模マインドマップに対応するパフォーマンス最適化を実装する",
+        "details": "1. インメモリキャッシュの実装\n2. 遅延読み込み機能\n3. バッチ処理の最適化\n4. ストリーミング処理の実装\n5. インデックス構造の導入\n\n```typescript\nimport { LRUCache } from 'lru-cache';\n\nconst performanceOptimizer = {\n  cache: new LRUCache<string, any>({\n    max: 500,\n    ttl: 1000 * 60 * 5, // 5分\n    updateAgeOnGet: true\n  }),\n  \n  batchProcessor: {\n    queue: [],\n    process: async () => {\n      if (this.queue.length === 0) return;\n      \n      const batch = this.queue.splice(0, 100);\n      const results = await Promise.all(\n        batch.map(op => processOperation(op))\n      );\n      return results;\n    }\n  },\n  \n  streamProcessor: async function* (filePath: string) {\n    const stream = fs.createReadStream(filePath);\n    const parser = new JSONStream.parse('root.children.*');\n    \n    stream.pipe(parser);\n    \n    for await (const node of parser) {\n      yield processNode(node);\n    }\n  }\n};\n```",
+        "testStrategy": "1. キャッシュヒット率の測定\n2. 大規模データでのメモリ使用量テスト\n3. バッチ処理の効率性テスト\n4. ストリーミングのスループットテスト",
+        "priority": "medium",
+        "dependencies": [
+          19
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "LRUキャッシュシステムの実装と最適化",
+            "description": "大規模マインドマップデータの高速アクセスを実現するインメモリキャッシュシステムを実装する",
+            "dependencies": [],
+            "details": "LRU-Cacheライブラリを使用したキャッシュシステムの実装。キャッシュサイズ、TTL、更新戦略の最適化を行い、頻繁にアクセスされるノードデータをメモリに保持。キャッシュヒット率の監視機能とメモリ使用量の自動調整機能を含む。WeakMapを活用したメモリリークの防止と、キャッシュウォーミング戦略の実装も行う",
+            "status": "pending",
+            "testStrategy": "キャッシュヒット率90%以上の達成テスト、メモリ使用量の上限遵守テスト、並行アクセス時のキャッシュ整合性テスト、キャッシュエビクション戦略の効果測定"
+          },
+          {
+            "id": 2,
+            "title": "遅延読み込みとバーチャルスクロールの実装",
+            "description": "大規模マインドマップの初期表示を高速化するための遅延読み込みメカニズムを構築する",
+            "dependencies": [
+              "20.1"
+            ],
+            "details": "Intersection Observer APIを使用した可視領域検出、オンデマンドでのノード展開、バーチャルスクロールによる大量ノードの効率的レンダリング。プログレッシブレンダリングによる段階的な表示と、プリフェッチ戦略による先読み機能の実装。React VirtualやTanStack Virtualなどのライブラリ活用も検討",
+            "status": "pending",
+            "testStrategy": "10万ノード以上のマインドマップで初期表示時間3秒以内の達成、スクロールパフォーマンス60FPS維持のテスト、メモリ使用量の線形増加防止テスト"
+          },
+          {
+            "id": 3,
+            "title": "バッチ処理とキューイングシステムの構築",
+            "description": "複数の操作を効率的に処理するためのバッチ処理システムを実装する",
+            "dependencies": [
+              "20.1"
+            ],
+            "details": "操作キューの実装と自動バッチング機能の構築。優先度付きキューによる重要操作の優先実行、デバウンス・スロットリング機能の統合、エラーハンドリングとリトライメカニズムの実装。Promise.allSettledを使用した並列処理と、バックプレッシャー制御による過負荷防止機能を含む",
+            "status": "pending",
+            "testStrategy": "1000件/秒の操作処理能力テスト、バッチサイズの自動最適化テスト、エラー時のグレースフルデグラデーションテスト、CPU使用率80%以下の維持確認"
+          },
+          {
+            "id": 4,
+            "title": "ストリーミング処理とチャンク分割の実装",
+            "description": "大規模ファイルの効率的な読み書きを実現するストリーミング処理システムを構築する",
+            "dependencies": [
+              "20.3"
+            ],
+            "details": "Node.jsのStreamAPIを使用したファイル処理、JSONStreamによる段階的パース、チャンク単位での処理とメモリ効率の最適化。Transform Streamを使用したリアルタイム変換処理、バックプレッシャー対応、プログレス通知機能の実装。Web Streams APIとの互換性確保も行う",
+            "status": "pending",
+            "testStrategy": "1GB以上のファイル処理でメモリ使用量100MB以下の維持、ストリーミング処理のスループット測定、チャンク境界でのデータ整合性テスト"
+          },
+          {
+            "id": 5,
+            "title": "インデックス構造とクエリ最適化の実装",
+            "description": "高速検索とデータアクセスを実現するためのインデックス構造を構築する",
+            "dependencies": [
+              "20.2",
+              "20.4"
+            ],
+            "details": "B-Treeベースのインデックス構造の実装、全文検索用の転置インデックス、空間インデックスによる位置ベース検索の最適化。メタデータインデックスによる属性検索の高速化、インデックスの自動更新とメンテナンス機能、クエリプランナーによる最適な検索戦略の選択機能を実装",
+            "status": "pending",
+            "testStrategy": "100万ノードでの検索レスポンス100ms以内の達成、インデックス更新のオーバーヘッド測定、メモリフットプリントの最適化確認、並行更新時のインデックス整合性テスト"
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-08-03T03:13:21.292Z",
+      "updated": "2025-08-03T03:15:15.092Z",
+      "description": "Tasks for master context"
+    }
+  }
+}
