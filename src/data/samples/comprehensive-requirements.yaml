@@ -134,6 +134,45 @@ root:
                     priority: "medium"
                     status: "defined"
                     category: "quality"
+                
+                - id: "format-conversion"
+                  title: "JSON/YAML相互変換機能"
+                  description: "JSON形式とYAML形式の相互変換とモード選択機能"
+                  tags: ["ui-frontend"]
+                  customFields:
+                    priority: "high"
+                    status: "defined"
+                    category: "functional"
+                    complexity: "medium"
+                    dependencies: "js-yamlライブラリ"
+                  
+                  children:
+                    - id: "format-mode-selection"
+                      title: "フォーマットモード選択"
+                      description: "ユーザーがJSON/YAMLモードを選択できる"
+                      customFields:
+                        priority: "high"
+                        status: "defined"
+                        category: "functional"
+                        complexity: "low"
+                    
+                    - id: "auto-conversion-on-load"
+                      title: "読み込み時自動変換"
+                      description: "ファイル読み込み時に選択されたモードに自動変換する"
+                      customFields:
+                        priority: "high"
+                        status: "defined"
+                        category: "functional"
+                        complexity: "medium"
+                    
+                    - id: "conversion-validation"
+                      title: "変換時検証機能"
+                      description: "変換処理の成功/失敗を適切に表示し、エラー時の詳細情報を提供"
+                      customFields:
+                        priority: "medium"
+                        status: "defined"
+                        category: "quality"
+                        complexity: "low"
 
         # ワークフロー統合要求
         - id: "workflow-integration-need"
@@ -265,6 +304,54 @@ root:
                 category: "functional"
                 complexity: "medium"
                 dependencies: "D3.js, SVG描画"
+            
+            - id: "node-basic-info-display"
+              title: "ノード基本情報簡易表示"
+              description: "priorityやstatusなどの基本情報をノードに最低限の表現で表示する機能"
+              tags: ["ui-frontend", "usability"]
+              customFields:
+                priority: "high"
+                status: "defined"
+                category: "functional"
+                complexity: "medium"
+                dependencies: "CSS, アイコンライブラリ"
+              
+              children:
+                - id: "priority-visual-indicator"
+                  title: "優先度視覚インジケーター"
+                  description: "ノードの角や境界線に色を付けて優先度を表示"
+                  customFields:
+                    priority: "high"
+                    status: "defined"
+                    category: "functional"
+                    complexity: "low"
+                
+                - id: "status-visual-indicator"
+                  title: "ステータス視覚インジケーター"
+                  description: "ノードにアイコンや背景色でステータスを表示"
+                  customFields:
+                    priority: "high"
+                    status: "defined"
+                    category: "functional"
+                    complexity: "low"
+                
+                - id: "minimal-text-overlay"
+                  title: "最小限テキストオーバーレイ"
+                  description: "ホバーまたはクリック時に基本情報を小さくオーバーレイ表示"
+                  customFields:
+                    priority: "medium"
+                    status: "defined"
+                    category: "functional"
+                    complexity: "medium"
+                
+                - id: "color-legend"
+                  title: "カラー凡例機能"
+                  description: "色やアイコンの意味を示す凡例をUI上に表示"
+                  customFields:
+                    priority: "medium"
+                    status: "defined"
+                    category: "usability"
+                    complexity: "low"
 
         # 効率化要求
         - id: "project-efficiency-need"
