@@ -225,7 +225,7 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
           onClick={handleLoadComprehensiveSample}
           title="包括的要件定義サンプルを読み込み"
         >
-          📋 包括的要件定義
+          📋 サンプル読み込み
         </button>
       </div>
 
