@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { App } from '../../App';
+import App from '../../App';
 import type { MindmapData } from '../../types';
 
 // タイマーのモック
@@ -67,7 +67,7 @@ describe('エラーハンドリングの統合テスト', () => {
       const user = userEvent.setup();
 
       mockFileHandle.getFile.mockRejectedValue(new Error('File read failed'));
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      ((global as any).showOpenFilePicker).mockResolvedValue([mockFileHandle]);
 
       render(<App />);
 
@@ -90,7 +90,7 @@ describe('エラーハンドリングの統合テスト', () => {
         type: 'text/plain'
       });
       mockFileHandle.getFile.mockResolvedValue(mockFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      ((global as any).showOpenFilePicker).mockResolvedValue([mockFileHandle]);
 
       render(<App />);
 
@@ -105,7 +105,7 @@ describe('エラーハンドリングの統合テスト', () => {
     it('ファイルアクセス権限エラーを処理する', async () => {
       const user = userEvent.setup();
 
-      (global.showOpenFilePicker as any).mockRejectedValue(
+      ((global as any).showOpenFilePicker).mockRejectedValue(
         new DOMException('Permission denied', 'NotAllowedError')
       );
 
@@ -123,7 +123,7 @@ describe('エラーハンドリングの統合テスト', () => {
       const user = userEvent.setup();
 
       mockFileHandle.getFile.mockRejectedValue(new TypeError('Network error'));
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      ((global as any).showOpenFilePicker).mockResolvedValue([mockFileHandle]);
 
       render(<App />);
 
@@ -170,7 +170,7 @@ describe('エラーハンドリングの統合テスト', () => {
         close: vi.fn()
       };
       mockFileHandle.createWritable.mockResolvedValue(mockWritableStream);
-      (global.showSaveFilePicker as any).mockResolvedValue(mockFileHandle);
+      ((global as any).showSaveFilePicker).mockResolvedValue(mockFileHandle);
 
       const saveButton = screen.getByRole('button', { name: /保存/ });
       await user.click(saveButton);
@@ -212,7 +212,7 @@ describe('エラーハンドリングの統合テスト', () => {
         close: vi.fn()
       };
       mockFileHandle.createWritable.mockResolvedValue(mockWritableStream);
-      (global.showSaveFilePicker as any).mockResolvedValue(mockFileHandle);
+      ((global as any).showSaveFilePicker).mockResolvedValue(mockFileHandle);
 
       const saveButton = screen.getByRole('button', { name: /保存/ });
       await user.click(saveButton);

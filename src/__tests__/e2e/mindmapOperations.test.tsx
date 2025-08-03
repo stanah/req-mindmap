@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { App } from '../../App';
+import App from '../../App';
 import type { MindmapData } from '../../types';
 
 // タイマーのモック
@@ -19,7 +19,6 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 }));
 
 // D3.jsのSVG操作のモック
-let mockTransform = { x: 0, y: 0, k: 1 };
 const mockZoomBehavior = {
   transform: vi.fn(),
   scaleTo: vi.fn(),

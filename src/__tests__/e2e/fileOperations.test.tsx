@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { App } from '../../App';
+import App from '../../App';
 import type { MindmapData } from '../../types';
 
 // タイマーのモック
@@ -236,7 +236,7 @@ describe('ファイル操作ワークフローのE2Eテスト', () => {
 
       // ステップ4: ファイル保存
       mockFileHandle.createWritable.mockResolvedValue(mockWritableStream);
-      (global.showSaveFilePicker as any).mockResolvedValue(mockFileHandle);
+      ((global as any).showSaveFilePicker).mockResolvedValue(mockFileHandle);
 
       const saveButton = screen.getByRole('button', { name: /保存/ });
       await user.click(saveButton);
@@ -257,7 +257,7 @@ describe('ファイル操作ワークフローのE2Eテスト', () => {
         type: 'application/json'
       });
       mockFileHandle.getFile.mockResolvedValue(mockFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      ((global as any).showOpenFilePicker).mockResolvedValue([mockFileHandle]);
 
       const openButton = screen.getByRole('button', { name: /ファイルを開く|開く/ });
       await user.click(openButton);
@@ -304,7 +304,7 @@ describe('ファイル操作ワークフローのE2Eテスト', () => {
       // ファイル1を保存
       const file1Handle = { ...mockFileHandle, name: 'file1.json' };
       file1Handle.createWritable.mockResolvedValue(mockWritableStream);
-      (global.showSaveFilePicker as any).mockResolvedValue(file1Handle);
+      ((global as any).showSaveFilePicker).mockResolvedValue(file1Handle);
 
       const saveButton = screen.getByRole('button', { name: /保存/ });
       await user.click(saveButton);
@@ -339,7 +339,7 @@ describe('ファイル操作ワークフローのE2Eテスト', () => {
         type: 'application/json'
       });
       file1Handle.getFile.mockResolvedValue(mockFile1);
-      (global.showOpenFilePicker as any).mockResolvedValue([file1Handle]);
+      ((global as any).showOpenFilePicker).mockResolvedValue([file1Handle]);
 
       const openButton = screen.getByRole('button', { name: /ファイルを開く|開く/ });
       await user.click(openButton);
@@ -363,7 +363,7 @@ describe('ファイル操作ワークフローのE2Eテスト', () => {
         type: 'application/json'
       });
       mockFileHandle.getFile.mockResolvedValue(mockJsonFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      ((global as any).showOpenFilePicker).mockResolvedValue([mockFileHandle]);
 
       const openButton = screen.getByRole('button', { name: /ファイルを開く|開く/ });
       await user.click(openButton);
@@ -375,7 +375,7 @@ describe('ファイル操作ワークフローのE2Eテスト', () => {
       // YAML形式で保存
       const yamlHandle = { ...mockFileHandle, name: 'test.yaml' };
       yamlHandle.createWritable.mockResolvedValue(mockWritableStream);
-      (global.showSaveFilePicker as any).mockResolvedValue(yamlHandle);
+      ((global as any).showSaveFilePicker).mockResolvedValue(yamlHandle);
 
       // 形式選択ドロップダウンでYAMLを選択
       const formatSelect = screen.getByLabelText(/形式|フォーマット/);
@@ -398,7 +398,7 @@ describe('ファイル操作ワークフローのE2Eテスト', () => {
         type: 'application/x-yaml'
       });
       yamlHandle.getFile.mockResolvedValue(mockYamlFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([yamlHandle]);
+      ((global as any).showOpenFilePicker).mockResolvedValue([yamlHandle]);
 
       await user.click(openButton);
 
@@ -410,7 +410,7 @@ describe('ファイル操作ワークフローのE2Eテスト', () => {
       // JSON形式で再保存
       const jsonHandle2 = { ...mockFileHandle, name: 'converted.json' };
       jsonHandle2.createWritable.mockResolvedValue(mockWritableStream);
-      (global.showSaveFilePicker as any).mockResolvedValue(jsonHandle2);
+      ((global as any).showSaveFilePicker).mockResolvedValue(jsonHandle2);
 
       await user.selectOptions(formatSelect, 'json');
       await user.click(saveButton);
@@ -488,7 +488,7 @@ describe('ファイル操作ワークフローのE2Eテスト', () => {
 
       // 保存を実行
       mockFileHandle.createWritable.mockResolvedValue(mockWritableStream);
-      (global.showSaveFilePicker as any).mockResolvedValue(mockFileHandle);
+      ((global as any).showSaveFilePicker).mockResolvedValue(mockFileHandle);
 
       await user.click(saveButton);
 
@@ -585,7 +585,7 @@ describe('ファイル操作ワークフローのE2Eテスト', () => {
         });
         const fileHandle = { ...mockFileHandle, name: file.name };
         fileHandle.getFile.mockResolvedValue(mockFile);
-        (global.showOpenFilePicker as any).mockResolvedValue([fileHandle]);
+        ((global as any).showOpenFilePicker).mockResolvedValue([fileHandle]);
 
         const openButton = screen.getByRole('button', { name: /ファイルを開く|開く/ });
         await user.click(openButton);
@@ -664,7 +664,7 @@ describe('ファイル操作ワークフローのE2Eテスト', () => {
 
       // 最初の手動保存
       mockFileHandle.createWritable.mockResolvedValue(mockWritableStream);
-      (global.showSaveFilePicker as any).mockResolvedValue(mockFileHandle);
+      ((global as any).showSaveFilePicker).mockResolvedValue(mockFileHandle);
 
       const saveButton = screen.getByRole('button', { name: /保存/ });
       await user.click(saveButton);

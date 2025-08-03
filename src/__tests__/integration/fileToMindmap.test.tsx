@@ -3,9 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { App } from '../../App';
+import App from '../../App';
 import type { MindmapData } from '../../types';
 
 // モックの設定
@@ -139,7 +139,7 @@ describe('ファイル読み込みからマインドマップ表示までの統�
   beforeEach(() => {
     vi.clearAllMocks();
     mockFileHandle.getFile.mockClear();
-    (global.showOpenFilePicker as any).mockClear();
+    ((global as any).showOpenFilePicker).mockClear();
   });
 
   afterEach(() => {
@@ -155,7 +155,7 @@ describe('ファイル読み込みからマインドマップ表示までの統�
         type: 'application/json'
       });
       mockFileHandle.getFile.mockResolvedValue(mockFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      ((global as any).showOpenFilePicker).mockResolvedValue([mockFileHandle]);
 
       render(<App />);
 
@@ -193,7 +193,7 @@ describe('ファイル読み込みからマインドマップ表示までの統�
         type: 'application/json'
       });
       mockFileHandle.getFile.mockResolvedValue(mockFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      ((global as any).showOpenFilePicker).mockResolvedValue([mockFileHandle]);
 
       render(<App />);
 
@@ -246,7 +246,7 @@ settings:
         type: 'application/x-yaml'
       });
       mockFileHandle.getFile.mockResolvedValue(mockFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      ((global as any).showOpenFilePicker).mockResolvedValue([mockFileHandle]);
 
       render(<App />);
 
@@ -275,7 +275,7 @@ settings:
         type: 'application/json'
       });
       mockFileHandle.getFile.mockResolvedValue(mockFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      ((global as any).showOpenFilePicker).mockResolvedValue([mockFileHandle]);
 
       render(<App />);
 
@@ -303,7 +303,7 @@ settings:
         type: 'application/json'
       });
       mockFileHandle.getFile.mockResolvedValue(mockFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      ((global as any).showOpenFilePicker).mockResolvedValue([mockFileHandle]);
 
       render(<App />);
 
@@ -319,7 +319,7 @@ settings:
     it('ファイル読み込みがキャンセルされた場合の処理', async () => {
       const user = userEvent.setup();
       
-      (global.showOpenFilePicker as any).mockRejectedValue(
+      ((global as any).showOpenFilePicker).mockRejectedValue(
         new DOMException('User cancelled', 'AbortError')
       );
 
@@ -348,7 +348,7 @@ settings:
         type: 'application/json'
       });
       mockFileHandle.getFile.mockResolvedValue(mockFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      ((global as any).showOpenFilePicker).mockResolvedValue([mockFileHandle]);
 
       render(<App />);
 
@@ -372,7 +372,7 @@ settings:
 
       // 保存の準備
       mockFileHandle.createWritable.mockResolvedValue(mockWritableStream);
-      (global.showSaveFilePicker as any).mockResolvedValue(mockFileHandle);
+      ((global as any).showSaveFilePicker).mockResolvedValue(mockFileHandle);
 
       // 保存ボタンをクリック
       const saveButton = screen.getByRole('button', { name: /保存/ });
@@ -407,7 +407,7 @@ settings:
         type: 'application/json'
       });
       mockFileHandle.getFile.mockResolvedValue(mockFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      ((global as any).showOpenFilePicker).mockResolvedValue([mockFileHandle]);
 
       render(<App />);
 
@@ -449,7 +449,7 @@ settings:
         type: 'application/json'
       });
       mockFileHandle.getFile.mockResolvedValue(mockFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      ((global as any).showOpenFilePicker).mockResolvedValue([mockFileHandle]);
 
       const startTime = performance.now();
 

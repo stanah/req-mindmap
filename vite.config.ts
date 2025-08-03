@@ -11,4 +11,12 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
   },
+  resolve: {
+    alias: {
+      // テスト環境でのmonaco-editor問題の解決
+      ...(process.env.NODE_ENV === 'test' && {
+        'monaco-editor': 'monaco-editor/esm/vs/editor/editor.api.js'
+      })
+    }
+  }
 })
