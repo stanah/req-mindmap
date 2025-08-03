@@ -9,7 +9,7 @@
  * バリデーションルール
  */
 export interface ValidationRule {
-  type: 'required' | 'minLength' | 'maxLength' | 'pattern' | 'min' | 'max';
+  type: 'required' | 'minLength' | 'maxLength' | 'pattern' | 'min' | 'max' | 'range' | 'length';
   value?: string | number | RegExp;
   message?: string;
 }

@@ -27,7 +27,7 @@ describe('useStoreSync', () => {
     vi.clearAllMocks();
     
     // useAppStoreのモック実装
-    (useAppStore as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => {
+    (useAppStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => {
       const mockState = {
         file: {
           fileContent: '',
@@ -161,7 +161,7 @@ describe('useStoreSync', () => {
 
     it('自動保存が有効な場合にファイルを自動保存する', () => {
       // 自動保存が有効な状態をモック
-      (useAppStore as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => {
+      (useAppStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => {
         const mockState = {
           file: {
             isDirty: true,

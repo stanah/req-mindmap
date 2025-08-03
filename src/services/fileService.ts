@@ -183,6 +183,56 @@ export class BrowserFileService implements FileService {
     await this.saveFileWithOptions(content, { filename: suggestedName });
   }
 
+  /**
+   * ユーザーがファイルを選択して読み込み、ファイル情報も含めて返す
+   */
+  async loadFileWithInfo(): Promise<FileLoadResult> {
+    return new Promise((resolve, reject) => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json,.yaml,.yml';
+      
+      input.onchange = async (event) => {
+        const target = event.target as HTMLInputElement;
+        const file = target.files?.[0];
+        
+        if (!file) {
+          reject(new Error('ファイルが選択されませんでした'));
+          return;
+        }
+
+        try {
+          const content = await file.text();
+          const fileInfo = this.createFileInfo(file, content);
+          
+          resolve({
+            content,
+            fileInfo,
+            success: true
+          });
+        } catch (error) {
+          reject(new Error(`ファイル読み込みエラー: ${error instanceof Error ? error.message : String(error)}`));
+        }
+      };
+
+      input.click();
+    });
+  }
+
+  // FileServiceインターフェースの必須メソッド
+  async loadFile(path: string): Promise<string> {
+    // ブラウザ環境では直接パスでのファイル読み込みは不可能
+    // ユーザー選択によるファイル読み込みを実行
+    throw new Error('ブラウザ環境では直接パスでのファイル読み込みはサポートされていません。loadFileWithInfoメソッドを使用してください。');
+  }
+
+  async saveFile(path: string, content: string): Promise<void> {
+    // ブラウザ環境では直接パスでのファイル保存は不可能
+    // ダウンロード方式での保存を実行
+    const filename = path.split('/').pop() || 'untitled.json';
+    await this.saveFileWithOptions(content, { filename });
+  }
+
   watchFile(path: string, callback: (content: string) => void): void {
     // ファイル監視のコールバックを登録
     this.watchers.set(path, callback);
@@ -194,22 +244,22 @@ export class BrowserFileService implements FileService {
     this.watchers.clear();
   }
 
-  async exists(): Promise<boolean> {
+  async exists(path: string): Promise<boolean> {
     // ブラウザ環境では実装不可能（セキュリティ上の制限）
     return false;
   }
 
-  async deleteFile(): Promise<void> {
+  async deleteFile(path: string): Promise<void> {
     // ブラウザ環境では実装不可能（セキュリティ上の制限）
     throw new Error('ブラウザ環境ではファイル削除はサポートされていません');
   }
 
-  async createDirectory(): Promise<void> {
+  async createDirectory(path: string): Promise<void> {
     // ブラウザ環境では実装不可能（セキュリティ上の制限）
     throw new Error('ブラウザ環境ではディレクトリ作成はサポートされていません');
   }
 
-  async listFiles(): Promise<string[]> {
+  async listFiles(path: string): Promise<string[]> {
     // ブラウザ環境では実装不可能（セキュリティ上の制限）
     return [];
   }
@@ -570,19 +620,19 @@ root:
 
 // VSCode拡張用のファイルサービス実装（将来用）
 export class VSCodeFileService implements FileService {
-  async loadFile(): Promise<string> {
+  async loadFile(path: string): Promise<string> {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
     throw new Error('VSCode file service not implemented yet');
   }
 
-  async saveFile(): Promise<void> {
+  async saveFile(path: string, content: string): Promise<void> {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
     throw new Error('VSCode file service not implemented yet');
   }
 
-  watchFile(): void {
+  watchFile(path: string, callback: (content: string) => void): void {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
     throw new Error('VSCode file service not implemented yet');
@@ -594,25 +644,25 @@ export class VSCodeFileService implements FileService {
     throw new Error('VSCode file service not implemented yet');
   }
 
-  async exists(): Promise<boolean> {
+  async exists(path: string): Promise<boolean> {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
     throw new Error('VSCode file service not implemented yet');
   }
 
-  async deleteFile(): Promise<void> {
+  async deleteFile(path: string): Promise<void> {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
     throw new Error('VSCode file service not implemented yet');
   }
 
-  async createDirectory(): Promise<void> {
+  async createDirectory(path: string): Promise<void> {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
     throw new Error('VSCode file service not implemented yet');
   }
 
-  async listFiles(): Promise<string[]> {
+  async listFiles(path: string): Promise<string[]> {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
     throw new Error('VSCode file service not implemented yet');

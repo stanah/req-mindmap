@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { TemplateGeneratorService, TemplateType } from '../templateGeneratorService';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { TemplateGeneratorService, type TemplateType } from '../templateGeneratorService';
 
 describe('TemplateGeneratorService', () => {
   let service: TemplateGeneratorService;

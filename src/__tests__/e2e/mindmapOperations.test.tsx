@@ -3,8 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { render, screen, waitFor, act } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen } from '@testing-library/react';
 import App from '../../App';
 import type { MindmapData } from '../../types';
 
@@ -99,7 +98,9 @@ vi.mock('d3-selection', () => ({
 }));
 
 describe('マインドマップ操作のE2Eテスト', () => {
-  const complexMindmapData: MindmapData = {
+  // 将来のテスト用に保持（現在は未使用）
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _complexMindmapData: MindmapData = {
     version: '1.0',
     title: 'マインドマップ操作テスト',
     root: {

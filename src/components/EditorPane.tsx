@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-// monaco-editorは動的インポートで使用
+import type * as monaco from 'monaco-editor';
 import { useAppStore } from '../stores';
 import { useEditorSync } from '../hooks';
 import './EditorPane.css';
@@ -81,11 +81,11 @@ export const EditorPane: React.FC = () => {
       const syntaxErrors = parserService.getParseErrors(content);
       
       // 構文エラーのマーカーを設定（テスト環境対応）
-      import('monaco-editor').then((monaco) => {
+      import('monaco-editor').then((monacoModule) => {
         const markers: monaco.editor.IMarkerData[] = syntaxErrors.map(error => ({
           severity: error.severity === 'error' 
-            ? monaco.MarkerSeverity.Error 
-            : monaco.MarkerSeverity.Warning,
+            ? monacoModule.MarkerSeverity.Error 
+            : monacoModule.MarkerSeverity.Warning,
           startLineNumber: error.line,
           startColumn: error.column,
           endLineNumber: error.line,
@@ -94,7 +94,7 @@ export const EditorPane: React.FC = () => {
           source: 'syntax-checker',
         }));
 
-        monaco.editor.setModelMarkers(model, 'syntax-checker', markers);
+        monacoModule.editor.setModelMarkers(model, 'syntax-checker', markers);
       }).catch(() => {
         // テスト環境では何もしない
       });
@@ -129,7 +129,7 @@ export const EditorPane: React.FC = () => {
     });
 
     // カーソル位置変更のリスナー
-    editor.onDidChangeCursorPosition((e) => {
+    editor.onDidChangeCursorPosition((e: monaco.editor.ICursorPositionChangedEvent) => {
       updateEditorCursorPosition({
         line: e.position.lineNumber,
         column: e.position.column,
@@ -258,27 +258,31 @@ export const EditorPane: React.FC = () => {
     const model = editor.getModel();
     if (!model) return;
 
-    // 既存のハイライトをクリア（グローバルmonacoが存在する場合のみ）
-    if (typeof monaco !== 'undefined') {
-      monaco.editor.setModelMarkers(model, 'node-highlight', []);
-    }
+    // 既存のハイライトをクリア（動的monaco import使用）
+    import('monaco-editor').then((monacoModule) => {
+      monacoModule.editor.setModelMarkers(model, 'node-highlight', []);
+    }).catch(() => {
+      // テスト環境では何もしない
+    });
 
     if (editorHighlightRange) {
-      // 新しいハイライトを設定（グローバルmonacoが存在する場合のみ）
-      if (typeof monaco !== 'undefined') {
+      // 新しいハイライトを設定（動的monaco import使用）
+      import('monaco-editor').then((monacoModule) => {
         const markers: monaco.editor.IMarkerData[] = [{
-          severity: monaco.MarkerSeverity.Info,
+          severity: monacoModule.MarkerSeverity.Info,
           startLineNumber: editorHighlightRange.startLine,
           startColumn: editorHighlightRange.startColumn,
           endLineNumber: editorHighlightRange.endLine,
           endColumn: editorHighlightRange.endColumn,
           message: `選択されたノードに対応する箇所`,
           source: 'node-highlight',
-          tags: [monaco.MarkerTag.Unnecessary], // 視覚的にハイライト
+          tags: [monacoModule.MarkerTag.Unnecessary], // 視覚的にハイライト
         }];
 
-        monaco.editor.setModelMarkers(model, 'node-highlight', markers);
-      }
+        monacoModule.editor.setModelMarkers(model, 'node-highlight', markers);
+      }).catch(() => {
+        // テスト環境では何もしない
+      });
 
       // ハイライト箇所にスクロール
       if (editorHighlightRange.reason === 'node-selection') {
@@ -382,8 +386,12 @@ export const EditorPane: React.FC = () => {
                 if (editorRef.current) {
                   const model = editorRef.current.getModel();
                   if (model) {
-                    monaco.editor.setModelMarkers(model, 'parser', []);
-                    monaco.editor.setModelMarkers(model, 'syntax-checker', []);
+                    import('monaco-editor').then((monacoModule) => {
+                      monacoModule.editor.setModelMarkers(model, 'parser', []);
+                      monacoModule.editor.setModelMarkers(model, 'syntax-checker', []);
+                    }).catch(() => {
+                      // テスト環境では何もしない
+                    });
                   }
                 }
               }}

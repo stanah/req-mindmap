@@ -25,7 +25,7 @@ describe('useRealtimeSync', () => {
     vi.clearAllMocks();
     
     // useAppStoreのモック実装
-    (useAppStore as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => {
+    (useAppStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => {
       const mockState = {
         file: {
           fileContent: '',
@@ -113,7 +113,7 @@ describe('useRealtimeSync', () => {
   describe('自動同期の制御', () => {
     it('自動同期が無効な場合は同期しない', () => {
       // 自動同期を無効にする
-      (useAppStore as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => {
+      (useAppStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => {
         const mockState = {
           ui: {
             editorSettings: {
@@ -315,7 +315,7 @@ describe('useRealtimeSync', () => {
     it('同期遅延設定の変更が反映される', () => {
       let syncDelay = 300;
       
-      (useAppStore as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => {
+      (useAppStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => {
         const mockState = {
           ui: {
             editorSettings: {

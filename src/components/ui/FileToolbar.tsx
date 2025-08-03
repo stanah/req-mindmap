@@ -23,7 +23,6 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
     updateContent,
     addNotification,
     closeFile,
-    ui: { editorSettings },
   } = useAppStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -120,7 +119,8 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
   /**
    * テンプレートから新規作成
    */
-  const handleNewFromTemplate = (templateType: 'basic' | 'advanced' | 'project') => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _handleNewFromTemplate = (templateType: 'basic' | 'advanced' | 'project') => {
     if (file.isDirty) {
       const confirmed = window.confirm('保存されていない変更があります。新しいファイルを作成しますか？');
       if (!confirmed) return;
