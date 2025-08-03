@@ -15,7 +15,7 @@ export const CreateNodeSchema = z.object({
   parentId: z.string().describe('ID of the parent node (or "root" for top-level)'),
   title: z.string().describe('Title of the new node'),
   description: z.string().optional().describe('Description of the new node'),
-  customFields: z.record(z.any()).optional().describe('Custom fields for the node'),
+  customFields: z.record(z.string(), z.any()).optional().describe('Custom fields for the node'),
   tags: z.array(z.string()).optional().describe('Tags to assign to the node'),
 });
 
@@ -24,7 +24,7 @@ export const UpdateNodeSchema = z.object({
   nodeId: z.string().describe('ID of the node to update'),
   title: z.string().optional().describe('New title for the node'),
   description: z.string().optional().describe('New description for the node'),
-  customFields: z.record(z.any()).optional().describe('Custom fields to update'),
+  customFields: z.record(z.string(), z.any()).optional().describe('Custom fields to update'),
   tags: z.array(z.string()).optional().describe('Tags to assign to the node'),
 });
 
@@ -39,7 +39,7 @@ export const SearchNodesSchema = z.object({
   query: z.string().describe('Search query (supports text search in title/description)'),
   filters: z.object({
     tags: z.array(z.string()).optional().describe('Filter by tags'),
-    customFields: z.record(z.any()).optional().describe('Filter by custom fields'),
+    customFields: z.record(z.string(), z.any()).optional().describe('Filter by custom fields'),
     depth: z.number().optional().describe('Maximum depth to search'),
   }).optional().describe('Additional search filters'),
   limit: z.number().default(10).describe('Maximum number of results to return'),
