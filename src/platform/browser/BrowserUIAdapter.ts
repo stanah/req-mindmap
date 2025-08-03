@@ -1,4 +1,4 @@
-import { UIAdapter, ProgressReporter } from '../interfaces';
+import type { UIAdapter, ProgressReporter } from '../interfaces';
 
 /**
  * ブラウザ環境でのUI操作実装

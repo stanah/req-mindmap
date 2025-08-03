@@ -1,11 +1,11 @@
-import { SettingsAdapter } from '../interfaces';
+import type { SettingsAdapter } from '../interfaces';
 
 /**
  * VSCode拡張環境での設定管理実装
  * 将来実装予定のスケルトン
  */
 export class VSCodeSettingsAdapter implements SettingsAdapter {
-  get<T>(key: string, defaultValue?: T): T {
+  get<T>(_key: string, _defaultValue?: T): T {
     // VSCode API を使用して設定値を取得
     // const vscode = acquireVsCodeApi();
     // return vscode.postMessage({
@@ -17,7 +17,7 @@ export class VSCodeSettingsAdapter implements SettingsAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  async set<T>(key: string, value: T): Promise<void> {
+  async set<T>(_key: string, _value: T): Promise<void> {
     // VSCode API を使用して設定値を保存
     // const vscode = acquireVsCodeApi();
     // await vscode.postMessage({
@@ -29,7 +29,7 @@ export class VSCodeSettingsAdapter implements SettingsAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  onDidChange(callback: (key: string, value: any) => void): void {
+  onDidChange(_callback: (key: string, value: any) => void): void {
     // VSCode API を使用して設定変更イベントを監視
     // const vscode = acquireVsCodeApi();
     // vscode.postMessage({
@@ -50,7 +50,7 @@ export class VSCodeSettingsAdapter implements SettingsAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  async reset(key: string): Promise<void> {
+  async reset(_key: string): Promise<void> {
     // VSCode API を使用して設定をリセット
     // const vscode = acquireVsCodeApi();
     // await vscode.postMessage({

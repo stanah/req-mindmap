@@ -39,7 +39,8 @@ Object.defineProperty(global.SVGElement.prototype, 'getBBox', {
 });
 
 // mockTransform変数を定義
-let mockTransform = { x: 0, y: 0, k: 1 };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+let _mockTransform = { x: 0, y: 0, k: 1 };
 
 // D3のズーム機能をモック
 vi.mock('d3-zoom', () => ({
@@ -209,7 +210,7 @@ describe('マインドマップ操作のE2Eテスト', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockTransform = { x: 0, y: 0, k: 1 };
+    _mockTransform = { x: 0, y: 0, k: 1 };
   });
 
   afterEach(() => {

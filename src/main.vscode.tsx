@@ -5,6 +5,8 @@ import './index.css';
 
 // VSCode拡張環境用のメインエントリーポイント
 import { PlatformAdapterFactory } from './platform';
+// VSCode拡張環境用（将来実装予定）
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { VSCodePlatformAdapter } from './platform/vscode';
 
 // VSCode環境の検出と設定

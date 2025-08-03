@@ -1,4 +1,4 @@
-import { PlatformAdapter } from '../interfaces';
+import type { PlatformAdapter } from '../interfaces';
 import { VSCodeFileSystemAdapter } from './VSCodeFileSystemAdapter';
 import { VSCodeEditorAdapter } from './VSCodeEditorAdapter';
 import { VSCodeUIAdapter } from './VSCodeUIAdapter';

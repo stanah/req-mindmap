@@ -1,11 +1,11 @@
-import { UIAdapter, ProgressReporter } from '../interfaces';
+import type { UIAdapter, ProgressReporter } from '../interfaces';
 
 /**
  * VSCode拡張環境でのUI操作実装
  * 将来実装予定のスケルトン
  */
 export class VSCodeUIAdapter implements UIAdapter {
-  showInformationMessage(message: string): void {
+  showInformationMessage(_message: string): void {
     // VSCode API を使用して情報メッセージを表示
     // const vscode = acquireVsCodeApi();
     // vscode.postMessage({
@@ -16,7 +16,7 @@ export class VSCodeUIAdapter implements UIAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  showWarningMessage(message: string): void {
+  showWarningMessage(_message: string): void {
     // VSCode API を使用して警告メッセージを表示
     // const vscode = acquireVsCodeApi();
     // vscode.postMessage({
@@ -27,7 +27,7 @@ export class VSCodeUIAdapter implements UIAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  showErrorMessage(message: string): void {
+  showErrorMessage(_message: string): void {
     // VSCode API を使用してエラーメッセージを表示
     // const vscode = acquireVsCodeApi();
     // vscode.postMessage({
@@ -38,7 +38,7 @@ export class VSCodeUIAdapter implements UIAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  async showConfirmDialog(message: string, options: string[]): Promise<string | null> {
+  async showConfirmDialog(_message: string, _options: string[]): Promise<string | null> {
     // VSCode API を使用して確認ダイアログを表示
     // const vscode = acquireVsCodeApi();
     // return await vscode.postMessage({
@@ -50,7 +50,7 @@ export class VSCodeUIAdapter implements UIAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  async withProgress<T>(title: string, task: (progress: ProgressReporter) => Promise<T>): Promise<T> {
+  async withProgress<T>(_title: string, _task: (progress: ProgressReporter) => Promise<T>): Promise<T> {
     // VSCode API を使用してプログレスバーを表示
     // const vscode = acquireVsCodeApi();
     // return await vscode.postMessage({
@@ -62,7 +62,7 @@ export class VSCodeUIAdapter implements UIAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  showStatusBarMessage(message: string, timeout?: number): void {
+  showStatusBarMessage(_message: string, _timeout?: number): void {
     // VSCode API を使用してステータスバーメッセージを表示
     // const vscode = acquireVsCodeApi();
     // vscode.postMessage({

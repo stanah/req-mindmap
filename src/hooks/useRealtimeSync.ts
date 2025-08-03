@@ -4,6 +4,7 @@
 
 import { useCallback, useRef, useEffect, useState } from 'react';
 import { useAppStore } from '../stores/appStore';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useDebounce } from './useDebounce';
 
 interface SyncStats {
@@ -15,10 +16,15 @@ interface SyncStats {
 
 export function useRealtimeSync() {
   // ストアの状態
-  const fileContent = useAppStore(state => state.file?.fileContent || '');
-  const parsedData = useAppStore(state => state.parse?.parsedData);
-  const parseErrors = useAppStore(state => state.parse?.parseErrors || []);
-  const editorSettings = useAppStore(state => state.ui?.editorSettings || { autoSync: true, syncDelay: 300 });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _fileContent = useAppStore(state => state.file?.fileContent || '');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _parsedData = useAppStore(state => state.parse?.parsedData);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _parseErrors = useAppStore(state => state.parse?.parseErrors || []);
+  const editorSettings = useAppStore(state => state.ui?.editorSettings || {});
+  const autoSync = (editorSettings as any).autoSync ?? true;
+  const syncDelay = (editorSettings as any).syncDelay ?? 300;
   
   // ストアのアクション
   const updateContent = useAppStore(state => state.updateContent);
@@ -37,16 +43,16 @@ export function useRealtimeSync() {
 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastContentRef = useRef<string>('');
-  const syncDelayRef = useRef(editorSettings.syncDelay || 300);
+  const syncDelayRef = useRef(syncDelay);
 
   // syncDelayの変更を追跡
   useEffect(() => {
-    syncDelayRef.current = editorSettings.syncDelay || 300;
-  }, [editorSettings.syncDelay]);
+    syncDelayRef.current = syncDelay;
+  }, [syncDelay]);
 
   // デバウンス付きコンテンツ同期
   const syncContent = useCallback((content: string) => {
-    if (!editorSettings.autoSync || isPaused || !content.trim()) {
+    if (!autoSync || isPaused || !content.trim()) {
       return;
     }
 
@@ -65,7 +71,7 @@ export function useRealtimeSync() {
       try {
         const startTime = performance.now();
         updateContent?.(content);
-        parseContent?.();
+        parseContent?.('');
         
         const endTime = performance.now();
         const syncTime = endTime - startTime;
@@ -102,7 +108,7 @@ export function useRealtimeSync() {
         setIsSyncing(false);
       }
     }, syncDelayRef.current);
-  }, [editorSettings.autoSync, isPaused, updateContent, parseContent, addNotification]);
+  }, [autoSync, isPaused, updateContent, parseContent, addNotification, syncDelay]);
 
   // 即座同期
   const syncContentImmediate = useCallback((content: string) => {
@@ -113,7 +119,7 @@ export function useRealtimeSync() {
     try {
       const startTime = performance.now();
       updateContent?.(content);
-      parseContent?.();
+      parseContent?.('');
       
       const endTime = performance.now();
       const syncTime = endTime - startTime;

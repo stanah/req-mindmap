@@ -119,30 +119,11 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
   /**
    * テンプレートから新規作成
    */
+  // 将来のテンプレート機能用に保留
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _handleNewFromTemplate = (templateType: 'basic' | 'advanced' | 'project') => {
-    if (file.isDirty) {
-      const confirmed = window.confirm('保存されていない変更があります。新しいファイルを作成しますか？');
-      if (!confirmed) return;
-    }
-
-    // BrowserFileServiceにキャストしてcreateNewFileTemplateメソッドを呼び出し
-    const browserService = fileService as BrowserFileService;
-    const templateContent = browserService.createNewFileTemplate(templateType);
-    updateContent(templateContent);
-    
-    const templateNames = {
-      basic: '基本テンプレート',
-      advanced: '高度なテンプレート',
-      project: 'プロジェクト管理テンプレート',
-    };
-
-    addNotification({
-      message: `${templateNames[templateType]}から新しいファイルを作成しました`,
-      type: 'info',
-      autoHide: true,
-      duration: 3000,
-    });
+  const _handleNewFromTemplate = (_templateType: 'basic' | 'advanced' | 'project') => {
+    // 将来実装予定
+    console.warn('Template creation feature is not yet implemented');
   };
 
   /**

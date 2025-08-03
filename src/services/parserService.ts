@@ -226,7 +226,7 @@ export class ParserServiceImpl implements ParserService {
    * JSON Schemaに基づくバリデーション
    */
   validateSchema(data: unknown): ValidationResult {
-    return schemaValidator.validateMindmapData(data);
+    return schemaValidator.validateMindmapData(data as MindmapData);
   }
 
   /**

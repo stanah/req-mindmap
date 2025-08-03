@@ -1,4 +1,4 @@
-import { SettingsAdapter } from '../interfaces';
+import type { SettingsAdapter } from '../interfaces';
 
 /**
  * ブラウザ環境での設定管理実装

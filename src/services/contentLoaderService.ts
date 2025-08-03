@@ -3,6 +3,7 @@
  * テンプレート生成、サンプル読み込み、カスタムテンプレート読み込みを統合
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { MindmapData } from '../types/mindmap';
 import { templateGeneratorService } from './templateGeneratorService';
 import type { TemplateGeneratorOptions } from './templateGeneratorService';
@@ -134,7 +135,9 @@ export class ContentLoaderService {
       // YAMLをJSONに変換（必要に応じて）
       content = this.convertYamlToJson(sample.content as string);
     } else {
-      content = typeof sample.content === 'string' ? sample.content : JSON.stringify(sample.content, null, 2);
+      content = typeof sample.content === 'string' 
+        ? sample.content 
+        : JSON.stringify((sample as any).content, null, 2);
     }
 
     return {

@@ -1,4 +1,4 @@
-import { PlatformAdapter } from '../interfaces';
+import type { PlatformAdapter } from '../interfaces';
 import { BrowserFileSystemAdapter } from './BrowserFileSystemAdapter';
 import { BrowserEditorAdapter } from './BrowserEditorAdapter';
 import { BrowserUIAdapter } from './BrowserUIAdapter';
@@ -36,9 +36,10 @@ export class BrowserPlatformAdapter implements PlatformAdapter {
     }
 
     // Monaco Editor の初期化確認
-    if (typeof monaco !== 'undefined') {
+    try {
+      await import('monaco-editor');
       console.log('Monaco Editor が利用可能です');
-    } else {
+    } catch {
       console.warn('Monaco Editor が読み込まれていません');
     }
 

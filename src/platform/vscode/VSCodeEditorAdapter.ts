@@ -1,4 +1,4 @@
-import { EditorAdapter, EditorError } from '../interfaces';
+import type { EditorAdapter, EditorError } from '../interfaces';
 
 /**
  * VSCode拡張環境でのエディタ操作実装
@@ -15,7 +15,7 @@ export class VSCodeEditorAdapter implements EditorAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  setValue(value: string): void {
+  setValue(_value: string): void {
     // VSCode API を使用してエディタの内容を設定
     // const vscode = acquireVsCodeApi();
     // vscode.postMessage({
@@ -26,7 +26,7 @@ export class VSCodeEditorAdapter implements EditorAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  setLanguage(language: 'json' | 'yaml'): void {
+  setLanguage(_language: 'json' | 'yaml'): void {
     // VSCode API を使用して言語モードを設定
     // const vscode = acquireVsCodeApi();
     // vscode.postMessage({
@@ -37,7 +37,7 @@ export class VSCodeEditorAdapter implements EditorAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  setTheme(theme: string): void {
+  setTheme(_theme: string): void {
     // VSCode API を使用してテーマを設定
     // const vscode = acquireVsCodeApi();
     // vscode.postMessage({
@@ -48,7 +48,7 @@ export class VSCodeEditorAdapter implements EditorAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  setCursor(line: number, column?: number): void {
+  setCursor(_line: number, _column?: number): void {
     // VSCode API を使用してカーソル位置を設定
     // const vscode = acquireVsCodeApi();
     // vscode.postMessage({
@@ -60,7 +60,7 @@ export class VSCodeEditorAdapter implements EditorAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  highlight(startLine: number, startColumn: number, endLine: number, endColumn: number): void {
+  highlight(_startLine: number, _startColumn: number, _endLine: number, _endColumn: number): void {
     // VSCode API を使用して範囲をハイライト
     // const vscode = acquireVsCodeApi();
     // vscode.postMessage({
@@ -74,7 +74,7 @@ export class VSCodeEditorAdapter implements EditorAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  setErrorMarkers(errors: EditorError[]): void {
+  setErrorMarkers(_errors: EditorError[]): void {
     // VSCode API を使用してエラーマーカーを設定
     // const vscode = acquireVsCodeApi();
     // vscode.postMessage({
@@ -85,7 +85,7 @@ export class VSCodeEditorAdapter implements EditorAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  onDidChangeContent(callback: (content: string) => void): void {
+  onDidChangeContent(_callback: (content: string) => void): void {
     // VSCode API を使用して内容変更イベントを監視
     // const vscode = acquireVsCodeApi();
     // vscode.postMessage({
@@ -96,7 +96,7 @@ export class VSCodeEditorAdapter implements EditorAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  onDidChangeCursorPosition(callback: (line: number, column: number) => void): void {
+  onDidChangeCursorPosition(_callback: (line: number, column: number) => void): void {
     // VSCode API を使用してカーソル位置変更イベントを監視
     // const vscode = acquireVsCodeApi();
     // vscode.postMessage({

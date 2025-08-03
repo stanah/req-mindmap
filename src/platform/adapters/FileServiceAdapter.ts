@@ -1,4 +1,4 @@
-import { FileSystemAdapter } from '../interfaces';
+import type { FileSystemAdapter } from '../interfaces';
 import { getPlatformAdapter } from '../adapters';
 import type { FileService } from '../../types';
 
@@ -72,7 +72,7 @@ export class FileServiceAdapter implements FileService {
     return this.platformAdapter.watchFile(path, callback);
   }
 
-  stopWatching(path: string): void {
+  stopWatching(_path: string): void {
     // watchFileが返すdispose関数を使用するため、
     // このメソッドは非推奨として扱う
     console.warn('stopWatching is deprecated. Use the dispose function returned by watchFile instead.');
@@ -82,19 +82,19 @@ export class FileServiceAdapter implements FileService {
     return await this.platformAdapter.exists(path);
   }
 
-  async deleteFile(path: string): Promise<void> {
+  async deleteFile(_path: string): Promise<void> {
     // プラットフォーム抽象化レイヤーには削除機能がないため、
     // 将来的に追加する必要がある
     throw new Error('ファイル削除機能はまだ実装されていません');
   }
 
-  async createDirectory(path: string): Promise<void> {
+  async createDirectory(_path: string): Promise<void> {
     // プラットフォーム抽象化レイヤーにはディレクトリ作成機能がないため、
     // 将来的に追加する必要がある
     throw new Error('ディレクトリ作成機能はまだ実装されていません');
   }
 
-  async listFiles(directory: string): Promise<string[]> {
+  async listFiles(_directory: string): Promise<string[]> {
     // プラットフォーム抽象化レイヤーにはファイル一覧機能がないため、
     // 将来的に追加する必要がある
     throw new Error('ファイル一覧機能はまだ実装されていません');

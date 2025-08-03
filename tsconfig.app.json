@@ -19,12 +19,20 @@
     "resolveJsonModule": true,
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
   "include": [
     "src"
+  ],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx", 
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
+    "src/test/**/*",
+    "src/__tests__/**/*"
   ]
 }

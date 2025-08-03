@@ -1,4 +1,4 @@
-import { PlatformAdapter } from './interfaces';
+import type { PlatformAdapter } from './interfaces';
 import { BrowserPlatformAdapter } from './browser';
 
 /**

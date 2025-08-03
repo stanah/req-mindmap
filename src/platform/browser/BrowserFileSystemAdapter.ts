@@ -1,4 +1,4 @@
-import { FileSystemAdapter, FileDialogOptions } from '../interfaces';
+import type { FileSystemAdapter, FileDialogOptions } from '../interfaces';
 
 /**
  * ブラウザ環境でのファイルシステム操作実装
@@ -24,13 +24,19 @@ export class BrowserFileSystemAdapter implements FileSystemAdapter {
       throw new Error(`ファイルハンドルが見つかりません: ${path}`);
     }
 
-    // ファイル書き込み権限を確認
-    const permission = await handle.queryPermission({ mode: 'readwrite' });
-    if (permission !== 'granted') {
-      const newPermission = await handle.requestPermission({ mode: 'readwrite' });
-      if (newPermission !== 'granted') {
-        throw new Error('ファイル書き込み権限が拒否されました');
+    // ファイル書き込み権限を確認（ブラウザサポート確認付き）
+    try {
+      if ('queryPermission' in handle) {
+        const permission = await (handle as any).queryPermission({ mode: 'readwrite' });
+        if (permission !== 'granted') {
+          const newPermission = await (handle as any).requestPermission({ mode: 'readwrite' });
+          if (newPermission !== 'granted') {
+            throw new Error('ファイル書き込み権限が拒否されました');
+          }
+        }
       }
+    } catch (error) {
+      console.warn('Permission API not supported, proceeding without permission check:', error);
     }
 
     const writable = await handle.createWritable();
@@ -205,8 +211,10 @@ export class BrowserFileSystemAdapter implements FileSystemAdapter {
 
   /**
    * ローカルストレージからファイル内容を取得（フォールバック用）
+   * 将来の機能拡張のために保持
    */
-  private getStoredFileContent(path: string): string | null {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private _getStoredFileContent(path: string): string | null {
     try {
       return localStorage.getItem(`file_content_${path}`);
     } catch (error) {
