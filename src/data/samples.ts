@@ -321,6 +321,9 @@ settings:
   theme: light
   layout: tree`;
 
+// 外部ファイルからサンプルデータを読み込み
+import comprehensiveRequirementsYAML from './samples/comprehensive-requirements.yaml?raw';
+
 export const sampleList = [
   {
     id: 'ecommerce-json',
@@ -335,6 +338,13 @@ export const sampleList = [
     description: 'カスタムスキーマを使用したプロジェクト管理システムの要件定義',
     format: 'yaml' as const,
     content: sampleYAML,
+  },
+  {
+    id: 'comprehensive-requirements',
+    name: 'サンプル要件定義',
+    description: '要求から要件への関係性を明確にした包括的な要件定義サンプル',
+    format: 'yaml' as const,
+    content: comprehensiveRequirementsYAML,
   },
 ] as const;
 

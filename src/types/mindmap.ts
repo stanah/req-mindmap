@@ -170,6 +170,8 @@ export interface MindmapSettings {
   nodeSpacing?: number;
   /** レベル間の間隔 */
   levelSpacing?: number;
+  /** 縦間隔の調整係数 */
+  verticalSpacing?: number;
   /** アニメーション有効/無効 */
   enableAnimation?: boolean;
   /** アニメーション有効/無効（別名） */
