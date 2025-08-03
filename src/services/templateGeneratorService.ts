@@ -133,7 +133,7 @@ export class TemplateGeneratorService {
    * Starterテンプレート生成
    */
   private generateStarterTemplate(
-    schema: SchemaDefinition,
+    _schema: SchemaDefinition,
     locale: 'ja' | 'en',
     includeExamples: boolean
   ): MindmapData {
@@ -268,7 +268,7 @@ export class TemplateGeneratorService {
     includeExamples: boolean
   ): MindmapData {
     const standardTemplate = this.generateStandardTemplate(schema, locale, includeExamples);
-    const labels = this.getLabels(locale);
+    const _labels = this.getLabels(locale);
 
     // トレーサビリティマトリクスを追加
     if (!standardTemplate.root.customFields) {
@@ -314,7 +314,7 @@ export class TemplateGeneratorService {
   private generateCustomTemplate(
     schema: SchemaDefinition,
     locale: 'ja' | 'en',
-    includeExamples: boolean
+    _includeExamples: boolean
   ): MindmapData {
     // スキーマのプロパティから動的に生成
     const labels = this.getLabels(locale);
@@ -326,7 +326,7 @@ export class TemplateGeneratorService {
 
     // スキーマのプロパティを解析して動的にノードを生成
     if (schema.properties?.core?.properties) {
-      Object.entries(schema.properties.core.properties).forEach(([key, prop]: [string, any]) => {
+      Object.entries(schema.properties.core.properties).forEach(([key, _prop]: [string, any]) => {
         root.children?.push({
           id: key,
           title: this.formatPropertyName(key, locale),

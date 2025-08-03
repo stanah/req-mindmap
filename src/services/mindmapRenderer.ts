@@ -196,7 +196,6 @@ export class MindmapRenderer {
     // ノードサイズの計算（複数行対応）
     hierarchy.each((node: d3.HierarchyNode<MindmapNode>) => {
       const nodeData = node.data;
-      const textLength = this.calculateTextWidth(nodeData.title);
       const badgeHeight = this.calculateBadgeHeight(nodeData);
 
       // 設定値を使用、設定がない場合はデフォルト幅を使用
@@ -244,7 +243,6 @@ export class MindmapRenderer {
     // ノードサイズの再計算（複数行対応）
     newHierarchy.each((node: d3.HierarchyNode<MindmapNode>) => {
       const nodeData = node.data;
-      const textLength = this.calculateTextWidth(nodeData.title);
       const badgeHeight = this.calculateBadgeHeight(nodeData);
 
       // 設定値を使用、設定がない場合はデフォルト幅を使用
@@ -674,7 +672,7 @@ export class MindmapRenderer {
       });
 
     // バッジの描画
-    this.drawBadges(nodeUpdate);
+    this.drawBadges(nodeUpdate as d3.Selection<SVGGElement, D3Node, SVGGElement, unknown>);
 
     // 折りたたみインジケーターの位置とテキスト更新
     nodeUpdate.select('.mindmap-collapse-group')
@@ -687,13 +685,7 @@ export class MindmapRenderer {
     nodeSelection.exit().remove();
   }
 
-  /**
-   * テキスト幅の計算
-   */
-  private calculateTextWidth(text: string): number {
-    // 設定値を使用、設定がない場合はデフォルト幅を使用
-    return this.settings.nodeWidth || this.NODE_WIDTH;
-  }
+
 
   /**
    * バッジ用テキスト幅の計算

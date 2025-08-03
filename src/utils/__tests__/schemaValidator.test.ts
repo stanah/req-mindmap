@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SchemaValidator } from '../schemaValidator';
-import type { MindmapData, CustomSchema, ValidationResult } from '../../types';
+import type { MindmapData, CustomSchema } from '../../types';
 
 describe('SchemaValidator', () => {
   let validator: SchemaValidator;
@@ -110,7 +110,8 @@ describe('SchemaValidator', () => {
             type: 'string',
             label: '説明',
             validation: [
-              { type: 'length', min: 1, max: 100 }
+              { type: 'minLength', min: 1 },
+              { type: 'maxLength', max: 100 }
             ]
           }
         ],
@@ -180,7 +181,7 @@ describe('SchemaValidator', () => {
             label: 'スコア',
             validation: [
               {
-                type: 'range',
+                type: 'min',
                 min: 100,
                 max: 50 // min > max で無効
               }
@@ -236,7 +237,8 @@ describe('SchemaValidator', () => {
           type: 'number',
           label: 'スコア',
           validation: [
-            { type: 'range', min: 0, max: 100 }
+            { type: 'min', min: 0 },
+            { type: 'max', max: 100 }
           ]
         },
         {
@@ -260,7 +262,8 @@ describe('SchemaValidator', () => {
           type: 'string',
           label: '説明',
           validation: [
-            { type: 'length', min: 5, max: 200 }
+            { type: 'minLength', min: 5 },
+            { type: 'maxLength', max: 200 }
           ]
         }
       ],
