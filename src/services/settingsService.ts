@@ -133,6 +133,7 @@ export class SettingsService {
         layout: 'tree',
         zoom: 1,
         center: { x: 0, y: 0 },
+        nodeWidth: 160,
         maxNodeWidth: 300,
         nodeSpacing: 20,
         levelSpacing: 100,

@@ -162,6 +162,8 @@ export interface MindmapSettings {
   };
   /** ノードサイズ */
   nodeSize?: 'small' | 'medium' | 'large';
+  /** ノードの幅 */
+  nodeWidth?: number;
   /** ノードの最大幅 */
   maxNodeWidth?: number;
   /** ノード間の間隔 */

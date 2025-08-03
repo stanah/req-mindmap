@@ -188,7 +188,8 @@ export class MindmapRenderer {
       const textLength = this.calculateTextWidth(nodeData.title);
       const badgeHeight = this.calculateBadgeHeight(nodeData);
 
-      (node as D3Node).width = Math.min(Math.max(textLength + this.NODE_PADDING * 2, this.NODE_WIDTH), this.settings.maxNodeWidth || 200);
+      // 設定値を使用、設定がない場合はデフォルト幅を使用
+      (node as D3Node).width = this.settings.nodeWidth || this.NODE_WIDTH;
       
       // 複数行対応の高さ計算
       const nodeWidth = (node as D3Node).width;
@@ -235,7 +236,8 @@ export class MindmapRenderer {
       const textLength = this.calculateTextWidth(nodeData.title);
       const badgeHeight = this.calculateBadgeHeight(nodeData);
 
-      (node as D3Node).width = Math.min(Math.max(textLength + this.NODE_PADDING * 2, this.NODE_WIDTH), this.settings.maxNodeWidth || 200);
+      // 設定値を使用、設定がない場合はデフォルト幅を使用
+      (node as D3Node).width = this.settings.nodeWidth || this.NODE_WIDTH;
       
       // 複数行対応の高さ計算
       const nodeWidth = (node as D3Node).width;
@@ -648,18 +650,8 @@ export class MindmapRenderer {
    * テキスト幅の計算
    */
   private calculateTextWidth(text: string): number {
-    // より正確な文字幅計算（日本語と英語を考慮）
-    let width = 0;
-    for (let i = 0; i < text.length; i++) {
-      const char = text.charAt(i);
-      // 日本語文字（ひらがな、カタカナ、漢字）は幅広
-      if (char.match(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/)) {
-        width += 14; // 日本語文字の幅
-      } else {
-        width += 8; // 英数字の幅
-      }
-    }
-    return Math.max(width + 40, this.NODE_WIDTH * 0.8); // 最小幅を保証
+    // 設定値を使用、設定がない場合はデフォルト幅を使用
+    return this.settings.nodeWidth || this.NODE_WIDTH;
   }
 
   /**
@@ -697,8 +689,9 @@ export class MindmapRenderer {
    * テキストを複数行に分割する
    */
   private splitTextIntoLines(text: string, maxWidth: number, maxLines: number = 3): string[] {
-    const charWidth = 8; // 平均文字幅
-    const maxCharsPerLine = Math.floor(maxWidth / charWidth);
+    // 日本語と英語を考慮した平均文字幅
+    const avgCharWidth = 10; // 日本語を含む平均文字幅を調整
+    const maxCharsPerLine = Math.floor(maxWidth / avgCharWidth);
     
     if (maxCharsPerLine <= 3) {
       return [text.substring(0, 1) + '...'];
@@ -797,7 +790,7 @@ export class MindmapRenderer {
    * バッジの高さを計算
    */
   private calculateBadgeHeight(nodeData: MindmapNode): number {
-    if (!this.customSchema || !nodeData.customFields) {
+    if (!this.customSchema || !this.customSchema.displayRules || !nodeData.customFields) {
       return 0;
     }
 
@@ -812,7 +805,7 @@ export class MindmapRenderer {
    * ノードの背景色を取得
    */
   private getNodeBackgroundColor(nodeData: MindmapNode): string {
-    if (!this.customSchema || !nodeData.customFields) {
+    if (!this.customSchema || !this.customSchema.displayRules || !nodeData.customFields) {
       return '#ffffff';
     }
 
@@ -834,7 +827,7 @@ export class MindmapRenderer {
    * ノードのテキスト色を取得
    */
   private getNodeTextColor(nodeData: MindmapNode): string {
-    if (!this.customSchema || !nodeData.customFields) {
+    if (!this.customSchema || !this.customSchema.displayRules || !nodeData.customFields) {
       return '#333333';
     }
 
@@ -856,7 +849,7 @@ export class MindmapRenderer {
    * アイコンを取得
    */
   private getNodeIcon(nodeData: MindmapNode): string | null {
-    if (!this.customSchema || !nodeData.customFields) {
+    if (!this.customSchema || !this.customSchema.displayRules || !nodeData.customFields) {
       return null;
     }
 
@@ -878,7 +871,7 @@ export class MindmapRenderer {
    * バッジ情報を取得
    */
   private getNodeBadges(nodeData: MindmapNode): Array<{ text: string, style: StyleSettings }> {
-    if (!this.customSchema || !nodeData.customFields) {
+    if (!this.customSchema || !this.customSchema.displayRules || !nodeData.customFields) {
       return [];
     }
 

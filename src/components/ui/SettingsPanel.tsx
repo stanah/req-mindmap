@@ -353,16 +353,18 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
               </div>
 
               <div className="setting-group">
-                <label className="setting-label">最大ノード幅</label>
+                <label className="setting-label">ノード幅</label>
                 <input
                   type="number"
-                  min="200"
-                  max="500"
-                  value={mindmapSettings.maxNodeWidth || 300}
-                  onChange={(e) => handleMindmapSettingChange('maxNodeWidth', parseInt(e.target.value))}
+                  min="80"
+                  max="400"
+                  value={mindmapSettings.nodeWidth || 160}
+                  onChange={(e) => handleMindmapSettingChange('nodeWidth', parseInt(e.target.value))}
                   className="setting-input"
                 />
               </div>
+
+
 
               <div className="setting-group">
                 <label className="setting-label">ノード間隔</label>
