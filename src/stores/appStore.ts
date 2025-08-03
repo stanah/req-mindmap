@@ -725,8 +725,9 @@ export const useAppStore = create<AppStore>()(
         },
 
         resetSettings: () => {
-          const defaultSettings = settingsService.loadSettings();
+          // クリアしてからデフォルト設定を取得
           settingsService.clearAllData();
+          const defaultSettings = settingsService.loadSettings();
           
           set((state) => ({
             ...state,

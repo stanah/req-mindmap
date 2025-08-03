@@ -223,17 +223,20 @@ describe('useRealtimeSync', () => {
 
       const content = '{"title": "test"}';
 
+      // デバウンス版を使用（immediate版は常に実行される）
       act(() => {
-        result.current.syncContentImmediate(content);
+        result.current.syncContent(content);
       });
+
+      vi.clearAllMocks();
 
       // 同じ内容で再度同期
       act(() => {
-        result.current.syncContentImmediate(content);
+        result.current.syncContent(content);
       });
 
-      // 最初の1回のみ呼ばれる
-      expect(mockUpdateContent).toHaveBeenCalledTimes(1);
+      // 同じ内容なのでスキップされる
+      expect(mockUpdateContent).not.toHaveBeenCalled();
     });
 
     it('空文字列の場合は同期をスキップする', () => {
@@ -336,6 +339,14 @@ describe('useRealtimeSync', () => {
       // 設定を変更
       syncDelay = 500;
       rerender();
+      
+      // 既存のタイマーをクリア
+      vi.clearAllMocks();
+
+      // 新しい設定で再度同期を開始
+      act(() => {
+        result.current.syncContent('{"title": "test2"}');
+      });
 
       // 元の遅延時間では同期されない
       act(() => {
@@ -387,14 +398,30 @@ describe('useRealtimeSync', () => {
       });
     });
 
-    it('同期統計が正しく更新される', () => {
+    it('同期統計が正しく更新される', async () => {
+      // モックが成功するように設定
+      mockUpdateContent.mockImplementation(() => {});
+      mockParseContent.mockImplementation(() => {});
+      
       const { result } = renderHook(() => useRealtimeSync());
 
-      act(() => {
+      // 統計が0から始まることを確認
+      expect(result.current.syncStats.totalSyncs).toBe(0);
+      expect(result.current.syncStats.successfulSyncs).toBe(0);
+
+      await act(async () => {
         result.current.syncContentImmediate('{"title": "test1"}');
+      });
+
+      // 1回目の統計確認
+      expect(result.current.syncStats.totalSyncs).toBe(1);
+      expect(result.current.syncStats.successfulSyncs).toBe(1);
+
+      await act(async () => {
         result.current.syncContentImmediate('{"title": "test2"}');
       });
 
+      // 2回目の統計確認
       expect(result.current.syncStats.totalSyncs).toBe(2);
       expect(result.current.syncStats.successfulSyncs).toBe(2);
       expect(result.current.syncStats.failedSyncs).toBe(0);

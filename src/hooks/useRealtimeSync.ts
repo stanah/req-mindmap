@@ -37,6 +37,12 @@ export function useRealtimeSync() {
 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastContentRef = useRef<string>('');
+  const syncDelayRef = useRef(editorSettings.syncDelay || 300);
+
+  // syncDelayの変更を追跡
+  useEffect(() => {
+    syncDelayRef.current = editorSettings.syncDelay || 300;
+  }, [editorSettings.syncDelay]);
 
   // デバウンス付きコンテンツ同期
   const syncContent = useCallback((content: string) => {
@@ -44,6 +50,7 @@ export function useRealtimeSync() {
       return;
     }
 
+    // 同じコンテンツの場合はスキップ（ただし統計は更新しない）
     if (content === lastContentRef.current) {
       return;
     }
@@ -63,19 +70,27 @@ export function useRealtimeSync() {
         const endTime = performance.now();
         const syncTime = endTime - startTime;
 
-        setSyncStats(prev => ({
-          totalSyncs: prev.totalSyncs + 1,
-          successfulSyncs: prev.successfulSyncs + 1,
-          failedSyncs: prev.failedSyncs,
-          averageSyncTime: (prev.averageSyncTime * prev.totalSyncs + syncTime) / (prev.totalSyncs + 1)
-        }));
+        // 統計を正しく更新（totalSyncsを先に増やしてから計算）
+        setSyncStats(prev => {
+          const newTotalSyncs = prev.totalSyncs + 1;
+          const newSuccessfulSyncs = prev.successfulSyncs + 1;
+          return {
+            totalSyncs: newTotalSyncs,
+            successfulSyncs: newSuccessfulSyncs,
+            failedSyncs: prev.failedSyncs,
+            averageSyncTime: prev.totalSyncs === 0 
+              ? syncTime 
+              : (prev.averageSyncTime * prev.totalSyncs + syncTime) / newTotalSyncs
+          };
+        });
 
         lastContentRef.current = content;
       } catch (error) {
         setSyncStats(prev => ({
-          ...prev,
           totalSyncs: prev.totalSyncs + 1,
-          failedSyncs: prev.failedSyncs + 1
+          successfulSyncs: prev.successfulSyncs,
+          failedSyncs: prev.failedSyncs + 1,
+          averageSyncTime: prev.averageSyncTime
         }));
 
         addNotification?.({
@@ -86,8 +101,8 @@ export function useRealtimeSync() {
       } finally {
         setIsSyncing(false);
       }
-    }, editorSettings.syncDelay || 300);
-  }, [editorSettings.autoSync, editorSettings.syncDelay, isPaused, updateContent, parseContent, addNotification]);
+    }, syncDelayRef.current);
+  }, [editorSettings.autoSync, isPaused, updateContent, parseContent, addNotification]);
 
   // 即座同期
   const syncContentImmediate = useCallback((content: string) => {
@@ -103,19 +118,26 @@ export function useRealtimeSync() {
       const endTime = performance.now();
       const syncTime = endTime - startTime;
 
-      setSyncStats(prev => ({
-        totalSyncs: prev.totalSyncs + 1,
-        successfulSyncs: prev.successfulSyncs + 1,
-        failedSyncs: prev.failedSyncs,
-        averageSyncTime: (prev.averageSyncTime * prev.totalSyncs + syncTime) / (prev.totalSyncs + 1)
-      }));
+      setSyncStats(prev => {
+        const newTotalSyncs = prev.totalSyncs + 1;
+        const newSuccessfulSyncs = prev.successfulSyncs + 1;
+        return {
+          totalSyncs: newTotalSyncs,
+          successfulSyncs: newSuccessfulSyncs,
+          failedSyncs: prev.failedSyncs,
+          averageSyncTime: prev.totalSyncs === 0 
+            ? syncTime 
+            : (prev.averageSyncTime * prev.totalSyncs + syncTime) / newTotalSyncs
+        };
+      });
 
       lastContentRef.current = content;
     } catch (error) {
       setSyncStats(prev => ({
-        ...prev,
         totalSyncs: prev.totalSyncs + 1,
-        failedSyncs: prev.failedSyncs + 1
+        successfulSyncs: prev.successfulSyncs,
+        failedSyncs: prev.failedSyncs + 1,
+        averageSyncTime: prev.averageSyncTime
       }));
 
       addNotification?.({

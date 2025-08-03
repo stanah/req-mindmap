@@ -84,18 +84,12 @@ root:
 
       // YAMLパーサーのモック
       vi.doMock('yaml', () => ({
-        default: {
-          parse: vi.fn().mockReturnValue({
-            version: '1.0',
-            title: 'テストマインドマップ',
-            root: { id: 'root', title: 'ルートノード' }
-          })
-        },
         parse: vi.fn().mockReturnValue({
           version: '1.0',
           title: 'テストマインドマップ',
           root: { id: 'root', title: 'ルートノード' }
-        })
+        }),
+        stringify: vi.fn().mockReturnValue('version: "1.0"\ntitle: "テストマインドマップ"')
       }));
 
       const result = await fileService.openFile();
@@ -170,6 +164,13 @@ title: "test
       mockFileHandle.getFile.mockResolvedValue(mockFile);
       (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
 
+      // YAMLパーサーでエラーを発生させるモック
+      vi.doMock('yaml', () => ({
+        parse: vi.fn().mockImplementation(() => {
+          throw new Error('Invalid YAML syntax');
+        })
+      }));
+
       const result = await fileService.openFile();
 
       expect(result.success).toBe(false);
@@ -212,6 +213,11 @@ title: "test
     it('YAMLファイルを正しく保存する', async () => {
       mockFileHandle.createWritable.mockResolvedValue(mockWritableStream);
       (global.showSaveFilePicker as any).mockResolvedValue(mockFileHandle);
+
+      // YAMLstringifyのモック
+      vi.doMock('yaml', () => ({
+        stringify: vi.fn().mockReturnValue('version: "1.0"\ntitle: テストマインドマップ')
+      }));
 
       const result = await fileService.saveFile(testData, 'yaml');
 
