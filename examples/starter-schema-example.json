@@ -1,0 +1,78 @@
+{
+  "version": "1.0",
+  "title": "マインドマップツール - スターター要件定義",
+  "description": "シンプルで実用的な要件定義の例",
+  "templateType": "starter-requirements",
+  "core": {
+    "businessGoals": [
+      {
+        "id": "bg001",
+        "title": "要件定義作業の効率化",
+        "description": "従来のExcel・Word管理から脱却し、構造化された要件管理を実現",
+        "level": "business",
+        "priority": "must",
+        "status": "approved",
+        "category": "効率化",
+        "owner": "product_owner",
+        "acceptanceCriteria": [
+          "要件作成時間を50%短縮",
+          "要件変更の追跡が可能",
+          "複数人での同時編集が可能"
+        ]
+      }
+    ],
+    "userRequirements": [
+      {
+        "id": "ur001", 
+        "title": "JSON/YAMLでマインドマップを作成したい",
+        "description": "ユーザーとして、テキストベースでマインドマップを作成し、リアルタイムで視覚化を確認したい",
+        "level": "user",
+        "priority": "must",
+        "status": "approved",
+        "category": "コア機能",
+        "owner": "dev_team",
+        "effort": {
+          "size": "L",
+          "hours": 40
+        },
+        "acceptanceCriteria": [
+          "JSON形式でマインドマップデータを入力できる",
+          "YAML形式でマインドマップデータを入力できる", 
+          "入力と同時にリアルタイムで視覚化が更新される",
+          "シンタックスエラーが適切に表示される"
+        ],
+        "dependencies": [],
+        "tags": ["エディタ", "リアルタイム", "JSON", "YAML"]
+      },
+      {
+        "id": "ur002",
+        "title": "マインドマップを視覚的に確認したい", 
+        "description": "ユーザーとして、作成したマインドマップをインタラクティブな図として確認したい",
+        "level": "user",
+        "priority": "must",
+        "status": "review",
+        "category": "ビジュアライゼーション",
+        "owner": "dev_team",
+        "effort": {
+          "size": "L",
+          "hours": 32
+        },
+        "acceptanceCriteria": [
+          "D3.jsによる美しい描画",
+          "ズーム・パン操作が可能",
+          "ノードの展開・折りたたみが可能",
+          "200ms以内のリアルタイム更新"
+        ],
+        "dependencies": ["ur001"],
+        "tags": ["D3.js", "インタラクション", "パフォーマンス"]
+      }
+    ]
+  },
+  "metadata": {
+    "createdAt": "2025-01-15T12:00:00Z",
+    "updatedAt": "2025-01-15T14:00:00Z", 
+    "version": "1.0.0",
+    "authors": ["dev_team"],
+    "tags": ["mindmap", "requirements", "starter"]
+  }
+}

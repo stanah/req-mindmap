@@ -1,0 +1,303 @@
+/**
+ * テンプレートモーダルのスタイル
+ */
+
+.template-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.template-modal {
+  background: var(--vscode-editor-background, #1e1e1e);
+  border: 1px solid var(--vscode-panel-border, #3c3c3c);
+  border-radius: 8px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: slideIn 0.3s ease-out;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes slideIn {
+  from { 
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.template-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--vscode-panel-border, #3c3c3c);
+  background: var(--vscode-titleBar-activeBackground, #2d2d30);
+}
+
+.template-modal__header h2 {
+  margin: 0;
+  color: var(--vscode-foreground, #cccccc);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.template-modal__close {
+  background: none;
+  border: none;
+  color: var(--vscode-foreground, #cccccc);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.template-modal__close:hover {
+  background: var(--vscode-toolbar-hoverBackground, #404040);
+}
+
+.template-modal__content {
+  padding: 24px;
+  max-height: calc(90vh - 140px);
+  overflow-y: auto;
+}
+
+.template-modal__section {
+  margin-bottom: 32px;
+}
+
+.template-modal__section h3 {
+  margin: 0 0 16px 0;
+  color: var(--vscode-foreground, #cccccc);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* テンプレートタイプ選択 */
+.template-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.template-type-card {
+  border: 2px solid var(--vscode-panel-border, #3c3c3c);
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--vscode-input-background, #3c3c3c);
+}
+
+.template-type-card:hover {
+  border-color: var(--vscode-focusBorder, #007acc);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.template-type-card.selected {
+  border-color: var(--vscode-focusBorder, #007acc);
+  background: var(--vscode-list-activeSelectionBackground, #094771);
+}
+
+.template-type-card__icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.template-type-card__content h4 {
+  margin: 0 0 8px 0;
+  color: var(--vscode-foreground, #cccccc);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.template-type-card__content p {
+  margin: 0 0 12px 0;
+  color: var(--vscode-descriptionForeground, #999999);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.template-type-card__meta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+}
+
+.template-type-card__meta .complexity {
+  color: var(--vscode-charts-orange, #ff8c00);
+}
+
+.template-type-card__meta .time {
+  color: var(--vscode-charts-green, #00aa00);
+}
+
+/* オプション設定 */
+.template-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.template-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.template-option input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.template-option span {
+  color: var(--vscode-foreground, #cccccc);
+  font-weight: 500;
+}
+
+.template-option small {
+  color: var(--vscode-descriptionForeground, #999999);
+  font-size: 12px;
+  margin-left: 20px;
+}
+
+.template-option select {
+  background: var(--vscode-input-background, #3c3c3c);
+  border: 1px solid var(--vscode-input-border, #3c3c3c);
+  color: var(--vscode-input-foreground, #cccccc);
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-top: 8px;
+  max-width: 200px;
+}
+
+/* プレビュー */
+.template-preview {
+  background: var(--vscode-textCodeBlock-background, #2d2d30);
+  border: 1px solid var(--vscode-panel-border, #3c3c3c);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.template-preview ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.template-preview li {
+  padding: 4px 0;
+  color: var(--vscode-foreground, #cccccc);
+  font-size: 14px;
+}
+
+/* フッター */
+.template-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid var(--vscode-panel-border, #3c3c3c);
+  background: var(--vscode-panel-background, #252526);
+}
+
+.template-modal__button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.template-modal__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.template-modal__button--secondary {
+  background: var(--vscode-button-secondaryBackground, #3c3c3c);
+  color: var(--vscode-button-secondaryForeground, #cccccc);
+}
+
+.template-modal__button--secondary:hover:not(:disabled) {
+  background: var(--vscode-button-secondaryHoverBackground, #464647);
+}
+
+.template-modal__button--primary {
+  background: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #ffffff);
+}
+
+.template-modal__button--primary:hover:not(:disabled) {
+  background: var(--vscode-button-hoverBackground, #1177bb);
+}
+
+/* ローディングスピナー */
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .template-modal {
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .template-type-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .template-modal__content {
+    padding: 16px;
+  }
+  
+  .template-modal__footer {
+    padding: 16px;
+    flex-direction: column;
+  }
+  
+  .template-modal__button {
+    width: 100%;
+    justify-content: center;
+  }
+}
