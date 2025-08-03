@@ -399,6 +399,19 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
               </div>
 
               <div className="setting-group">
+                <label className="setting-label">縦間隔</label>
+                <input
+                  type="number"
+                  min="0.3"
+                  max="2.0"
+                  step="0.1"
+                  value={mindmapSettings.verticalSpacing || 1.0}
+                  onChange={(e) => handleMindmapSettingChange('verticalSpacing', parseFloat(e.target.value))}
+                  className="setting-input"
+                />
+              </div>
+
+              <div className="setting-group">
                 <label className="setting-checkbox">
                   <input
                     type="checkbox"

@@ -137,6 +137,7 @@ export class SettingsService {
         maxNodeWidth: 300,
         nodeSpacing: 20,
         levelSpacing: 100,
+        verticalSpacing: 1.0,
         enableAnimation: true,
         autoLayout: true,
       },
