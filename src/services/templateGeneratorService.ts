@@ -197,16 +197,16 @@ export class TemplateGeneratorService {
     // システム要件を追加
     starterTemplate.root.children?.push({
       id: 'system-requirements',
-      name: labels.systemRequirements,
+      title: labels.systemRequirements,
       children: includeExamples ? [
         {
           id: 'sr001',
-          name: labels.exampleSystemRequirement,
-          attributes: {
+          title: labels.exampleSystemRequirement,
+          description: labels.exampleSystemRequirementDesc,
+          customFields: {
             priority: 'must',
             status: 'draft',
-            category: 'functional',
-            description: labels.exampleSystemRequirementDesc
+            category: 'functional'
           }
         }
       ] : []
