@@ -1,0 +1,1229 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://req-mindmap.example.com/schemas/unified-requirements-schema.json",
+  "title": "統合要件定義マインドマップスキーマ",
+  "description": "要求から実装まで一気通貫で管理する統合マインドマップのJSONスキーマ",
+  "type": "object",
+  "required": ["version", "title", "templateType", "abstractionLevels", "crossCuttingConcerns", "root"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "description": "スキーマバージョン"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "マインドマップのタイトル"
+    },
+    "description": {
+      "type": "string",
+      "description": "マインドマップの説明"
+    },
+    "templateType": {
+      "type": "string",
+      "const": "unified-requirements",
+      "description": "テンプレート種別"
+    },
+    "abstractionLevels": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 5
+      },
+      "uniqueItems": true,
+      "description": "使用する抽象度レベル"
+    },
+    "crossCuttingConcerns": {
+      "$ref": "#/definitions/CrossCuttingConcerns"
+    },
+    "root": {
+      "$ref": "#/definitions/UnifiedMindmapNode"
+    },
+    "traceabilityMatrix": {
+      "$ref": "#/definitions/TraceabilityMatrix"
+    },
+    "qualityMetrics": {
+      "$ref": "#/definitions/QualityMetrics"
+    },
+    "settings": {
+      "type": "object",
+      "description": "アプリケーション設定"
+    },
+    "metadata": {
+      "$ref": "#/definitions/Metadata"
+    }
+  },
+
+  "definitions": {
+    "AbstractionLevel": {
+      "type": "integer",
+      "enum": [0, 1, 2, 3, 4, 5],
+      "description": "抽象度レベル: 0=ビジネスニーズ, 1=ステークホルダー要求, 2=ユーザーストーリー, 3=システム要件, 4=設計仕様, 5=実装タスク"
+    },
+
+    "NodeType": {
+      "type": "string",
+      "enum": [
+        "business_opportunity", "business_problem", "strategic_goal",
+        "user_request", "business_request", "technical_request", "regulatory_request",
+        "user_story", "acceptance_criteria", "persona", "user_journey",
+        "functional_requirement", "non_functional_requirement", "quality_attribute", "constraint",
+        "architecture_design", "ui_ux_design", "api_design", "data_design", "component_design",
+        "development_task", "test_task", "deployment_task", "documentation_task"
+      ],
+      "description": "ノード種別"
+    },
+
+    "NodeStatus": {
+      "type": "string",
+      "enum": ["todo", "in_progress", "review", "done", "blocked", "cancelled"],
+      "description": "ノードステータス"
+    },
+
+    "ProcessPhase": {
+      "type": "string",
+      "enum": ["planning", "analysis", "design", "implementation", "testing", "deployment"],
+      "description": "プロセスフェーズ"
+    },
+
+    "Priority": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "優先度"
+    },
+
+    "ComplexityLevel": {
+      "type": "string",
+      "enum": ["simple", "medium", "complex"],
+      "description": "複雑性レベル"
+    },
+
+    "RiskLevel": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"],
+      "description": "リスクレベル"
+    },
+
+    "RelationshipType": {
+      "type": "string",
+      "enum": [
+        "derives", "realizes", "decomposes", "aggregates",
+        "depends_on", "conflicts_with", "supports", "relates_to",
+        "constrains", "verifies", "validates", "tests",
+        "impacts", "blocks", "enables"
+      ],
+      "description": "関係性種別"
+    },
+
+    "RelationshipStrength": {
+      "type": "string",
+      "enum": ["mandatory", "recommended", "optional", "reference"],
+      "description": "関係性強度"
+    },
+
+    "ROIMetrics": {
+      "type": "object",
+      "required": ["expectedROI", "paybackPeriod"],
+      "properties": {
+        "expectedROI": {
+          "type": "number",
+          "description": "期待ROI(%)"
+        },
+        "paybackPeriod": {
+          "type": "number",
+          "minimum": 0,
+          "description": "投資回収期間(月)"
+        },
+        "investmentAmount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "投資額"
+        },
+        "expectedRevenue": {
+          "type": "number",
+          "minimum": 0,
+          "description": "期待収益"
+        },
+        "costSaving": {
+          "type": "number",
+          "minimum": 0,
+          "description": "コスト削減額"
+        }
+      }
+    },
+
+    "MarketAnalysis": {
+      "type": "object",
+      "required": ["marketSize", "targetSegment"],
+      "properties": {
+        "marketSize": {
+          "type": "string",
+          "description": "市場規模"
+        },
+        "targetSegment": {
+          "type": "string",
+          "description": "ターゲットセグメント"
+        },
+        "competitiveAdvantage": {
+          "type": "string",
+          "description": "競合優位性"
+        },
+        "marketTrends": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "市場トレンド"
+        }
+      }
+    },
+
+    "BusinessNeedData": {
+      "type": "object",
+      "required": ["level", "businessCase", "roi", "strategicAlignment"],
+      "properties": {
+        "level": { "const": 0 },
+        "businessCase": {
+          "type": "string",
+          "minLength": 1,
+          "description": "ビジネスケース"
+        },
+        "roi": { "$ref": "#/definitions/ROIMetrics" },
+        "strategicAlignment": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "戦略的整合性"
+        },
+        "marketOpportunity": { "$ref": "#/definitions/MarketAnalysis" },
+        "competitiveAdvantage": {
+          "type": "string",
+          "description": "競合優位性"
+        }
+      }
+    },
+
+    "StakeholderInfo": {
+      "type": "object",
+      "required": ["stakeholderId", "name", "role", "department"],
+      "properties": {
+        "stakeholderId": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "department": { "type": "string" },
+        "influence": { "$ref": "#/definitions/Priority" },
+        "interest": { "$ref": "#/definitions/Priority" }
+      }
+    },
+
+    "ImpactAnalysis": {
+      "type": "object",
+      "required": ["businessImpact", "technicalImpact", "userImpact"],
+      "properties": {
+        "businessImpact": { "$ref": "#/definitions/Priority" },
+        "technicalImpact": { "$ref": "#/definitions/Priority" },
+        "userImpact": { "$ref": "#/definitions/Priority" },
+        "organizationalImpact": { "$ref": "#/definitions/Priority" },
+        "riskAssessment": { "type": "string" }
+      }
+    },
+
+    "StakeholderRequestData": {
+      "type": "object",
+      "required": ["level", "requestor", "rationale", "impactAnalysis"],
+      "properties": {
+        "level": { "const": 1 },
+        "requestor": { "$ref": "#/definitions/StakeholderInfo" },
+        "rationale": { "type": "string", "minLength": 1 },
+        "impactAnalysis": { "$ref": "#/definitions/ImpactAnalysis" },
+        "acceptanceCriteria": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "conflictsWith": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "QualityAttribute": {
+      "type": "object",
+      "required": ["name", "target", "priority"],
+      "properties": {
+        "name": { "type": "string" },
+        "target": { "type": "string" },
+        "measurable": { "type": "boolean", "default": true },
+        "priority": { "$ref": "#/definitions/Priority" }
+      }
+    },
+
+    "Constraint": {
+      "type": "object",
+      "required": ["type", "description", "rationale"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["technical", "business", "legal", "resource", "time"]
+        },
+        "description": { "type": "string" },
+        "rationale": { "type": "string" },
+        "impact": { "type": "string" }
+      }
+    },
+
+    "VerificationMethod": {
+      "type": "object",
+      "required": ["method", "details"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["testing", "inspection", "analysis", "demonstration"]
+        },
+        "tool": { "type": "string" },
+        "details": { "type": "string" }
+      }
+    },
+
+    "SystemRequirementData": {
+      "type": "object",
+      "required": ["level", "derivedFromStories", "requirementType", "verificationCriteria"],
+      "properties": {
+        "level": { "const": 3 },
+        "derivedFromStories": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "元となるユーザーストーリーID"
+        },
+        "requirementType": {
+          "type": "string",
+          "enum": ["functional", "non_functional", "quality_attribute"]
+        },
+        "functionalDetails": {
+          "type": "object",
+          "properties": {
+            "inputs": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "outputs": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "businessRules": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "exceptions": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "qualityAttributes": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/QualityAttribute" }
+        },
+        "verificationCriteria": {
+          "type": "object",
+          "required": ["measurable", "testable", "criteria"],
+          "properties": {
+            "measurable": { "type": "boolean" },
+            "testable": { "type": "boolean" },
+            "criteria": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "FunctionalSpecification": {
+      "type": "object",
+      "required": ["inputs", "outputs", "processing"],
+      "properties": {
+        "inputs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "outputs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "processing": { "type": "string" },
+        "businessRules": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "exceptions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "TechnicalSpecification": {
+      "type": "object",
+      "required": ["architecture", "frameworks", "databases"],
+      "properties": {
+        "architecture": { "type": "string" },
+        "frameworks": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "libraries": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "databases": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "integrations": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "APIEndpoint": {
+      "type": "object",
+      "required": ["method", "path", "description"],
+      "properties": {
+        "method": { "type": "string" },
+        "path": { "type": "string" },
+        "description": { "type": "string" },
+        "parameters": { "type": "object" },
+        "responses": { "type": "object" }
+      }
+    },
+
+    "UIComponent": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "props": { "type": "object" }
+      }
+    },
+
+    "InterfaceSpecification": {
+      "type": "object",
+      "properties": {
+        "apiEndpoints": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/APIEndpoint" }
+        },
+        "uiComponents": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/UIComponent" }
+        },
+        "integrationPoints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["system", "protocol", "description"],
+            "properties": {
+              "system": { "type": "string" },
+              "protocol": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "DataEntity": {
+      "type": "object",
+      "required": ["name", "attributes"],
+      "properties": {
+        "name": { "type": "string" },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "relationships": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "DataSpecification": {
+      "type": "object",
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/DataEntity" }
+        },
+        "schemas": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "migrations": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "SecurityRequirement": {
+      "type": "object",
+      "required": ["category", "requirement", "implementation", "priority"],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": ["authentication", "authorization", "encryption", "audit"]
+        },
+        "requirement": { "type": "string" },
+        "implementation": { "type": "string" },
+        "priority": { "$ref": "#/definitions/Priority" }
+      }
+    },
+
+    "DesignType": {
+      "type": "string",
+      "enum": ["architecture", "ui_ux", "data", "api", "security", "deployment", "integration"],
+      "description": "設計の種類"
+    },
+
+    "DesignReference": {
+      "type": "object",
+      "required": ["designId", "designType", "documentType", "documentUrl"],
+      "properties": {
+        "designId": { "type": "string" },
+        "designType": { "$ref": "#/definitions/DesignType" },
+        "documentType": {
+          "type": "string",
+          "enum": ["c4_diagram", "uml_diagram", "figma", "sketch", "wireframe", "er_diagram", "dbml", "openapi", "graphql_schema"]
+        },
+        "documentUrl": { "type": "string" },
+        "description": { "type": "string" },
+        "designElements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["elementId", "elementType", "description"],
+            "properties": {
+              "elementId": { "type": "string" },
+              "elementType": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "ImplementationReadiness": {
+      "type": "object",
+      "required": ["technicalFeasibility", "resourceAvailability", "dependencyResolution", "riskMitigation"],
+      "properties": {
+        "technicalFeasibility": { "type": "number", "minimum": 0, "maximum": 100 },
+        "resourceAvailability": { "type": "number", "minimum": 0, "maximum": 100 },
+        "dependencyResolution": { "type": "number", "minimum": 0, "maximum": 100 },
+        "riskMitigation": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+
+    "ImplementationGuidance": {
+      "type": "object",
+      "required": ["recommendedApproach"],
+      "properties": {
+        "recommendedApproach": { "type": "string" },
+        "technicalConsiderations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "performanceConsiderations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "securityConsiderations": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "DesignSpecificationData": {
+      "type": "object",
+      "required": ["level", "implementsRequirements", "designType", "designReferences", "implementationReadiness"],
+      "properties": {
+        "level": { "const": 4 },
+        "implementsRequirements": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "実現するシステム要件ID"
+        },
+        "designType": { "$ref": "#/definitions/DesignType" },
+        "designReferences": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/DesignReference" }
+        },
+        "implementationReadiness": { "$ref": "#/definitions/ImplementationReadiness" },
+        "implementationGuidance": { "$ref": "#/definitions/ImplementationGuidance" }
+      }
+    },
+
+    "AcceptanceCriterion": {
+      "type": "object",
+      "required": ["id", "description", "testable", "priority"],
+      "properties": {
+        "id": { "type": "string" },
+        "description": { "type": "string" },
+        "testable": { "type": "boolean" },
+        "priority": { "$ref": "#/definitions/Priority" }
+      }
+    },
+
+    "TestScenario": {
+      "type": "object",
+      "required": ["id", "name", "description", "steps", "expectedResult"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "steps": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "expectedResult": { "type": "string" },
+        "testData": { "type": "object" }
+      }
+    },
+
+    "PersonaReference": {
+      "type": "object",
+      "required": ["personaId", "personaName"],
+      "properties": {
+        "personaId": { "type": "string" },
+        "personaName": { "type": "string" },
+        "demographics": { "type": "string" },
+        "goals": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "painPoints": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "BusinessPriority": {
+      "type": "object",
+      "required": ["priority", "businessValue", "urgency"],
+      "properties": {
+        "priority": { "$ref": "#/definitions/Priority" },
+        "businessValue": { "type": "number", "minimum": 1, "maximum": 10 },
+        "urgency": { "$ref": "#/definitions/Priority" },
+        "rationale": { "type": "string" }
+      }
+    },
+
+    "UserStoryData": {
+      "type": "object",
+      "required": ["level", "userRole", "userGoal", "userBenefit", "acceptanceCriteria", "context"],
+      "properties": {
+        "level": { "const": 2 },
+        "userRole": { "type": "string" },
+        "userGoal": { "type": "string" },
+        "userBenefit": { "type": "string" },
+        "persona": { "$ref": "#/definitions/PersonaReference" },
+        "userJourney": { "type": "string" },
+        "priority": { "$ref": "#/definitions/BusinessPriority" },
+        "acceptanceCriteria": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/AcceptanceCriterion" }
+        },
+        "context": {
+          "type": "object",
+          "required": ["businessValue", "userPain"],
+          "properties": {
+            "businessValue": { "type": "string" },
+            "userPain": { "type": "string" },
+            "competitiveAdvantage": { "type": "string" }
+          }
+        },
+        "assumptions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "constraints": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "TaskType": {
+      "type": "string",
+      "enum": [
+        "backend_development", "frontend_development", "database_development", "api_development",
+        "ui_ux_design", "unit_testing", "integration_testing", "e2e_testing",
+        "performance_testing", "security_testing", "deployment", "documentation", "code_review"
+      ]
+    },
+
+    "TechnicalDetails": {
+      "type": "object",
+      "properties": {
+        "framework": { "type": "string" },
+        "language": { "type": "string" },
+        "database": { "type": "string" },
+        "tools": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "apis": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "components": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "libraries": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "EffortEstimate": {
+      "type": "object",
+      "required": ["hours", "confidence", "complexity"],
+      "properties": {
+        "hours": {
+          "type": "number",
+          "minimum": 0
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "complexity": { "$ref": "#/definitions/ComplexityLevel" },
+        "assumptions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "TaskDependency": {
+      "type": "object",
+      "required": ["taskId", "type"],
+      "properties": {
+        "taskId": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["finish_to_start", "start_to_start", "finish_to_finish", "start_to_finish"]
+        },
+        "lag": { "type": "number" }
+      }
+    },
+
+    "TestRequirement": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["unit_test", "integration_test", "e2e_test", "performance_test"]
+        },
+        "coverage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "scenarios": {
+          "type": "number",
+          "minimum": 0
+        },
+        "tools": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "ImplementationTaskData": {
+      "type": "object",
+      "required": ["level", "taskType", "technicalDetails", "estimatedEffort", "dependencies", "completionCriteria"],
+      "properties": {
+        "level": { "const": 5 },
+        "taskType": { "$ref": "#/definitions/TaskType" },
+        "technicalDetails": { "$ref": "#/definitions/TechnicalDetails" },
+        "estimatedEffort": { "$ref": "#/definitions/EffortEstimate" },
+        "dependencies": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/TaskDependency" }
+        },
+        "completionCriteria": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "testRequirements": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/TestRequirement" }
+        }
+      }
+    },
+
+    "LevelSpecificData": {
+      "oneOf": [
+        { "$ref": "#/definitions/BusinessNeedData" },
+        { "$ref": "#/definitions/StakeholderRequestData" },
+        { "$ref": "#/definitions/UserStoryData" },
+        { "$ref": "#/definitions/SystemRequirementData" },
+        { "$ref": "#/definitions/DesignSpecificationData" },
+        { "$ref": "#/definitions/ImplementationTaskData" }
+      ]
+    },
+
+    "NodeRelationship": {
+      "type": "object",
+      "required": ["id", "sourceNodeId", "targetNodeId", "relationshipType", "strength", "confidence", "rationale", "createdAt", "createdBy", "validated"],
+      "properties": {
+        "id": { "type": "string" },
+        "sourceNodeId": { "type": "string" },
+        "targetNodeId": { "type": "string" },
+        "relationshipType": { "$ref": "#/definitions/RelationshipType" },
+        "strength": { "$ref": "#/definitions/RelationshipStrength" },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "rationale": { "type": "string" },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdBy": { "type": "string" },
+        "validated": { "type": "boolean" }
+      }
+    },
+
+    "TraceabilityLink": {
+      "type": "object",
+      "required": ["linkId", "linkType", "sourceLevel", "targetLevel"],
+      "properties": {
+        "linkId": { "type": "string" },
+        "linkType": {
+          "type": "string",
+          "enum": ["forward", "backward", "bidirectional"]
+        },
+        "sourceLevel": { "$ref": "#/definitions/AbstractionLevel" },
+        "targetLevel": { "$ref": "#/definitions/AbstractionLevel" },
+        "coverage": {
+          "type": "object",
+          "required": ["totalSourceNodes", "tracedSourceNodes", "coveragePercentage", "uncoveredNodes"],
+          "properties": {
+            "totalSourceNodes": { "type": "integer", "minimum": 0 },
+            "tracedSourceNodes": { "type": "integer", "minimum": 0 },
+            "coveragePercentage": { "type": "number", "minimum": 0, "maximum": 100 },
+            "uncoveredNodes": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "completeness": { "type": "number", "minimum": 0, "maximum": 100 },
+        "impactAssessment": {
+          "type": "object",
+          "required": ["directImpacts", "indirectImpacts", "riskLevel", "estimatedEffort", "recommendations"],
+          "properties": {
+            "directImpacts": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "indirectImpacts": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "riskLevel": { "$ref": "#/definitions/RiskLevel" },
+            "estimatedEffort": { "$ref": "#/definitions/EffortEstimate" },
+            "recommendations": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "changeHistory": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["changeId", "timestamp", "author", "changeType", "description", "impactedNodes"],
+            "properties": {
+              "changeId": { "type": "string" },
+              "timestamp": { "type": "string", "format": "date-time" },
+              "author": { "type": "string" },
+              "changeType": {
+                "type": "string",
+                "enum": ["create", "update", "delete", "move"]
+              },
+              "description": { "type": "string" },
+              "impactedNodes": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "ValidationStatus": {
+      "type": "object",
+      "required": ["isValid", "lastValidated", "validatedBy", "issues"],
+      "properties": {
+        "isValid": { "type": "boolean" },
+        "lastValidated": { "type": "string", "format": "date-time" },
+        "validatedBy": { "type": "string" },
+        "issues": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "ReviewStatus": {
+      "type": "object",
+      "required": ["status", "reviewers"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pending", "in_review", "approved", "rejected"]
+        },
+        "reviewers": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "lastReviewed": { "type": "string", "format": "date-time" },
+        "comments": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "TestCoverage": {
+      "type": "object",
+      "required": ["unitTests", "integrationTests", "e2eTests", "overallCoverage"],
+      "properties": {
+        "unitTests": { "type": "number", "minimum": 0, "maximum": 100 },
+        "integrationTests": { "type": "number", "minimum": 0, "maximum": 100 },
+        "e2eTests": { "type": "number", "minimum": 0, "maximum": 100 },
+        "overallCoverage": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+
+    "Comment": {
+      "type": "object",
+      "required": ["id", "author", "content", "timestamp"],
+      "properties": {
+        "id": { "type": "string" },
+        "author": { "type": "string" },
+        "content": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "replies": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Comment" }
+        }
+      }
+    },
+
+    "Attachment": {
+      "type": "object",
+      "required": ["id", "name", "type", "url", "size", "uploadedBy", "uploadedAt"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "url": { "type": "string", "format": "uri" },
+        "size": { "type": "integer", "minimum": 0 },
+        "uploadedBy": { "type": "string" },
+        "uploadedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "NodePosition": {
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    },
+
+    "UnifiedMindmapNode": {
+      "type": "object",
+      "required": [
+        "id", "title", "description", "abstractionLevel", "nodeType", "status",
+        "phase", "completionRate", "priority", "complexity", "businessValue",
+        "riskLevel", "owner", "stakeholders", "createdAt", "updatedAt",
+        "levelSpecificData", "relationships", "traceability", "validationStatus",
+        "reviewStatus", "comments", "attachments"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "abstractionLevel": { "$ref": "#/definitions/AbstractionLevel" },
+        "nodeType": { "$ref": "#/definitions/NodeType" },
+        "category": { "type": "string" },
+        "status": { "$ref": "#/definitions/NodeStatus" },
+        "phase": { "$ref": "#/definitions/ProcessPhase" },
+        "completionRate": { "type": "number", "minimum": 0, "maximum": 100 },
+        "priority": { "$ref": "#/definitions/Priority" },
+        "complexity": { "$ref": "#/definitions/ComplexityLevel" },
+        "businessValue": { "type": "number", "minimum": 1, "maximum": 10 },
+        "riskLevel": { "$ref": "#/definitions/RiskLevel" },
+        "owner": { "type": "string" },
+        "assignee": { "type": "string" },
+        "stakeholders": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "deadline": { "type": "string", "format": "date-time" },
+        "levelSpecificData": { "$ref": "#/definitions/LevelSpecificData" },
+        "relationships": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/NodeRelationship" }
+        },
+        "traceability": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/TraceabilityLink" }
+        },
+        "validationStatus": { "$ref": "#/definitions/ValidationStatus" },
+        "reviewStatus": { "$ref": "#/definitions/ReviewStatus" },
+        "testCoverage": { "$ref": "#/definitions/TestCoverage" },
+        "comments": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Comment" }
+        },
+        "attachments": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Attachment" }
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/UnifiedMindmapNode" }
+        },
+        "position": { "$ref": "#/definitions/NodePosition" },
+        "collapsed": { "type": "boolean", "default": false }
+      }
+    },
+
+    "CrossCuttingConcerns": {
+      "type": "object",
+      "required": ["stakeholders", "qualityAttributes"],
+      "properties": {
+        "stakeholders": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["id", "name", "role", "organization", "influence", "interest", "involvementByLevel", "concerns", "expectations", "communicationPreferences", "permissions", "approvalAuthority"],
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "role": { "type": "string" },
+              "organization": { "type": "string" },
+              "influence": { "$ref": "#/definitions/Priority" },
+              "interest": { "$ref": "#/definitions/Priority" },
+              "involvementByLevel": {
+                "type": "object",
+                "properties": {
+                  "0": { "type": "string", "enum": ["owner", "reviewer", "approver", "consulted", "informed"] },
+                  "1": { "type": "string", "enum": ["owner", "reviewer", "approver", "consulted", "informed"] },
+                  "2": { "type": "string", "enum": ["owner", "reviewer", "approver", "consulted", "informed"] },
+                  "3": { "type": "string", "enum": ["owner", "reviewer", "approver", "consulted", "informed"] },
+                  "4": { "type": "string", "enum": ["owner", "reviewer", "approver", "consulted", "informed"] },
+                  "5": { "type": "string", "enum": ["owner", "reviewer", "approver", "consulted", "informed"] }
+                }
+              },
+              "concerns": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "expectations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["id", "description", "priority", "measurable"],
+                  "properties": {
+                    "id": { "type": "string" },
+                    "description": { "type": "string" },
+                    "priority": { "$ref": "#/definitions/Priority" },
+                    "measurable": { "type": "boolean" }
+                  }
+                }
+              },
+              "communicationPreferences": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["type", "frequency"],
+                  "properties": {
+                    "type": { "type": "string", "enum": ["email", "meeting", "chat", "notification"] },
+                    "frequency": { "type": "string", "enum": ["daily", "weekly", "bi-weekly", "monthly", "as-needed"] },
+                    "details": { "type": "string" }
+                  }
+                }
+              },
+              "permissions": {
+                "type": "array",
+                "items": { "type": "string", "enum": ["read", "write", "comment", "approve_l0_l1", "approve_l2_l3", "approve_l3_l4_l5"] }
+              },
+              "approvalAuthority": {
+                "type": "array",
+                "items": { "type": "string", "enum": ["business_requirements", "user_requirements", "system_requirements", "technical_specifications", "implementation_plans"] }
+              }
+            }
+          }
+        },
+        "qualityAttributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["id", "name", "category", "description", "targets", "applicableLevels", "affectedNodes", "realizationStrategies", "verificationMethods"],
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "category": {
+                "type": "string",
+                "enum": ["performance", "security", "reliability", "usability", "maintainability", "scalability", "availability", "compatibility"]
+              },
+              "description": { "type": "string" },
+              "targets": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["metric", "value", "priority", "measurable"],
+                  "properties": {
+                    "metric": { "type": "string" },
+                    "value": { "type": "string" },
+                    "priority": { "$ref": "#/definitions/Priority" },
+                    "measurable": { "type": "boolean" }
+                  }
+                }
+              },
+              "applicableLevels": {
+                "type": "array",
+                "items": { "$ref": "#/definitions/AbstractionLevel" }
+              },
+              "affectedNodes": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "realizationStrategies": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["strategy", "description", "complexity"],
+                  "properties": {
+                    "strategy": { "type": "string" },
+                    "description": { "type": "string" },
+                    "complexity": { "$ref": "#/definitions/ComplexityLevel" },
+                    "estimatedEffort": { "$ref": "#/definitions/EffortEstimate" }
+                  }
+                }
+              },
+              "verificationMethods": {
+                "type": "array",
+                "items": { "$ref": "#/definitions/VerificationMethod" }
+              }
+            }
+          }
+        },
+        "constraints": { "type": "object" },
+        "risks": { "type": "object" },
+        "compliance": { "type": "object" }
+      }
+    },
+
+    "TraceabilityMatrix": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["realizes", "realizedBy", "derivedRequirements", "implementedBy", "verifiedBy", "coverage"],
+        "properties": {
+          "realizes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "realizedBy": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "derivedRequirements": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "implementedBy": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "verifiedBy": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "coverage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        }
+      }
+    },
+
+    "QualityMetrics": {
+      "type": "object",
+      "required": ["completenessScore", "consistencyScore", "traceabilityScore", "maturityScore", "overallQualityScore", "nodeCompleteness"],
+      "properties": {
+        "completenessScore": { "type": "number", "minimum": 0, "maximum": 100 },
+        "consistencyScore": { "type": "number", "minimum": 0, "maximum": 100 },
+        "traceabilityScore": { "type": "number", "minimum": 0, "maximum": 100 },
+        "maturityScore": { "type": "number", "minimum": 0, "maximum": 100 },
+        "overallQualityScore": { "type": "number", "minimum": 0, "maximum": 100 },
+        "nodeCompleteness": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["level", "totalNodes", "completeNodes", "completeness"],
+            "properties": {
+              "level": { "$ref": "#/definitions/AbstractionLevel" },
+              "totalNodes": { "type": "integer", "minimum": 0 },
+              "completeNodes": { "type": "integer", "minimum": 0 },
+              "completeness": { "type": "number", "minimum": 0, "maximum": 100 }
+            }
+          }
+        }
+      }
+    },
+
+    "Metadata": {
+      "type": "object",
+      "required": ["createdAt", "updatedAt", "authors", "version"],
+      "properties": {
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "authors": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "version": { "type": "string" },
+        "description": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

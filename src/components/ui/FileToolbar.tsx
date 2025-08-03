@@ -193,55 +193,17 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
           ➕ 新規
         </button>
         
-        <div className="file-toolbar__dropdown">
-          <button
-            className="file-toolbar__button file-toolbar__button--dropdown"
-            title="テンプレートから作成"
-          >
-            📋 テンプレート ▼
-          </button>
-          <div className="file-toolbar__dropdown-menu">
-            <button
-              className="file-toolbar__dropdown-item"
-              onClick={() => handleNewFromTemplate('basic')}
-            >
-              基本テンプレート
-            </button>
-            <button
-              className="file-toolbar__dropdown-item"
-              onClick={() => handleNewFromTemplate('advanced')}
-            >
-              高度なテンプレート
-            </button>
-            <button
-              className="file-toolbar__dropdown-item"
-              onClick={() => handleNewFromTemplate('project')}
-            >
-              プロジェクト管理
-            </button>
-            <div className="file-toolbar__dropdown-divider"></div>
-            <button
-              className="file-toolbar__dropdown-item file-toolbar__dropdown-item--featured"
-              onClick={handleGenerateFromSchema}
-            >
-              🔧 スキーマベース生成
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* サンプルデータ読み込み */}
-      <div className="file-toolbar__group">
+        {/* 統合コンテンツ読み込みボタン */}
         <button
-          className="file-toolbar__button file-toolbar__button--sample"
-          onClick={handleLoadSample}
-          title="サンプルデータを読み込む"
+          className="file-toolbar__button file-toolbar__button--content-load"
+          onClick={() => setShowContentLoadModal(true)}
+          title="テンプレート・サンプル読み込み"
         >
-          📝 サンプル読み込み
+          📚 コンテンツ読み込み
         </button>
       </div>
 
-      {/* 設定ボタン */}
+{/* 設定ボタン */}
       <div className="file-toolbar__group">
         <button
           className="file-toolbar__button"
