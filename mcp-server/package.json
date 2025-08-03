@@ -1,0 +1,49 @@
+{
+  "name": "req-mindmap-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for req-mindmap: Provides mindmap file operations via Model Context Protocol",
+  "type": "module",
+  "main": "dist/server.js",
+  "bin": {
+    "req-mindmap-mcp": "dist/server.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/server.js",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint src/**/*.ts",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "mcp",
+    "mindmap",
+    "model-context-protocol",
+    "requirements",
+    "yaml",
+    "json"
+  ],
+  "author": "Claude Code",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "zod": "^3.23.8",
+    "winston": "^3.16.0",
+    "dotenv": "^16.4.7",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "@types/js-yaml": "^4.0.9",
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.4",
+    "eslint": "^9.30.1",
+    "@typescript-eslint/eslint-plugin": "^8.35.1",
+    "@typescript-eslint/parser": "^8.35.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "pnpm@10.14.0"
+}

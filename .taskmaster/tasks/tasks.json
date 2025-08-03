@@ -697,7 +697,7 @@
         "testStrategy": "1. MCPサーバーの起動確認テスト\n2. 基本的なツール登録の動作確認\n3. エラーハンドリングのユニットテスト\n4. ロギング機能の動作確認",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -705,7 +705,7 @@
             "description": "TypeScriptプロジェクトを初期化し、MCPサーバー開発に必要な基本設定を行う",
             "dependencies": [],
             "details": "package.jsonの作成、tsconfig.jsonの設定（strict: true、module: esnext、target: es2022、esModuleInterop: true）、.gitignoreの作成、プロジェクトディレクトリ構造の作成（src/、dist/、tests/）、npm scriptsの設定（build、dev、test、lint）",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "npm installが正常に完了すること、tscコマンドでコンパイルエラーが発生しないこと、プロジェクト構造が正しく作成されていることを確認"
           },
           {
@@ -716,7 +716,7 @@
               "11.1"
             ],
             "details": "@modelcontextprotocol/sdk、@modelcontextprotocol/sdk/server、@modelcontextprotocol/sdk/server/stdioのインストール、zod、winston、dotenvなどの必要なライブラリのインストール、型定義ファイル（@types/*）のインストール、package.jsonのtype: moduleの設定確認",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "すべての依存関係が正しくインストールされていること、importステートメントが正常に機能すること、型チェックが正常に動作することを確認"
           },
           {
@@ -727,7 +727,7 @@
               "11.2"
             ],
             "details": "server.tsの作成、Serverインスタンスの初期化（name: 'mindmap-mcp-server'、version: '1.0.0'）、StdioServerTransportの設定、基本的なリクエストハンドラーの実装（ListToolsRequestSchema）、サーバー起動処理の実装、package.jsonにbinフィールドを追加してCLIとして実行可能にする",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "MCPサーバーが正常に起動すること、標準入出力での通信が可能なこと、ListToolsリクエストに応答できること、エラーなくプロセスが終了すること"
           },
           {
@@ -738,7 +738,7 @@
               "11.3"
             ],
             "details": "src/types/tools.tsの作成、マインドマップ操作ツールのインターフェース定義（create、read、update、delete、search、export）、各ツールのZodスキーマ定義、入力パラメータと出力形式の型定義、ツール登録用のヘルパー関数の実装",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "すべてのツール定義が正しくコンパイルされること、Zodスキーマのバリデーションが正常に動作すること、型の整合性が保たれていることを確認"
           },
           {
@@ -749,7 +749,7 @@
               "11.4"
             ],
             "details": "src/utils/logger.tsの作成（Winstonロガーの設定）、src/utils/errors.tsの作成（カスタムエラークラスの定義）、グローバルエラーハンドラーの実装、非同期エラーのキャッチ機構、ログレベルの設定（debug、info、warn、error）、ログファイルのローテーション設定",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "各種エラーが適切にキャッチされログに記録されること、ログファイルが正しく生成されること、エラー時にサーバーがクラッシュしないこと、ログレベルが正しく機能することを確認"
           }
         ]
@@ -1516,7 +1516,7 @@
     ],
     "metadata": {
       "created": "2025-08-03T03:13:21.292Z",
-      "updated": "2025-08-03T12:03:09.597Z",
+      "updated": "2025-08-03T13:07:31.099Z",
       "description": "Tasks for master context"
     }
   }
