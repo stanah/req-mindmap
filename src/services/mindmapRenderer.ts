@@ -158,6 +158,12 @@ export class MindmapRenderer {
     this.container = this.svg.append('g')
       .attr('class', 'mindmap-container');
 
+    // リンク用のグループ（ノードより下に描画される）
+    this.container.append('g').attr('class', 'mindmap-links');
+
+    // ノード用のグループ（リンクより上に描画される）
+    this.container.append('g').attr('class', 'mindmap-nodes');
+
     // 背景クリックイベント
     this.svg.on('click', (event) => {
       if (event.target === svgElement && this.eventHandlers.onBackgroundClick) {
@@ -468,7 +474,7 @@ export class MindmapRenderer {
         .x(d => d.x)
         .y(d => d.y);
 
-    const linkSelection = this.container
+    const linkSelection = this.container.select('.mindmap-links')
       .selectAll<SVGPathElement, D3Link>('.mindmap-link')
       .data(links, (d: D3Link) => `${d.source.data.id}-${d.target.data.id}`);
 
@@ -501,7 +507,7 @@ export class MindmapRenderer {
    * ノードの描画
    */
   private drawNodes(nodes: D3Node[]): void {
-    const nodeSelection = this.container
+    const nodeSelection = this.container.select('.mindmap-nodes')
       .selectAll<SVGGElement, D3Node>('.mindmap-node')
       .data(nodes, (d: D3Node) => d.data.id);
 
@@ -708,20 +714,6 @@ export class MindmapRenderer {
 
     const width = text.split('').reduce((total, char) => total + getCharWidth(char), 0);
     return Math.max(width, 20); // 最小幅20px
-  }
-
-  /**
-   * テキストの切り詰め
-   */
-  private truncateText(text: string, maxWidth: number): string {
-    const charWidth = 8; // 平均文字幅
-    const maxChars = Math.floor(maxWidth / charWidth);
-
-    if (text.length <= maxChars) {
-      return text;
-    }
-
-    return text.substring(0, maxChars - 3) + '...';
   }
 
   /**
@@ -1288,12 +1280,12 @@ export class MindmapRenderer {
    * ノードの選択状態を更新
    */
   public selectNode(nodeId: string | null): void {
-    this.container
+    this.container.select('.mindmap-nodes')
       .selectAll('.mindmap-node')
       .classed('selected', false);
 
     if (nodeId) {
-      this.container
+      this.container.select('.mindmap-nodes')
         .selectAll<SVGGElement, D3Node>('.mindmap-node')
         .filter((d: D3Node) => d.data.id === nodeId)
         .classed('selected', true);
@@ -1304,12 +1296,12 @@ export class MindmapRenderer {
    * カーソル対応ノードの強調表示
    */
   public highlightCursorNode(nodeId: string | null): void {
-    this.container
+    this.container.select('.mindmap-nodes')
       .selectAll('.mindmap-node')
       .classed('cursor-highlight', false);
 
     if (nodeId) {
-      this.container
+      this.container.select('.mindmap-nodes')
         .selectAll<SVGGElement, D3Node>('.mindmap-node')
         .filter((d: D3Node) => d.data.id === nodeId)
         .classed('cursor-highlight', true);
