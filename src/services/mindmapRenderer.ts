@@ -72,6 +72,7 @@ export class MindmapRenderer {
   private readonly NODE_PADDING = 8;
   private readonly LEVEL_SPACING = 200;
   private readonly NODE_SPACING = 60;
+  private VERTICAL_SPACING_MULTIPLIER = 1.0; // 縦間隔の調整係数（設定可能）
   private readonly BADGE_HEIGHT = 16;
   private readonly BADGE_MARGIN = 4;
 
@@ -87,8 +88,13 @@ export class MindmapRenderer {
       maxNodeWidth: 200,
       nodeSpacing: 60,
       levelSpacing: 200,
+      verticalSpacing: 1.0,
       ...settings,
     };
+    
+    // 縦間隔の調整係数を設定値から取得
+    this.VERTICAL_SPACING_MULTIPLIER = this.settings.verticalSpacing || 1.0;
+    console.log('VERTICAL_SPACING_MULTIPLIER set to:', this.VERTICAL_SPACING_MULTIPLIER);
     this.eventHandlers = eventHandlers;
 
     // 仮想化マネージャーの初期化
@@ -270,18 +276,10 @@ export class MindmapRenderer {
         layout = d3.tree<MindmapNode>()
           .nodeSize([this.NODE_SPACING * 1.5, this.LEVEL_SPACING])
           .separation((a: d3.HierarchyPointNode<MindmapNode>, b: d3.HierarchyPointNode<MindmapNode>) => {
-            // 実際のノードサイズに基づいた分離距離を計算
-            const aNode = a as D3Node;
-            const bNode = b as D3Node;
-
-            // ノードの高さに基づく間隔計算
-            const maxHeight = Math.max(aNode.height || this.NODE_HEIGHT, bNode.height || this.NODE_HEIGHT);
-            const baseSpacing = maxHeight / this.NODE_SPACING;
-
-            // 同じ親の子ノード間は基本間隔、異なる親の子ノード間は1.5倍
-            const separationMultiplier = a.parent === b.parent ? 1.2 : 1.8;
-
-            return baseSpacing * separationMultiplier;
+            const defaultSeparation = a.parent === b.parent ? 1 : 1.3;
+            const result = defaultSeparation * this.VERTICAL_SPACING_MULTIPLIER;
+            
+            return result;
           });
         break;
     }
@@ -357,8 +355,9 @@ export class MindmapRenderer {
         const prevNode = sortedSiblings[i - 1];
         const currentNode = sortedSiblings[i];
 
-        // 必要な最小間隔を計算（各ノードの高さの半分 + マージン）
-        const minDistance = (prevNode.height + currentNode.height) / 2 + 40;
+        // 必要な最小間隔を計算（ノードの高さ + 最小マージン）
+        const minMargin = 10 * this.VERTICAL_SPACING_MULTIPLIER; // より小さなマージン
+        const minDistance = (prevNode.height + currentNode.height) / 2 + minMargin;
         const actualDistance = currentNode.y - prevNode.y;
 
         if (actualDistance < minDistance) {
@@ -370,6 +369,43 @@ export class MindmapRenderer {
         }
       }
     });
+
+    // 親子ノード間の横方向重複をチェック・修正
+    this.preventParentChildOverlaps(root);
+  }
+
+  private preventParentChildOverlaps(root: D3Node): void {
+    root.each((node: D3Node) => {
+      if (!node.parent) return;
+
+      const parent = node.parent as D3Node;
+      const parentWidth = parent.width || this.settings.nodeWidth || 160;
+      const childWidth = node.width || this.settings.nodeWidth || 160;
+
+      // 親ノードの右端と子ノードの左端の距離を計算
+      const parentRight = parent.x + parentWidth / 2;
+      const childLeft = node.x - childWidth / 2;
+      const currentGap = childLeft - parentRight;
+
+      // 最小間隔（20px）を確保
+      const minGap = 20;
+      if (currentGap < minGap) {
+        const adjustment = minGap - currentGap;
+        // 子ノードとその子孫を右に移動
+        this.moveNodeAndDescendants(node, adjustment, 0);
+      }
+    });
+  }
+
+  private moveNodeAndDescendants(node: D3Node, deltaX: number, deltaY: number): void {
+    node.x += deltaX;
+    node.y += deltaY;
+
+    if (node.children) {
+      node.children.forEach((child: D3Node) => {
+        this.moveNodeAndDescendants(child, deltaX, deltaY);
+      });
+    }
   }
 
   /**
@@ -658,16 +694,20 @@ export class MindmapRenderer {
    * バッジ用テキスト幅の計算
    */
   private calculateBadgeTextWidth(text: string): number {
-    let width = 0;
-    for (let i = 0; i < text.length; i++) {
-      const char = text.charAt(i);
-      // 小さいフォント用の幅計算
+    // 統一された文字幅計算関数を使用
+    const getCharWidth = (char: string): number => {
       if (char.match(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/)) {
-        width += 10; // 日本語文字の幅（10pxフォント）
+        return 10; // 日本語文字の幅（バッジ用は少し小さく）
+      } else if (char.match(/[A-Z]/)) {
+        return 7; // 大文字の幅
+      } else if (char.match(/[a-z0-9]/)) {
+        return 6; // 小文字・数字の幅
       } else {
-        width += 6; // 英数字の幅（10pxフォント）
+        return 5; // その他の文字（記号など）
       }
-    }
+    };
+
+    const width = text.split('').reduce((total, char) => total + getCharWidth(char), 0);
     return Math.max(width, 20); // 最小幅20px
   }
 
@@ -689,47 +729,181 @@ export class MindmapRenderer {
    * テキストを複数行に分割する
    */
   private splitTextIntoLines(text: string, maxWidth: number, maxLines: number = 3): string[] {
-    // 日本語と英語を考慮した平均文字幅
-    const avgCharWidth = 10; // 日本語を含む平均文字幅を調整
-    const maxCharsPerLine = Math.floor(maxWidth / avgCharWidth);
-    
-    if (maxCharsPerLine <= 3) {
-      return [text.substring(0, 1) + '...'];
+    // より正確な文字幅計算関数
+    const getCharWidth = (char: string): number => {
+      if (char.match(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/)) {
+        return 12; // 日本語文字の幅を少し小さく調整
+      } else if (char.match(/[A-Z]/)) {
+        return 8; // 大文字の幅
+      } else if (char.match(/[a-z0-9]/)) {
+        return 7; // 小文字・数字の幅
+      } else {
+        return 5; // その他の文字（記号など）
+      }
+    };
+
+    // テキストの実際の幅を計算
+    const getTextWidth = (text: string): number => {
+      return text.split('').reduce((width, char) => width + getCharWidth(char), 0);
+    };
+
+    // 最小幅をチェック
+    if (maxWidth < 40) {
+      return [text.charAt(0) + '...'];
     }
 
-    const words = text.split(/\s+/);
+    const lines: string[] = [];
+    
+    // まず自然な区切り位置で分割を試みる
+    const sentences = text.split(/([。、！？\.\,\!\?])/);
+    let currentLine = '';
+    
+    for (let i = 0; i < sentences.length; i++) {
+      const segment = sentences[i];
+      if (!segment) continue;
+      
+      const testLine = currentLine + segment;
+      const testWidth = getTextWidth(testLine);
+      
+      if (testWidth <= maxWidth) {
+        currentLine = testLine;
+      } else {
+        // 現在の行を追加
+        if (currentLine) {
+          lines.push(currentLine);
+          
+          // 最大行数チェック
+          if (lines.length >= maxLines - 1) {
+            // 残りのテキストを処理
+            const remaining = sentences.slice(i).join('');
+            if (remaining) {
+              const truncated = this.splitLongSegment(remaining, maxWidth);
+              if (truncated.endsWith('...') || getTextWidth(truncated) <= maxWidth) {
+                lines.push(truncated);
+              } else {
+                lines.push(truncated + '...');
+              }
+            }
+            break;
+          }
+          
+          // セグメント自体も長すぎるかチェック
+          if (getTextWidth(segment) > maxWidth) {
+            const segmentLines = this.splitByCharacters(segment, maxWidth, maxLines - lines.length);
+            lines.push(...segmentLines);
+            currentLine = '';
+          } else {
+            currentLine = segment;
+          }
+        } else {
+          // セグメント自体が長すぎる場合、文字単位で分割
+          const segmentLines = this.splitByCharacters(segment, maxWidth, maxLines - lines.length);
+          lines.push(...segmentLines);
+          currentLine = '';
+          
+          if (lines.length >= maxLines) {
+            break;
+          }
+        }
+      }
+    }
+    
+    // 残りのテキストを処理
+    if (currentLine && lines.length < maxLines) {
+      lines.push(currentLine);
+    }
+    
+    // 文字単位での分割が必要な場合の処理（句読点がない長いテキスト）
+    if (lines.length === 0 || (lines.length === 1 && getTextWidth(lines[0]) > maxWidth)) {
+      return this.splitByCharacters(text, maxWidth, maxLines);
+    }
+    
+    return lines.length > 0 ? lines : [text.charAt(0) + '...'];
+  }
+
+  /**
+   * 長いセグメントを文字単位で分割
+   */
+  private splitLongSegment(text: string, maxWidth: number): string {
+    const getCharWidth = (char: string): number => {
+      if (char.match(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/)) {
+        return 14;
+      } else if (char.match(/[A-Z]/)) {
+        return 9;
+      } else if (char.match(/[a-z0-9]/)) {
+        return 8;
+      } else {
+        return 6;
+      }
+    };
+
+    let currentWidth = 0;
+    let result = '';
+    
+    for (const char of text) {
+      const charWidth = getCharWidth(char);
+      if (currentWidth + charWidth <= maxWidth) {
+        result += char;
+        currentWidth += charWidth;
+      } else {
+        break;
+      }
+    }
+    
+    return result;
+  }
+
+  /**
+   * 文字単位での分割（フォールバック）
+   */
+  private splitByCharacters(text: string, maxWidth: number, maxLines: number): string[] {
+    const getCharWidth = (char: string): number => {
+      if (char.match(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/)) {
+        return 14;
+      } else if (char.match(/[A-Z]/)) {
+        return 9;
+      } else if (char.match(/[a-z0-9]/)) {
+        return 8;
+      } else {
+        return 6;
+      }
+    };
+
     const lines: string[] = [];
     let currentLine = '';
-
-    for (const word of words) {
-      const testLine = currentLine ? `${currentLine} ${word}` : word;
+    let currentWidth = 0;
+    
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      const charWidth = getCharWidth(char);
       
-      if (testLine.length <= maxCharsPerLine) {
-        currentLine = testLine;
+      if (currentWidth + charWidth <= maxWidth) {
+        currentLine += char;
+        currentWidth += charWidth;
       } else {
         if (currentLine) {
           lines.push(currentLine);
-          currentLine = word;
-        } else {
-          // 単語自体が長すぎる場合は切り詰める
-          lines.push(word.substring(0, maxCharsPerLine - 3) + '...');
-          currentLine = '';
-        }
-        
-        // 最大行数に達した場合は省略記号で終了
-        if (lines.length >= maxLines - 1) {
-          if (currentLine) {
-            const remainingSpace = maxCharsPerLine - currentLine.length - 3;
-            if (remainingSpace > 0) {
+          currentLine = char;
+          currentWidth = charWidth;
+          
+          if (lines.length >= maxLines - 1) {
+            // 残りのテキストを省略
+            const remaining = text.slice(i + 1);
+            if (remaining) {
+              const ellipsisWidth = getCharWidth('.') * 3;
+              while (currentWidth + ellipsisWidth > maxWidth && currentLine.length > 0) {
+                currentLine = currentLine.slice(0, -1);
+                currentWidth -= getCharWidth(currentLine[currentLine.length] || '');
+              }
               currentLine += '...';
-            } else {
-              currentLine = currentLine.substring(0, maxCharsPerLine - 3) + '...';
             }
             lines.push(currentLine);
-          } else if (lines.length < maxLines) {
-            lines.push('...');
+            break;
           }
-          break;
+        } else {
+          // 1文字も入らない場合は強制的に追加
+          lines.push(char);
+          if (lines.length >= maxLines) break;
         }
       }
     }
@@ -737,8 +911,8 @@ export class MindmapRenderer {
     if (currentLine && lines.length < maxLines) {
       lines.push(currentLine);
     }
-
-    return lines.length > 0 ? lines : [text.substring(0, maxCharsPerLine - 3) + '...'];
+    
+    return lines.length > 0 ? lines : [text.charAt(0) + '...'];
   }
 
   /**
@@ -748,25 +922,31 @@ export class MindmapRenderer {
     const availableWidth = nodeData.width - this.NODE_PADDING * 2 - (this.getNodeIcon(nodeData.data) ? 24 : 0);
     const lines = this.splitTextIntoLines(nodeData.data.title, availableWidth);
     
-    // 既存のtspan要素をクリア
+    // 既存のtspan要素と直接テキストをクリア
     textElement.selectAll('tspan').remove();
+    textElement.text('');
     
-    // 複数行の場合のみtspanを使用
-    if (lines.length > 1) {
-      const lineHeight = 16;
-      const totalHeight = lines.length * lineHeight;
-      const startY = -(totalHeight / 2) + (lineHeight / 2);
-      
-      lines.forEach((line, index) => {
-        textElement
-          .append('tspan')
-          .attr('x', this.getNodeIcon(nodeData.data) ? 8 : 0)
-          .attr('dy', index === 0 ? startY : lineHeight)
-          .text(line);
-      });
-    } else {
+    if (lines.length === 1) {
       // 単一行の場合は直接textを設定
       textElement.text(lines[0]);
+    } else {
+      // 複数行の場合はtspanを使用
+      const lineHeight = 16;
+      const totalHeight = lines.length * lineHeight;
+      
+      // dominant-baseline="middle"の場合、text要素の基準位置は中央
+      // 複数行全体の中央を基準に、各行の位置を計算
+      const firstLineOffset = -(totalHeight / 2) + (lineHeight / 2);
+      
+      lines.forEach((line, index) => {
+        const tspan = textElement
+          .append('tspan')
+          .attr('x', this.getNodeIcon(nodeData.data) ? 8 : 0)
+          .text(line);
+        
+        const dyValue = index === 0 ? firstLineOffset : lineHeight;
+        tspan.attr('dy', `${dyValue}px`);
+      });
     }
   }
 
@@ -778,11 +958,11 @@ export class MindmapRenderer {
     const lines = this.splitTextIntoLines(nodeData.data.title, availableWidth);
     
     if (lines.length > 1) {
-      // 複数行の場合はtspanのdyで調整するので、基準位置を返す
+      // 複数行の場合はノードの中央位置を基準にする
       return 0;
     } else {
-      // 単一行の場合は従来通り
-      return -8;
+      // 単一行の場合は少し上に配置（バッジ用のスペースを考慮）
+      return -4;
     }
   }
 
@@ -1031,19 +1211,27 @@ export class MindmapRenderer {
   public updateSettings(newSettings: Partial<MindmapSettings>): void {
     const oldLayout = this.settings.layout;
     this.settings = { ...this.settings, ...newSettings };
+    
+    // 縦間隔の調整係数を更新
+    if (newSettings.verticalSpacing !== undefined) {
+      this.VERTICAL_SPACING_MULTIPLIER = newSettings.verticalSpacing;
+      console.log('VERTICAL_SPACING_MULTIPLIER updated to:', this.VERTICAL_SPACING_MULTIPLIER);
+    }
 
-    // レイアウトが変更された場合は再描画
-    if (newSettings.layout && newSettings.layout !== oldLayout && this.root) {
-      // 既存のSVG要素をクリアしてから再レイアウト
-      this.container.selectAll('*').remove();
+    // レイアウトまたは縦間隔が変更された場合は再描画
+    if ((newSettings.layout && newSettings.layout !== oldLayout) || newSettings.verticalSpacing !== undefined) {
+      if (this.root) {
+        // 既存のSVG要素をクリアしてから再レイアウト
+        this.container.selectAll('*').remove();
 
-      this.root = this.applyLayout(this.root);
-      this.draw();
+        this.root = this.applyLayout(this.root);
+        this.draw();
 
-      // ビューを中央に配置（少し遅延を入れて確実に描画完了を待つ）
-      setTimeout(() => {
-        this.centerView();
-      }, 100);
+        // ビューを中央に配置（少し遅延を入れて確実に描画完了を待つ）
+        setTimeout(() => {
+          this.centerView();
+        }, 100);
+      }
     }
   }
 
