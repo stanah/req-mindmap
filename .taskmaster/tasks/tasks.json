@@ -1371,11 +1371,152 @@
             "testStrategy": "100万ノードでの検索レスポンス100ms以内の達成、インデックス更新のオーバーヘッド測定、メモリフットプリントの最適化確認、並行更新時のインデックス整合性テスト"
           }
         ]
+      },
+      {
+        "id": 21,
+        "title": "JSON/YAML相互変換機能の実装",
+        "description": "ユーザーがJSON/YAMLフォーマットを選択し、ファイル読み込み時に自動変換する機能を実装する。js-yamlライブラリを使用し、変換エラーの詳細表示機能を含む。",
+        "details": "1. フォーマットモード選択UIの実装\n   - ラジオボタンまたはトグルスイッチでJSON/YAMLモードを選択\n   - 選択状態をlocalStorageに保存\n   - リアルタイムプレビュー機能\n\n2. js-yamlライブラリの統合\n   ```typescript\n   import yaml from 'js-yaml';\n   import { z } from 'zod';\n\n   interface FormatConverterOptions {\n     preserveComments?: boolean;\n     indent?: number;\n     lineWidth?: number;\n   }\n\n   class FormatConverter {\n     static toYAML(data: any, options?: FormatConverterOptions): string {\n       try {\n         return yaml.dump(data, {\n           indent: options?.indent || 2,\n           lineWidth: options?.lineWidth || 80,\n           sortKeys: false,\n           noRefs: true\n         });\n       } catch (error) {\n         throw new ConversionError('YAML変換エラー', error);\n       }\n     }\n\n     static fromYAML(yamlString: string): any {\n       try {\n         return yaml.load(yamlString, {\n           schema: yaml.JSON_SCHEMA\n         });\n       } catch (error) {\n         throw new ConversionError('YAML解析エラー', error);\n       }\n     }\n\n     static validateConversion(data: any, targetFormat: 'json' | 'yaml'): ValidationResult {\n       const result = { valid: true, errors: [], warnings: [] };\n       \n       // 循環参照チェック\n       const seen = new WeakSet();\n       const checkCircular = (obj: any) => {\n         if (obj && typeof obj === 'object') {\n           if (seen.has(obj)) {\n             result.errors.push('循環参照が検出されました');\n             result.valid = false;\n             return;\n           }\n           seen.add(obj);\n           Object.values(obj).forEach(checkCircular);\n         }\n       };\n       checkCircular(data);\n\n       // YAML固有の制限チェック\n       if (targetFormat === 'yaml') {\n         // 特殊文字のチェック\n         const checkSpecialChars = (obj: any, path = '') => {\n           if (typeof obj === 'string' && /[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F]/.test(obj)) {\n             result.warnings.push(`制御文字が含まれています: ${path}`);\n           }\n         };\n         // 再帰的にチェック\n         JSON.stringify(data, (key, value) => {\n           checkSpecialChars(value, key);\n           return value;\n         });\n       }\n\n       return result;\n     }\n   }\n   ```\n\n3. ファイル読み込み時の自動変換機能\n   ```typescript\n   const fileLoader = {\n     async loadWithConversion(filePath: string, targetFormat: 'json' | 'yaml') {\n       const content = await fs.readFile(filePath, 'utf-8');\n       const extension = path.extname(filePath).toLowerCase();\n       let data;\n\n       // 元のフォーマットを検出\n       if (extension === '.json') {\n         data = JSON.parse(content);\n       } else if (['.yaml', '.yml'].includes(extension)) {\n         data = FormatConverter.fromYAML(content);\n       } else {\n         // 内容から推測\n         try {\n           data = JSON.parse(content);\n         } catch {\n           data = FormatConverter.fromYAML(content);\n         }\n       }\n\n       // バリデーション\n       const validation = FormatConverter.validateConversion(data, targetFormat);\n       if (!validation.valid) {\n         throw new ConversionError('変換前検証エラー', validation.errors);\n       }\n\n       // ターゲットフォーマットに変換\n       if (targetFormat === 'yaml') {\n         return {\n           data,\n           formatted: FormatConverter.toYAML(data),\n           warnings: validation.warnings\n         };\n       } else {\n         return {\n           data,\n           formatted: JSON.stringify(data, null, 2),\n           warnings: validation.warnings\n         };\n       }\n     }\n   };\n   ```\n\n4. エラーハンドリングとユーザーフィードバック\n   ```typescript\n   class ConversionError extends Error {\n     constructor(\n       message: string,\n       public details?: any,\n       public line?: number,\n       public column?: number\n     ) {\n       super(message);\n       this.name = 'ConversionError';\n     }\n\n     getDetailedMessage(): string {\n       let msg = this.message;\n       if (this.line) msg += `\\n行: ${this.line}`;\n       if (this.column) msg += `, 列: ${this.column}`;\n       if (this.details) {\n         if (this.details instanceof Error) {\n           msg += `\\n詳細: ${this.details.message}`;\n         } else {\n           msg += `\\n詳細: ${JSON.stringify(this.details, null, 2)}`;\n         }\n       }\n       return msg;\n     }\n   }\n\n   // UI通知システム\n   const notificationManager = {\n     showSuccess(message: string) {\n       toast.success(message, {\n         duration: 3000,\n         position: 'top-right'\n       });\n     },\n\n     showError(error: ConversionError) {\n       toast.error(error.getDetailedMessage(), {\n         duration: 5000,\n         position: 'top-right',\n         action: {\n           label: '詳細',\n           onClick: () => showErrorDialog(error)\n         }\n       });\n     },\n\n     showWarning(warnings: string[]) {\n       if (warnings.length > 0) {\n         toast.warning(`${warnings.length}件の警告があります`, {\n           duration: 4000,\n           description: warnings.join('\\n')\n         });\n       }\n     }\n   };\n   ```\n\n5. UIコンポーネントの実装\n   ```typescript\n   const FormatSelector: React.FC = () => {\n     const [format, setFormat] = useLocalStorage('mindmap-format', 'json');\n     const [isConverting, setIsConverting] = useState(false);\n\n     const handleFormatChange = async (newFormat: 'json' | 'yaml') => {\n       setIsConverting(true);\n       try {\n         // 現在のデータを新しいフォーマットに変換\n         const currentData = getCurrentMindmapData();\n         const result = await convertFormat(currentData, newFormat);\n         \n         // 警告を表示\n         if (result.warnings.length > 0) {\n           notificationManager.showWarning(result.warnings);\n         }\n\n         // フォーマットを更新\n         setFormat(newFormat);\n         updateEditorContent(result.formatted);\n         notificationManager.showSuccess(`${newFormat.toUpperCase()}形式に変換しました`);\n       } catch (error) {\n         notificationManager.showError(error);\n       } finally {\n         setIsConverting(false);\n       }\n     };\n\n     return (\n       <div className=\"format-selector\">\n         <label>\n           <input\n             type=\"radio\"\n             value=\"json\"\n             checked={format === 'json'}\n             onChange={() => handleFormatChange('json')}\n             disabled={isConverting}\n           />\n           JSON\n         </label>\n         <label>\n           <input\n             type=\"radio\"\n             value=\"yaml\"\n             checked={format === 'yaml'}\n             onChange={() => handleFormatChange('yaml')}\n             disabled={isConverting}\n           />\n           YAML\n         </label>\n         {isConverting && <Spinner size=\"sm\" />}\n       </div>\n     );\n   };\n   ```",
+        "testStrategy": "1. フォーマット変換の正確性テスト\n   - JSON→YAML→JSONのラウンドトリップテスト\n   - 特殊文字（改行、タブ、Unicode）を含むデータの変換テスト\n   - ネストが深いオブジェクトの変換テスト\n   - 配列、null、boolean値の正確な変換\n\n2. エラーハンドリングのテスト\n   - 不正なJSON/YAMLの解析エラー表示\n   - 循環参照データの検出とエラー表示\n   - 大きすぎるファイルの変換エラー\n   - メモリ不足時の適切なエラーハンドリング\n\n3. UIインタラクションテスト\n   - フォーマット切り替え時の即座の反映\n   - localStorage への設定保存と復元\n   - 変換中のローディング表示\n   - エラー/警告通知の表示と操作\n\n4. パフォーマンステスト\n   - 1MB以上のファイルの変換速度\n   - 連続変換時のメモリリーク確認\n   - 非同期処理によるUIブロッキング回避\n\n5. 互換性テスト\n   - 様々なYAMLバージョンとの互換性\n   - エンコーディング（UTF-8、UTF-16）の処理\n   - 既存のマインドマップデータとの後方互換性",
+        "status": "pending",
+        "dependencies": [
+          15,
+          16
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "フォーマット選択UIとステート管理の実装",
+            "description": "JSON/YAMLフォーマットを選択するためのUIコンポーネントを作成し、選択状態をlocalStorageで永続化する仕組みを実装する",
+            "dependencies": [],
+            "details": "Reactコンポーネントとしてラジオボタン形式のフォーマットセレクターを実装。useLocalStorageカスタムフックを作成して選択状態を永続化。変換中のローディング状態管理とUIの無効化処理を含む。Tailwind CSSまたはCSS Modulesでスタイリングを実装",
+            "status": "pending",
+            "testStrategy": "1. localStorageへの保存・読み込みの動作確認\n2. フォーマット切り替え時のUI状態変更テスト\n3. 変換中のローディング表示とボタン無効化の確認\n4. 初回アクセス時のデフォルト値（JSON）の設定確認"
+          },
+          {
+            "id": 2,
+            "title": "js-yamlライブラリの統合とFormatConverterクラスの実装",
+            "description": "js-yamlライブラリをプロジェクトに統合し、JSON/YAML間の相互変換を行うFormatConverterクラスを実装する",
+            "dependencies": [],
+            "details": "js-yamlパッケージのインストールと型定義の追加。FormatConverterクラスにtoYAML、fromYAML、validateConversionメソッドを実装。変換オプション（インデント、行幅等）のサポート。循環参照検出と特殊文字チェック機能の実装。ConversionErrorクラスによるエラー情報の構造化",
+            "status": "pending",
+            "testStrategy": "1. JSON→YAML変換の正確性テスト（プリミティブ値、配列、オブジェクト）\n2. YAML→JSON変換の正確性テスト\n3. 循環参照データの検出テスト\n4. 特殊文字（制御文字、Unicode）を含むデータの変換テスト\n5. 変換オプションの動作確認"
+          },
+          {
+            "id": 3,
+            "title": "ファイル読み込みと自動変換機能の実装",
+            "description": "ファイル読み込み時に拡張子を判定し、選択されたフォーマットに自動変換するfileLoaderモジュールを実装する",
+            "dependencies": [
+              "21.2"
+            ],
+            "details": "loadWithConversionメソッドの実装により、.json/.yaml/.yml拡張子の自動判定と変換を実現。拡張子が不明な場合は内容から形式を推測。変換前のバリデーション実行。変換結果にデータ、フォーマット済み文字列、警告情報を含むオブジェクトを返却",
+            "status": "pending",
+            "testStrategy": "1. 各拡張子（.json, .yaml, .yml）の正しい判定\n2. 拡張子なしファイルの内容推測機能のテスト\n3. 不正なファイル内容に対するエラーハンドリング\n4. 大容量ファイルの読み込みパフォーマンステスト"
+          },
+          {
+            "id": 4,
+            "title": "エラーハンドリングと通知システムの実装",
+            "description": "変換エラーの詳細表示機能とユーザー向け通知システム（トースト通知）を実装する",
+            "dependencies": [
+              "21.2",
+              "21.3"
+            ],
+            "details": "ConversionErrorクラスを拡張し、行番号・列番号を含む詳細なエラー情報を提供。react-hot-toastまたはreact-toastifyを使用したトースト通知の実装。成功・エラー・警告の3種類の通知タイプをサポート。エラー詳細表示用のダイアログコンポーネントの作成",
+            "status": "pending",
+            "testStrategy": "1. 各種エラータイプの正しい通知表示\n2. エラー位置情報（行・列）の正確な表示\n3. 複数の警告がある場合の集約表示\n4. トースト通知の自動非表示タイミングの確認"
+          },
+          {
+            "id": 5,
+            "title": "エディタ連携とリアルタイムプレビューの実装",
+            "description": "フォーマット変換結果をエディタに反映し、リアルタイムでプレビューを更新する機能を実装する",
+            "dependencies": [
+              "21.1",
+              "21.2",
+              "21.3",
+              "21.4"
+            ],
+            "details": "getCurrentMindmapData関数でエディタの現在のデータを取得。updateEditorContent関数で変換後のコンテンツをエディタに反映。フォーマット切り替え時の自動変換と即座の反映。変換処理中のエディタ無効化とプログレス表示。変換完了後のカーソル位置の保持",
+            "status": "pending",
+            "testStrategy": "1. フォーマット切り替え時のエディタ内容の即座の更新\n2. 変換中のエディタ無効化の動作確認\n3. カーソル位置とスクロール位置の保持\n4. 大規模データでの変換パフォーマンステスト"
+          }
+        ]
+      },
+      {
+        "id": 22,
+        "title": "ノード基本情報簡易表示機能の実装",
+        "description": "マインドマップのノードにpriority、status等の基本情報を視覚的に表示する機能を実装する。色、アイコン、最小限のオーバーレイを使用して情報を効果的に伝達する。",
+        "details": "1. 優先度視覚インジケーターの実装\n   ```typescript\n   interface PriorityIndicator {\n     high: { color: '#ff4444', borderWidth: 3, cornerRadius: 2 };\n     medium: { color: '#ffaa00', borderWidth: 2, cornerRadius: 1 };\n     low: { color: '#44aa00', borderWidth: 1, cornerRadius: 0 };\n   }\n\n   const applyPriorityStyles = (node: HTMLElement, priority: string) => {\n     const styles = PRIORITY_STYLES[priority];\n     node.style.borderColor = styles.color;\n     node.style.borderWidth = `${styles.borderWidth}px`;\n     node.style.borderRadius = `${styles.cornerRadius}px`;\n   };\n   ```\n\n2. ステータス視覚インジケーターの実装\n   ```typescript\n   import { mdiCheckCircle, mdiClock, mdiAlert, mdiCancel } from '@mdi/js';\n\n   const STATUS_ICONS = {\n     completed: { icon: mdiCheckCircle, bg: '#e8f5e9' },\n     inProgress: { icon: mdiClock, bg: '#fff3e0' },\n     blocked: { icon: mdiAlert, bg: '#ffebee' },\n     cancelled: { icon: mdiCancel, bg: '#f5f5f5' }\n   };\n\n   const renderStatusIcon = (status: string): SVGElement => {\n     const iconPath = STATUS_ICONS[status]?.icon;\n     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');\n     svg.setAttribute('viewBox', '0 0 24 24');\n     svg.innerHTML = `<path d=\"${iconPath}\" />`;\n     return svg;\n   };\n   ```\n\n3. 最小限テキストオーバーレイの実装\n   ```typescript\n   class InfoOverlay {\n     private tooltip: HTMLElement;\n\n     show(node: MindmapNode, event: MouseEvent) {\n       this.tooltip = document.createElement('div');\n       this.tooltip.className = 'node-info-overlay';\n       this.tooltip.innerHTML = `\n         <div class=\"info-row\">優先度: ${node.priority}</div>\n         <div class=\"info-row\">ステータス: ${node.status}</div>\n         <div class=\"info-row\">更新日: ${formatDate(node.updatedAt)}</div>\n       `;\n\n       const rect = event.target.getBoundingClientRect();\n       this.tooltip.style.position = 'absolute';\n       this.tooltip.style.left = `${rect.left}px`;\n       this.tooltip.style.top = `${rect.bottom + 5}px`;\n       document.body.appendChild(this.tooltip);\n     }\n\n     hide() {\n       if (this.tooltip) {\n         this.tooltip.remove();\n       }\n     }\n   }\n   ```\n\n4. カラー凡例機能の実装\n   ```typescript\n   const renderLegend = () => {\n     const legend = document.createElement('div');\n     legend.className = 'mindmap-legend';\n     \n     const sections = [\n       { title: '優先度', items: PRIORITY_STYLES },\n       { title: 'ステータス', items: STATUS_ICONS }\n     ];\n\n     sections.forEach(section => {\n       const group = document.createElement('div');\n       group.innerHTML = `<h4>${section.title}</h4>`;\n       \n       Object.entries(section.items).forEach(([key, value]) => {\n         const item = document.createElement('div');\n         item.className = 'legend-item';\n         item.innerHTML = `\n           <span class=\"legend-indicator\" style=\"background: ${value.color || value.bg}\"></span>\n           <span class=\"legend-label\">${key}</span>\n         `;\n         group.appendChild(item);\n       });\n       \n       legend.appendChild(group);\n     });\n\n     return legend;\n   };\n   ```\n\n5. CSSスタイル定義\n   ```css\n   .mindmap-node {\n     position: relative;\n     transition: all 0.3s ease;\n     border: 2px solid transparent;\n   }\n\n   .node-status-icon {\n     position: absolute;\n     top: -8px;\n     right: -8px;\n     width: 16px;\n     height: 16px;\n     border-radius: 50%;\n     background: white;\n     box-shadow: 0 2px 4px rgba(0,0,0,0.1);\n   }\n\n   .node-info-overlay {\n     background: rgba(0, 0, 0, 0.9);\n     color: white;\n     padding: 8px 12px;\n     border-radius: 4px;\n     font-size: 12px;\n     z-index: 1000;\n     box-shadow: 0 2px 8px rgba(0,0,0,0.2);\n   }\n\n   .mindmap-legend {\n     position: fixed;\n     bottom: 20px;\n     right: 20px;\n     background: white;\n     border: 1px solid #ddd;\n     border-radius: 8px;\n     padding: 16px;\n     box-shadow: 0 2px 8px rgba(0,0,0,0.1);\n   }\n   ```",
+        "testStrategy": "1. 視覚インジケーターの表示テスト\n   - 各優先度レベル（high/medium/low）に対応する境界線の色と太さの確認\n   - ステータスアイコンの正しい表示と位置の検証\n   - 異なるノードサイズでのインジケーター表示の適応性テスト\n   - ダークモード対応の確認\n\n2. インタラクションテスト\n   - ホバー時のオーバーレイ表示タイミング（遅延なし）の確認\n   - オーバーレイの位置計算が画面端で適切に調整されることの検証\n   - マウスアウト時のオーバーレイ非表示の確認\n   - タッチデバイスでのタップ操作の動作確認\n\n3. パフォーマンステスト\n   - 100個以上のノードでのレンダリング速度測定\n   - インジケーター更新時の再描画効率の確認\n   - メモリリークの検出（オーバーレイの生成・破棄）\n\n4. アクセシビリティテスト\n   - スクリーンリーダーでの情報読み上げ確認\n   - キーボードナビゲーションでのオーバーレイ表示\n   - 色覚多様性に対応したカラースキームの検証\n   - WCAG 2.1 AAレベルのコントラスト比の確認",
+        "status": "pending",
+        "dependencies": [
+          15,
+          16
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "優先度視覚インジケーターのReactコンポーネント実装",
+            "description": "マインドマップノードの優先度（high/medium/low）を境界線の色と太さで視覚的に表現するReactコンポーネントを実装する",
+            "dependencies": [],
+            "details": "PriorityIndicatorコンポーネントを作成し、優先度に応じた境界線スタイル（色、太さ、角の丸み）を適用する。高優先度は赤色で太い境界線、中優先度はオレンジ色で中程度の境界線、低優先度は緑色で細い境界線を使用。CSSモジュールまたはstyled-componentsを使用してスタイルを管理し、ダークモード対応も考慮する",
+            "status": "pending",
+            "testStrategy": "各優先度レベルのスタイルが正しく適用されることを確認するユニットテスト、スナップショットテストでUIの一貫性を検証、異なるノードサイズでの表示確認、ダークモードでの色の視認性テスト"
+          },
+          {
+            "id": 2,
+            "title": "ステータスアイコンのSVGレンダリングシステム実装",
+            "description": "ノードのステータス（completed/inProgress/blocked/cancelled）を表すアイコンをSVGで動的にレンダリングするシステムを構築する",
+            "dependencies": [],
+            "details": "@mdi/jsライブラリのアイコンを使用してステータスを視覚化。各ステータスに対応するアイコンとバックグラウンドカラーのマッピングを定義し、ノードの右上に配置。アイコンは16x16pxのサイズで、白背景に薄い影を付けて視認性を向上。React.memoを使用してレンダリングパフォーマンスを最適化",
+            "status": "pending",
+            "testStrategy": "各ステータスタイプに正しいアイコンが表示されることの確認、アイコンの位置計算が正確であることの検証、異なるブラウザでのSVGレンダリングの互換性テスト、アイコンのクリック可能エリアのテスト"
+          },
+          {
+            "id": 3,
+            "title": "ホバー時情報オーバーレイのツールチップ実装",
+            "description": "ノードにマウスホバーした際に優先度、ステータス、更新日時を表示する軽量なツールチップコンポーネントを実装する",
+            "dependencies": [
+              "22.1",
+              "22.2"
+            ],
+            "details": "React Portal を使用してbody直下にツールチップをレンダリング。ノードのbounding rectを計算して適切な位置に配置し、画面端では自動的に位置を調整。useDebounceフックを使用してちらつきを防止。アクセシビリティのためaria-describedby属性を設定",
+            "status": "pending",
+            "testStrategy": "ホバーイベントでツールチップが表示されることの確認、画面端での位置自動調整のテスト、マウスアウトで確実に非表示になることの検証、複数ノードの高速ホバー切り替え時の動作確認"
+          },
+          {
+            "id": 4,
+            "title": "カラー凡例コンポーネントとトグル機能の実装",
+            "description": "優先度とステータスの色・アイコンの意味を説明する凡例コンポーネントを作成し、表示/非表示のトグル機能を実装する",
+            "dependencies": [
+              "22.1",
+              "22.2"
+            ],
+            "details": "画面右下に固定配置される凡例パネルを実装。優先度セクションには各色の意味、ステータスセクションには各アイコンの意味を表示。useStateでトグル状態を管理し、localStorageに保存して永続化。アニメーション付きでスムーズに開閉",
+            "status": "pending",
+            "testStrategy": "凡例の各項目が正しく表示されることの確認、トグル機能の動作テスト、localStorageへの状態保存と復元のテスト、レスポンシブデザインでの表示確認"
+          },
+          {
+            "id": 5,
+            "title": "統合テストとアクセシビリティ対応",
+            "description": "全ての視覚インジケーター機能を統合し、アクセシビリティとパフォーマンスを確保する",
+            "dependencies": [
+              "22.1",
+              "22.2",
+              "22.3",
+              "22.4"
+            ],
+            "details": "全機能を統合したNodeVisualizationコンポーネントを作成。スクリーンリーダー対応のためaria-labelとrole属性を適切に設定。キーボードナビゲーションのサポート。React.memoとuseMemoを使用してレンダリング最適化。100ノード以上の大規模マインドマップでもスムーズに動作することを確保",
+            "status": "pending",
+            "testStrategy": "統合環境での全機能の動作確認、WAI-ARIA準拠のアクセシビリティテスト、キーボードナビゲーションのテスト、100ノード以上でのパフォーマンステスト（60fps維持）"
+          }
+        ]
       }
     ],
     "metadata": {
       "created": "2025-08-03T03:13:21.292Z",
-      "updated": "2025-08-03T04:31:35.403Z",
+      "updated": "2025-08-03T12:03:09.597Z",
       "description": "Tasks for master context"
     }
   }
