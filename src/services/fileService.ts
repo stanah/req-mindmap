@@ -53,9 +53,23 @@ export interface FileSaveOptions {
 export class BrowserFileService implements FileService {
   private watchers: Map<string, (content: string) => void> = new Map();
   private dragAndDropEnabled = false;
+  private recentFiles: any[] = [];
+  private fileChangeCallbacks: Map<string, (file: File) => void> = new Map();
 
   /**
    * ファイル形式を自動検出
+   */
+  detectFormat(filename: string): 'json' | 'yaml' | 'unknown' {
+    const extension = filename.split('.').pop()?.toLowerCase();
+    
+    if (extension === 'json') return 'json';
+    if (extension === 'yaml' || extension === 'yml') return 'yaml';
+    
+    return 'unknown';
+  }
+
+  /**
+   * ファイル形式を自動検出（内容も考慮）
    */
   private detectFileFormat(filename: string, content?: string): 'json' | 'yaml' | 'unknown' {
     const extension = filename.split('.').pop()?.toLowerCase();
@@ -93,6 +107,103 @@ export class BrowserFileService implements FileService {
       extension,
       detectedFormat,
     };
+  }
+
+  /**
+   * ファイルを開く（File System Access API使用）
+   */
+  async openFile(): Promise<{
+    success: boolean;
+    data?: any;
+    fileName?: string;
+    format?: 'json' | 'yaml';
+    error?: string;
+  }> {
+    try {
+      // File System Access APIの確認
+      if (!window.showOpenFilePicker) {
+        return {
+          success: false,
+          error: 'ファイルシステムアクセスがサポートされていません'
+        };
+      }
+
+      const [fileHandle] = await (window as any).showOpenFilePicker({
+        types: [
+          {
+            description: 'JSON/YAML Files',
+            accept: {
+              'application/json': ['.json'],
+              'text/yaml': ['.yaml', '.yml']
+            }
+          }
+        ],
+        multiple: false
+      });
+
+      const file = await fileHandle.getFile();
+      const content = await file.text();
+      const format = this.detectFormat(file.name);
+
+      if (format === 'unknown') {
+        return {
+          success: false,
+          error: 'サポートされていないファイル形式です'
+        };
+      }
+
+      let data;
+      try {
+        if (format === 'json') {
+          data = JSON.parse(content);
+        } else if (format === 'yaml') {
+          // YAMLパースはyaml-jsライブラリを使用（テストではモック）
+          try {
+            const yaml = await import('yaml');
+            data = yaml.parse(content);
+          } catch (error) {
+            // テスト環境等でyamlライブラリが利用できない場合のフォールバック
+            throw new Error('YAMLパースライブラリが利用できません');
+          }
+        }
+      } catch (error) {
+        const errorType = format === 'json' ? 'JSON' : 'YAML';
+        return {
+          success: false,
+          error: `${errorType}構文エラー: ${error.message}`
+        };
+      }
+
+      return {
+        success: true,
+        data,
+        fileName: file.name,
+        format
+      };
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        return {
+          success: false,
+          error: 'ファイル選択がキャンセルされました'
+        };
+      }
+      if (error.name === 'SecurityError') {
+        return {
+          success: false,
+          error: 'セキュリティエラー: ファイルアクセスが拒否されました'
+        };
+      }
+      if (error.name === 'TypeError' && error.message.includes('Network')) {
+        return {
+          success: false,
+          error: 'ネットワークエラー: ファイルの読み込みに失敗しました'
+        };
+      }
+      return {
+        success: false,
+        error: `ファイルの読み込みに失敗しました: ${error.message}`
+      };
+    }
   }
 
   /**
@@ -253,9 +364,72 @@ export class BrowserFileService implements FileService {
     this.dragAndDropEnabled = true;
   }
 
-  async saveFile(path: string, content: string): Promise<void> {
-    const filename = path.split('/').pop() || 'mindmap.json';
-    await this.saveFileWithOptions(content, { filename });
+  async saveFile(data: any, format: 'json' | 'yaml'): Promise<{
+    success: boolean;
+    error?: string;
+  }> {
+    try {
+      // formatチェック
+      if (format !== 'json' && format !== 'yaml') {
+        return {
+          success: false,
+          error: 'サポートされていない形式です'
+        };
+      }
+
+      // File System Access APIの確認
+      if (!window.showSaveFilePicker) {
+        return {
+          success: false,
+          error: 'ファイルシステムアクセスがサポートされていません'
+        };
+      }
+
+      const fileHandle = await (window as any).showSaveFilePicker({
+        suggestedName: format === 'json' ? 'mindmap.json' : 'mindmap.yaml',
+        types: [
+          {
+            description: format === 'json' ? 'JSON File' : 'YAML File',
+            accept: {
+              [format === 'json' ? 'application/json' : 'text/yaml']: 
+                format === 'json' ? ['.json'] : ['.yaml', '.yml']
+            }
+          }
+        ]
+      });
+
+      const writable = await fileHandle.createWritable();
+      
+      let content;
+      if (format === 'json') {
+        content = JSON.stringify(data, null, 2);
+      } else {
+        // YAMLフォーマットはyaml-jsライブラリを使用
+        try {
+          const yaml = await import('yaml');
+          content = yaml.stringify(data);
+        } catch (error) {
+          // テスト環境等でyamlライブラリが利用できない場合のフォールバック
+          throw new Error('YAMLフォーマットライブラリが利用できません');
+        }
+      }
+
+      await writable.write(content);
+      await writable.close();
+
+      return { success: true };
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        return {
+          success: false,
+          error: 'ファイル保存がキャンセルされました'
+        };
+      }
+      return {
+        success: false,
+        error: `ファイルの保存に失敗しました: ${error.message}`
+      };
+    }
   }
 
   /**
@@ -315,14 +489,21 @@ export class BrowserFileService implements FileService {
     await this.saveFileWithOptions(content, { filename: suggestedName });
   }
 
-  watchFile(path: string, callback: (content: string) => void): void {
-    // ブラウザ環境では実際のファイル監視は不可能
-    // 代わりにコールバックを保存して手動更新時に使用
-    this.watchers.set(path, callback);
+  watchFile(file: File, callback: (file: File) => void): void {
+    // ファイル監視のコールバックを登録
+    this.fileChangeCallbacks.set(file.name, callback);
   }
 
-  stopWatching(path: string): void {
-    this.watchers.delete(path);
+  // 内部的にファイル変更を通知
+  private notifyFileChange(file: File): void {
+    const callback = this.fileChangeCallbacks.get(file.name);
+    if (callback) {
+      callback(file);
+    }
+  }
+
+  stopWatching(): void {
+    this.fileChangeCallbacks.clear();
   }
 
   async exists(): Promise<boolean> {
@@ -345,12 +526,38 @@ export class BrowserFileService implements FileService {
     return [];
   }
 
-  // 手動でファイル変更を通知するメソッド（開発用）
-  notifyFileChange(path: string, content: string): void {
-    const callback = this.watchers.get(path);
-    if (callback) {
-      callback(content);
+  // 最近使用したファイル関連のメソッド
+  addToRecentFiles(fileInfo: { name: string; path: string; lastModified: number }): void {
+    // 既存のエントリを削除
+    this.recentFiles = this.recentFiles.filter(f => f.path !== fileInfo.path);
+    
+    // 新しいエントリを先頭に追加
+    this.recentFiles.unshift(fileInfo);
+    
+    // 最大10件まで保持
+    if (this.recentFiles.length > 10) {
+      this.recentFiles = this.recentFiles.slice(0, 10);
     }
+    
+    // localStorageに保存
+    localStorage.setItem('mindmap-recent-files', JSON.stringify(this.recentFiles));
+  }
+
+  getRecentFiles(): any[] {
+    const stored = localStorage.getItem('mindmap-recent-files');
+    if (stored) {
+      try {
+        this.recentFiles = JSON.parse(stored);
+      } catch (error) {
+        this.recentFiles = [];
+      }
+    }
+    return this.recentFiles;
+  }
+
+  clearRecentFiles(): void {
+    this.recentFiles = [];
+    localStorage.removeItem('mindmap-recent-files');
   }
 
   /**

@@ -44,7 +44,7 @@ describe('FileService', () => {
         version: '1.0',
         title: 'テストマインドマップ',
         root: {
-          id: 'root',
+          id: 'root',           
           title: 'ルートノード'
         }
       };
@@ -52,6 +52,7 @@ describe('FileService', () => {
       const mockFile = new File([JSON.stringify(testData)], 'test.json', {
         type: 'application/json'
       });
+      mockFile.text = vi.fn().mockResolvedValue(JSON.stringify(testData));
 
       mockFileHandle.getFile.mockResolvedValue(mockFile);
       (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
@@ -76,9 +77,26 @@ root:
       const mockFile = new File([yamlContent], 'test.yaml', {
         type: 'application/x-yaml'
       });
+      mockFile.text = vi.fn().mockResolvedValue(yamlContent);
 
       mockFileHandle.getFile.mockResolvedValue(mockFile);
       (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+
+      // YAMLパーサーのモック
+      vi.doMock('yaml', () => ({
+        default: {
+          parse: vi.fn().mockReturnValue({
+            version: '1.0',
+            title: 'テストマインドマップ',
+            root: { id: 'root', title: 'ルートノード' }
+          })
+        },
+        parse: vi.fn().mockReturnValue({
+          version: '1.0',
+          title: 'テストマインドマップ',
+          root: { id: 'root', title: 'ルートノード' }
+        })
+      }));
 
       const result = await fileService.openFile();
 
@@ -101,6 +119,7 @@ root:
       const mockFile = new File(['invalid content'], 'test.txt', {
         type: 'text/plain'
       });
+      mockFile.text = vi.fn().mockResolvedValue('invalid content');
 
       mockFileHandle.getFile.mockResolvedValue(mockFile);
       (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
@@ -126,6 +145,7 @@ root:
       const mockFile = new File([invalidJson], 'broken.json', {
         type: 'application/json'
       });
+      mockFile.text = vi.fn().mockResolvedValue(invalidJson);
 
       mockFileHandle.getFile.mockResolvedValue(mockFile);
       (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
@@ -145,6 +165,7 @@ title: "test
       const mockFile = new File([invalidYaml], 'broken.yaml', {
         type: 'application/x-yaml'
       });
+      mockFile.text = vi.fn().mockResolvedValue(invalidYaml);
 
       mockFileHandle.getFile.mockResolvedValue(mockFile);
       (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
@@ -355,19 +376,30 @@ title: "test
   describe('エラーハンドリング', () => {
     it('File System Access APIが利用できない場合の代替処理', async () => {
       // File System Access APIを無効化
-      delete (global as any).showOpenFilePicker;
-      delete (global as any).showSaveFilePicker;
+      const originalShowOpenFilePicker = (global as any).showOpenFilePicker;
+      const originalShowSaveFilePicker = (global as any).showSaveFilePicker;
+      
+      (global as any).showOpenFilePicker = undefined;
+      (global as any).showSaveFilePicker = undefined;
 
       const result = await fileService.openFile();
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('ファイルシステムアクセス');
+      
+      // 後始末
+      (global as any).showOpenFilePicker = originalShowOpenFilePicker;
+      (global as any).showSaveFilePicker = originalShowSaveFilePicker;
     });
 
     it('セキュリティエラーを適切に処理する', async () => {
-      (global.showOpenFilePicker as any).mockRejectedValue(
-        new DOMException('Security error', 'SecurityError')
-      );
+      // showOpenFilePickerを復元してからモック
+      Object.defineProperty(global, 'showOpenFilePicker', {
+        value: vi.fn().mockRejectedValue(
+          new DOMException('Security error', 'SecurityError')
+        ),
+        writable: true
+      });
 
       const result = await fileService.openFile();
 
@@ -377,7 +409,12 @@ title: "test
 
     it('ネットワークエラーを適切に処理する', async () => {
       mockFileHandle.getFile.mockRejectedValue(new TypeError('Network error'));
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      
+      // showOpenFilePickerを復元してからモック
+      Object.defineProperty(global, 'showOpenFilePicker', {
+        value: vi.fn().mockResolvedValue([mockFileHandle]),
+        writable: true
+      });
 
       const result = await fileService.openFile();
 

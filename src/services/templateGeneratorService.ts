@@ -101,20 +101,30 @@ export class TemplateGeneratorService {
    * テンプレートタイプを自動検出
    */
   private detectTemplateType(schema: SchemaDefinition): TemplateType {
+    // まず、スキーマの複雑さから推測（プロパティの存在をチェック）
+    const properties = schema.properties || {};
+    
+    const hasStakeholders = !!properties.stakeholders;
+    const hasQuality = !!properties.qualityTargets;
+    const hasTraceability = !!properties.traceability;
+    const hasCompliance = !!properties.compliance;
+
+    // エンタープライズレベルの特徴
+    if (hasTraceability || hasCompliance) {
+      return 'enterprise';
+    }
+    // スタンダードレベルの特徴
+    if (hasStakeholders || hasQuality) {
+      return 'standard';
+    }
+
+    // 明示的なテンプレートタイプ指定があればそれを使用
     const templateTypeValue = schema.properties?.templateType?.const ||
       schema.properties?.templateType?.default;
 
     if (templateTypeValue?.includes('starter')) return 'starter';
     if (templateTypeValue?.includes('standard')) return 'standard';
     if (templateTypeValue?.includes('enterprise')) return 'enterprise';
-
-    // スキーマの複雑さから推測
-    const hasStakeholders = !!schema.properties?.stakeholders;
-    const hasQuality = !!schema.properties?.qualityTargets;
-    const hasTraceability = !!schema.properties?.traceability;
-
-    if (hasTraceability) return 'enterprise';
-    if (hasStakeholders && hasQuality) return 'standard';
 
     return 'starter';
   }

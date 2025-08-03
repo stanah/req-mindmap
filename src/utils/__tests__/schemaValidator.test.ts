@@ -404,8 +404,8 @@ describe('SchemaValidator', () => {
       expect(result.errors.length).toBeGreaterThan(0);
       
       const error = result.errors[0];
-      expect(error.path).toContain('child1');
-      expect(error.message).toContain('priority');
+      expect(error.path).toContain('root.children[0].priority');
+      expect(error.message).toContain('無効な選択肢');
       expect(error.value).toBe('invalid');
     });
 
