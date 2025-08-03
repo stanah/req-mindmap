@@ -626,7 +626,7 @@ export class MindmapRenderer {
       .attr('y', d => this.calculateTextY(d))
       .attr('fill', d => this.getNodeTextColor(d.data))
       .each((d, i, nodes) => {
-        const textElement = d3.select(nodes[i]);
+        const textElement = d3.select(nodes[i]) as unknown as d3.Selection<SVGTextElement, D3Node, any, any>;
         this.renderMultilineText(textElement, d);
       });
 

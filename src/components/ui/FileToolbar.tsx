@@ -7,9 +7,9 @@
 import React, { useRef, useState } from 'react';
 import { useAppStore } from '../../stores/appStore';
 import { fileService, BrowserFileService } from '../../services/fileService';
-import { projectManagementSample, sampleYAML } from '../../data/samples';
+
 import { SettingsPanel } from './SettingsPanel';
-import { TemplateModal } from './TemplateModal';
+import { ContentLoadModal } from './ContentLoadModal';
 import type { FileLoadResult } from '../../services/fileService';
 import './SettingsPanel.css';
 
@@ -29,7 +29,7 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showContentLoadModal, setShowContentLoadModal] = useState(false);
 
   /**
    * ファイル読み込みハンドラー
@@ -151,32 +151,14 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
    * スキーマベーステンプレート生成
    */
   const handleGenerateFromSchema = () => {
-    setShowTemplateModal(true);
+    setShowContentLoadModal(true);
   };
 
   /**
    * サンプルデータを読み込む
    */
   const handleLoadSample = () => {
-    const language = editorSettings.language;
-    let content: string;
-    
-    // エディター言語に応じてサンプルを選択
-    if (language === 'yaml') {
-      content = sampleYAML;
-    } else {
-      // デフォルトはJSON（projectManagementSample）
-      content = JSON.stringify(projectManagementSample, null, 2);
-    }
-    
-    updateContent(content);
-
-    addNotification({
-      message: `サンプルデータを読み込みました (${language === 'yaml' ? 'YAML' : 'JSON'}形式)`,
-      type: 'info',
-      autoHide: true,
-      duration: 3000,
-    });
+    setShowContentLoadModal(true);
   };
 
   return (
@@ -312,9 +294,9 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
       />
 
       {/* テンプレート生成モーダル */}
-      <TemplateModal
-        isOpen={showTemplateModal}
-        onClose={() => setShowTemplateModal(false)}
+      <ContentLoadModal
+        isOpen={showContentLoadModal}
+        onClose={() => setShowContentLoadModal(false)}
       />
     </div>
   );

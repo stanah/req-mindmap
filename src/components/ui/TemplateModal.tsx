@@ -6,7 +6,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { useAppStore } from '../../stores/appStore';
-import { templateGeneratorService, TemplateType, TemplateGeneratorOptions } from '../../services/templateGeneratorService';
+import { templateGeneratorService } from '../../services/templateGeneratorService';
 import './TemplateModal.css';
 
 interface TemplateModalProps {
@@ -17,7 +17,7 @@ interface TemplateModalProps {
 export const TemplateModal: React.FC<TemplateModalProps> = ({ isOpen, onClose }) => {
   const { updateContent, addNotification } = useAppStore();
   
-  const [selectedTemplateType, setSelectedTemplateType] = useState<TemplateType>('starter');
+  const [selectedTemplateType, setSelectedTemplateType] = useState<'starter' | 'standard' | 'enterprise'>('starter');
   const [includeExamples, setIncludeExamples] = useState(true);
   const [includeComments, setIncludeComments] = useState(true);
   const [locale, setLocale] = useState<'ja' | 'en'>('ja');
@@ -25,7 +25,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ isOpen, onClose })
 
   const templateTypeOptions = [
     {
-      value: 'starter' as TemplateType,
+      value: 'starter' as const,
       label: 'スターター版',
       description: '基本的な要件定義（ビジネス目標 + ユーザー要件）',
       icon: '🚀',
@@ -33,7 +33,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ isOpen, onClose })
       timeToStart: '5分'
     },
     {
-      value: 'standard' as TemplateType,
+      value: 'standard' as const,
       label: 'スタンダード版',
       description: '標準的な要件定義（システム要件・ステークホルダー含む）',
       icon: '⚖️',
@@ -41,7 +41,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ isOpen, onClose })
       timeToStart: '15分'
     },
     {
-      value: 'enterprise' as TemplateType,
+      value: 'enterprise' as const,
       label: 'エンタープライズ版',
       description: '包括的な要件定義（トレーサビリティ・コンプライアンス含む）',
       icon: '🏢',
@@ -59,7 +59,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ isOpen, onClose })
     setIsGenerating(true);
     
     try {
-      const options: TemplateGeneratorOptions = {
+      const options = {
         templateType: selectedTemplateType,
         includeExamples,
         includeComments,

@@ -1,5 +1,4 @@
-import { MindmapData, MindmapNode } from '../types/mindmap';
-import { MindmapData, MindmapNode } from '../types/mindmap';
+import type { MindmapData, MindmapNode } from '../types/mindmap';
 
 /**
  * テンプレートタイプ定義
@@ -44,7 +43,7 @@ export interface TemplateGeneratorResult {
 export class TemplateGeneratorService {
   private static instance: TemplateGeneratorService;
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): TemplateGeneratorService {
     if (!TemplateGeneratorService.instance) {
@@ -102,21 +101,21 @@ export class TemplateGeneratorService {
    * テンプレートタイプを自動検出
    */
   private detectTemplateType(schema: SchemaDefinition): TemplateType {
-    const templateTypeValue = schema.properties?.templateType?.const || 
-                             schema.properties?.templateType?.default;
-    
+    const templateTypeValue = schema.properties?.templateType?.const ||
+      schema.properties?.templateType?.default;
+
     if (templateTypeValue?.includes('starter')) return 'starter';
     if (templateTypeValue?.includes('standard')) return 'standard';
     if (templateTypeValue?.includes('enterprise')) return 'enterprise';
-    
+
     // スキーマの複雑さから推測
     const hasStakeholders = !!schema.properties?.stakeholders;
     const hasQuality = !!schema.properties?.qualityTargets;
     const hasTraceability = !!schema.properties?.traceability;
-    
+
     if (hasTraceability) return 'enterprise';
     if (hasStakeholders && hasQuality) return 'standard';
-    
+
     return 'starter';
   }
 
@@ -129,7 +128,7 @@ export class TemplateGeneratorService {
     includeExamples: boolean
   ): MindmapData {
     const labels = this.getLabels(locale);
-    
+
     const root: MindmapNode = {
       id: 'root',
       title: labels.projectTitle,
@@ -173,7 +172,7 @@ export class TemplateGeneratorService {
 
     return {
       version: '1.0',
-      type: 'requirements',
+      title: labels.projectTitle,
       root,
       metadata: {
         created: new Date().toISOString(),
@@ -193,7 +192,7 @@ export class TemplateGeneratorService {
   ): MindmapData {
     const starterTemplate = this.generateStarterTemplate(schema, locale, includeExamples);
     const labels = this.getLabels(locale);
-    
+
     // システム要件を追加
     starterTemplate.root.children?.push({
       id: 'system-requirements',
@@ -213,10 +212,10 @@ export class TemplateGeneratorService {
     });
 
     // ステークホルダーを追加
-    if (!starterTemplate.root.attributes) {
-      starterTemplate.root.attributes = {};
+    if (!starterTemplate.root.customFields) {
+      starterTemplate.root.customFields = {};
     }
-    starterTemplate.root.attributes.stakeholders = includeExamples ? {
+    starterTemplate.root.customFields.stakeholders = includeExamples ? {
       'product_owner': {
         name: labels.productOwner,
         role: labels.productOwnerRole,
@@ -232,7 +231,7 @@ export class TemplateGeneratorService {
     } : {};
 
     // 品質ターゲットを追加
-    starterTemplate.root.attributes.qualityTargets = includeExamples ? [
+    starterTemplate.root.customFields.qualityTargets = includeExamples ? [
       {
         name: labels.qualityPerformance,
         target: labels.qualityPerformanceTarget,
@@ -246,7 +245,7 @@ export class TemplateGeneratorService {
     ] : [];
 
     starterTemplate.metadata!.templateType = 'standard-requirements';
-    
+
     return starterTemplate;
   }
 
@@ -260,13 +259,13 @@ export class TemplateGeneratorService {
   ): MindmapData {
     const standardTemplate = this.generateStandardTemplate(schema, locale, includeExamples);
     const labels = this.getLabels(locale);
-    
+
     // トレーサビリティマトリクスを追加
-    if (!standardTemplate.root.attributes) {
-      standardTemplate.root.attributes = {};
+    if (!standardTemplate.root.customFields) {
+      standardTemplate.root.customFields = {};
     }
-    
-    standardTemplate.root.attributes.traceability = {
+
+    standardTemplate.root.customFields.traceability = {
       'bg001': {
         realizes: [],
         realizedBy: ['ur001'],
@@ -280,14 +279,14 @@ export class TemplateGeneratorService {
     };
 
     // コンプライアンス情報を追加
-    standardTemplate.root.attributes.compliance = {
+    standardTemplate.root.customFields.compliance = {
       standards: includeExamples ? ['ISO 9001', 'ISO 27001'] : [],
       lastAudit: new Date().toISOString(),
       nextAudit: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
     };
 
     // 詳細なメトリクスを追加
-    standardTemplate.root.attributes.metrics = {
+    standardTemplate.root.customFields.metrics = {
       completeness: 0,
       consistency: 0,
       traceability: 0,
@@ -295,7 +294,7 @@ export class TemplateGeneratorService {
     };
 
     standardTemplate.metadata!.templateType = 'enterprise-requirements';
-    
+
     return standardTemplate;
   }
 
@@ -311,7 +310,7 @@ export class TemplateGeneratorService {
     const labels = this.getLabels(locale);
     const root: MindmapNode = {
       id: 'root',
-      name: labels.customProject,
+      title: labels.customProject,
       children: []
     };
 
@@ -320,7 +319,7 @@ export class TemplateGeneratorService {
       Object.entries(schema.properties.core.properties).forEach(([key, prop]: [string, any]) => {
         root.children?.push({
           id: key,
-          name: this.formatPropertyName(key, locale),
+          title: this.formatPropertyName(key, locale),
           children: []
         });
       });
@@ -328,7 +327,7 @@ export class TemplateGeneratorService {
 
     return {
       version: '1.0',
-      type: 'custom',
+      title: labels.customProject,
       root,
       metadata: {
         created: new Date().toISOString(),
@@ -365,20 +364,24 @@ export class TemplateGeneratorService {
    */
   private traverseAndAddComments(node: MindmapNode, comments: Record<string, string>): void {
     // ノード名に基づいてコメントを追加
-    if (node.name.includes('ビジネス') || node.name.includes('Business')) {
+    if (node.title.includes('ビジネス') || node.title.includes('Business')) {
       node.description = comments.businessGoals;
-    } else if (node.name.includes('ユーザー') || node.name.includes('User')) {
+    } else if (node.title.includes('ユーザー') || node.title.includes('User')) {
       node.description = comments.userRequirements;
-    } else if (node.name.includes('システム') || node.name.includes('System')) {
+    } else if (node.title.includes('システム') || node.title.includes('System')) {
       node.description = comments.systemRequirements;
     }
 
     // 属性にコメントを追加
-    if (node.attributes?.priority) {
-      node.attributes._priorityHelp = comments.priority;
+    if (node.customFields?.priority) {
+      if (!node.customFields._priorityHelp) {
+        node.customFields._priorityHelp = comments.priority;
+      }
     }
-    if (node.attributes?.status) {
-      node.attributes._statusHelp = comments.status;
+    if (node.customFields?.status) {
+      if (!node.customFields._statusHelp) {
+        node.customFields._statusHelp = comments.status;
+      }
     }
 
     // 子ノードも処理
@@ -391,7 +394,7 @@ export class TemplateGeneratorService {
   private formatPropertyName(key: string, locale: 'ja' | 'en'): string {
     // キャメルケースをスペース区切りに変換
     const formatted = key.replace(/([A-Z])/g, ' $1').trim();
-    
+
     // 一般的な用語を翻訳
     const translations: Record<string, Record<'ja' | 'en', string>> = {
       'businessGoals': { ja: 'ビジネス目標', en: 'Business Goals' },
@@ -471,7 +474,7 @@ export class TemplateGeneratorService {
       // ファイルサービスを使ってスキーマを読み込む
       const response = await fetch(schemaPath);
       const schema = await response.json();
-      
+
       return this.generateFromSchema(schema, options);
     } catch (error) {
       throw new Error(`Failed to load schema from ${schemaPath}: ${error}`);
