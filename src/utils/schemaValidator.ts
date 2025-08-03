@@ -362,3 +362,6 @@ export class SchemaValidator {
     }
   }
 }
+
+// デフォルトインスタンスをエクスポート
+export const schemaValidator = new SchemaValidator();
