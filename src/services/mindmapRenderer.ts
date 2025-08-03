@@ -94,7 +94,6 @@ export class MindmapRenderer {
     
     // 縦間隔の調整係数を設定値から取得
     this.VERTICAL_SPACING_MULTIPLIER = this.settings.verticalSpacing || 1.0;
-    console.log('VERTICAL_SPACING_MULTIPLIER set to:', this.VERTICAL_SPACING_MULTIPLIER);
     this.eventHandlers = eventHandlers;
 
     // 仮想化マネージャーの初期化
@@ -1215,7 +1214,6 @@ export class MindmapRenderer {
     // 縦間隔の調整係数を更新
     if (newSettings.verticalSpacing !== undefined) {
       this.VERTICAL_SPACING_MULTIPLIER = newSettings.verticalSpacing;
-      console.log('VERTICAL_SPACING_MULTIPLIER updated to:', this.VERTICAL_SPACING_MULTIPLIER);
     }
 
     // レイアウトまたは縦間隔が変更された場合は再描画
