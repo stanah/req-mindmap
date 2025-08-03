@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-import * as monaco from 'monaco-editor';
+// monaco-editorは動的インポートで使用
 import { useAppStore } from '../stores';
 import { useEditorSync } from '../hooks';
 import './EditorPane.css';
@@ -19,21 +19,24 @@ export const EditorPane: React.FC = () => {
   const { debouncedUpdateContent } = useEditorSync();
   
   // Monaco Editorのインスタンス参照
-  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const editorRef = useRef<any | null>(null);
 
   // エラーマーカーの更新
-  const updateErrorMarkers = useCallback(() => {
+  const updateErrorMarkers = useCallback(async () => {
     if (!editorRef.current) return;
 
     const model = editorRef.current.getModel();
     if (!model) return;
+
+    // 動的にmonaco-editorをインポート
+    const monaco = await import('monaco-editor');
 
     // パーサーエラーのマーカーをクリア
     monaco.editor.setModelMarkers(model, 'parser', []);
 
     // パースエラーがある場合、マーカーを設定
     if (parseErrors.length > 0) {
-      const markers: monaco.editor.IMarkerData[] = parseErrors.map(error => ({
+      const markers: any[] = parseErrors.map(error => ({
         severity: error.severity === 'error' 
           ? monaco.MarkerSeverity.Error 
           : monaco.MarkerSeverity.Warning,

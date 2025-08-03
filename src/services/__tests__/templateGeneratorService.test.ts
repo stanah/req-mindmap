@@ -38,10 +38,10 @@ describe('TemplateGeneratorService', () => {
         locale: 'ja'
       });
 
-      expect(result.data.root.name).toBe('新規プロジェクト要件定義');
+      expect(result.data.root.title).toBe('新規プロジェクト要件定義');
       expect(result.data.root.children).toHaveLength(2);
-      expect(result.data.root.children?.[0].name).toBe('ビジネス目標');
-      expect(result.data.root.children?.[1].name).toBe('ユーザー要件');
+      expect(result.data.root.children?.[0].title).toBe('ビジネス目標');
+      expect(result.data.root.children?.[1].title).toBe('ユーザー要件');
       expect(result.metadata.templateType).toBe('starter');
     });
 
@@ -53,9 +53,9 @@ describe('TemplateGeneratorService', () => {
       });
 
       expect(result.data.root.children).toHaveLength(3);
-      expect(result.data.root.children?.[2].name).toBe('システム要件');
-      expect(result.data.root.attributes?.stakeholders).toBeDefined();
-      expect(result.data.root.attributes?.qualityTargets).toBeDefined();
+      expect(result.data.root.children?.[2].title).toBe('システム要件');
+      expect(result.data.root.customFields?.stakeholders).toBeDefined();
+      expect(result.data.root.customFields?.qualityTargets).toBeDefined();
       expect(result.metadata.templateType).toBe('standard');
     });
 
@@ -67,9 +67,9 @@ describe('TemplateGeneratorService', () => {
       });
 
       expect(result.data.root.children).toHaveLength(3);
-      expect(result.data.root.attributes?.traceability).toBeDefined();
-      expect(result.data.root.attributes?.compliance).toBeDefined();
-      expect(result.data.root.attributes?.metrics).toBeDefined();
+      expect(result.data.root.customFields?.traceability).toBeDefined();
+      expect(result.data.root.customFields?.compliance).toBeDefined();
+      expect(result.data.root.customFields?.metrics).toBeDefined();
       expect(result.metadata.templateType).toBe('enterprise');
     });
 
@@ -80,9 +80,9 @@ describe('TemplateGeneratorService', () => {
         locale: 'en'
       });
 
-      expect(result.data.root.name).toBe('New Project Requirements');
-      expect(result.data.root.children?.[0].name).toBe('Business Goals');
-      expect(result.data.root.children?.[1].name).toBe('User Requirements');
+      expect(result.data.root.title).toBe('New Project Requirements');
+      expect(result.data.root.children?.[0].title).toBe('Business Goals');
+      expect(result.data.root.children?.[1].title).toBe('User Requirements');
     });
 
     it('should generate template without examples', async () => {
@@ -106,7 +106,7 @@ describe('TemplateGeneratorService', () => {
 
       // ビジネス目標ノードにコメントが追加されているかチェック
       const businessGoalsNode = result.data.root.children?.find(
-        child => child.name === 'ビジネス目標'
+        child => child.title === 'ビジネス目標'
       );
       expect(businessGoalsNode?.description).toContain('ビジネス価値');
     });

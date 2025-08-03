@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { FileServiceImpl } from '../fileService';
+import { BrowserFileService } from '../fileService';
 import type { MindmapData } from '../../types';
 
 // ファイルAPIのモック
@@ -31,10 +31,10 @@ Object.defineProperty(global, 'showSaveFilePicker', {
 });
 
 describe('FileService', () => {
-  let fileService: FileServiceImpl;
+  let fileService: BrowserFileService;
 
   beforeEach(() => {
-    fileService = new FileServiceImpl();
+    fileService = new BrowserFileService();
     vi.clearAllMocks();
   });
 

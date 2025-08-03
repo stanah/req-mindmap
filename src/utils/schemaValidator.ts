@@ -49,7 +49,7 @@ export class SchemaValidator {
 
     // カスタムスキーマの検証
     if (this.customSchema && data.root) {
-      this.validateCustomFields(data.root, 'root', errors);
+      this.validateNodeCustomFields(data.root, 'root', errors);
     }
 
     return {
@@ -94,6 +94,21 @@ export class SchemaValidator {
       valid: errors.length === 0,
       errors
     };
+  }
+
+  /**
+   * カスタムスキーマに基づいてデータを検証
+   */
+  validateWithCustomSchema(data: MindmapData, schema: CustomSchema): ValidationResult {
+    const originalSchema = this.customSchema;
+    this.setCustomSchema(schema);
+    
+    const result = this.validateMindmapData(data);
+    
+    // 元のスキーマを復元
+    this.customSchema = originalSchema;
+    
+    return result;
   }
 
   /**
@@ -155,7 +170,7 @@ export class SchemaValidator {
     }
   }
 
-  private validateCustomFields(node: any, path: string, errors: SchemaError[]): void {
+  private validateNodeCustomFields(node: any, path: string, errors: SchemaError[]): void {
     if (node.customFields) {
       const fieldValidation = this.validateCustomFields(node.customFields, path);
       errors.push(...fieldValidation.errors);
@@ -163,7 +178,7 @@ export class SchemaValidator {
 
     if (node.children && Array.isArray(node.children)) {
       node.children.forEach((child: any, index: number) => {
-        this.validateCustomFields(child, `${path}.children[${index}]`, errors);
+        this.validateNodeCustomFields(child, `${path}.children[${index}]`, errors);
       });
     }
   }
