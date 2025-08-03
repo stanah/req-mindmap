@@ -9,6 +9,7 @@ import { useAppStore } from '../../stores/appStore';
 import { fileService, BrowserFileService } from '../../services/fileService';
 import { projectManagementSample, sampleYAML } from '../../data/samples';
 import { SettingsPanel } from './SettingsPanel';
+import { TemplateModal } from './TemplateModal';
 import type { FileLoadResult } from '../../services/fileService';
 import './SettingsPanel.css';
 
@@ -28,6 +29,7 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
 
   /**
    * ファイル読み込みハンドラー
@@ -146,6 +148,13 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
   };
 
   /**
+   * スキーマベーステンプレート生成
+   */
+  const handleGenerateFromSchema = () => {
+    setShowTemplateModal(true);
+  };
+
+  /**
    * サンプルデータを読み込む
    */
   const handleLoadSample = () => {
@@ -228,6 +237,13 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
             >
               プロジェクト管理
             </button>
+            <div className="file-toolbar__dropdown-divider"></div>
+            <button
+              className="file-toolbar__dropdown-item file-toolbar__dropdown-item--featured"
+              onClick={handleGenerateFromSchema}
+            >
+              🔧 スキーマベース生成
+            </button>
           </div>
         </div>
       </div>
@@ -293,6 +309,12 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
       <SettingsPanel
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
+      />
+
+      {/* テンプレート生成モーダル */}
+      <TemplateModal
+        isOpen={showTemplateModal}
+        onClose={() => setShowTemplateModal(false)}
       />
     </div>
   );

@@ -182,14 +182,21 @@ export class MindmapRenderer {
     // 階層データの作成
     const hierarchy = d3.hierarchy(data.root);
 
-    // ノードサイズの計算
+    // ノードサイズの計算（複数行対応）
     hierarchy.each((node: d3.HierarchyNode<MindmapNode>) => {
       const nodeData = node.data;
       const textLength = this.calculateTextWidth(nodeData.title);
       const badgeHeight = this.calculateBadgeHeight(nodeData);
 
       (node as D3Node).width = Math.min(Math.max(textLength + this.NODE_PADDING * 2, this.NODE_WIDTH), this.settings.maxNodeWidth || 200);
-      (node as D3Node).height = this.NODE_HEIGHT + badgeHeight;
+      
+      // 複数行対応の高さ計算
+      const nodeWidth = (node as D3Node).width;
+      const availableWidth = nodeWidth - this.NODE_PADDING * 2 - (this.getNodeIcon(nodeData) ? 24 : 0);
+      const lines = this.splitTextIntoLines(nodeData.title, availableWidth);
+      const textHeight = lines.length * 16; // 16px per line
+      
+      (node as D3Node).height = Math.max(this.NODE_HEIGHT, textHeight + this.NODE_PADDING * 2) + badgeHeight;
 
       // 折りたたみ状態の初期化
       if (nodeData.collapsed && node.children) {
@@ -222,14 +229,21 @@ export class MindmapRenderer {
     const rootData = this.extractNodeData(hierarchy);
     const newHierarchy = d3.hierarchy(rootData);
 
-    // ノードサイズの再計算
+    // ノードサイズの再計算（複数行対応）
     newHierarchy.each((node: d3.HierarchyNode<MindmapNode>) => {
       const nodeData = node.data;
       const textLength = this.calculateTextWidth(nodeData.title);
       const badgeHeight = this.calculateBadgeHeight(nodeData);
 
       (node as D3Node).width = Math.min(Math.max(textLength + this.NODE_PADDING * 2, this.NODE_WIDTH), this.settings.maxNodeWidth || 200);
-      (node as D3Node).height = this.NODE_HEIGHT + badgeHeight;
+      
+      // 複数行対応の高さ計算
+      const nodeWidth = (node as D3Node).width;
+      const availableWidth = nodeWidth - this.NODE_PADDING * 2 - (this.getNodeIcon(nodeData) ? 24 : 0);
+      const lines = this.splitTextIntoLines(nodeData.title, availableWidth);
+      const textHeight = lines.length * 16; // 16px per line
+      
+      (node as D3Node).height = Math.max(this.NODE_HEIGHT, textHeight + this.NODE_PADDING * 2) + badgeHeight;
 
       // 折りたたみ状態の復元
       if (nodeData.collapsed && node.children) {
@@ -508,7 +522,7 @@ export class MindmapRenderer {
         }
       });
 
-    // ノードのテキスト
+    // ノードのテキスト（複数行対応）
     nodeEnter
       .append('text')
       .attr('class', 'mindmap-node-text')
@@ -606,14 +620,14 @@ export class MindmapRenderer {
       .attr('y', -8)
       .attr('fill', d => this.getNodeTextColor(d.data));
 
-    // テキストの更新と位置調整
+    // テキストの更新と位置調整（複数行対応）
     nodeUpdate.select('.mindmap-node-text')
       .attr('x', d => this.getNodeIcon(d.data) ? 8 : 0)
-      .attr('y', -8)
+      .attr('y', d => this.calculateTextY(d))
       .attr('fill', d => this.getNodeTextColor(d.data))
-      .text(d => {
-        const availableWidth = d.width - this.NODE_PADDING * 2 - (this.getNodeIcon(d.data) ? 24 : 0);
-        return this.truncateText(d.data.title, availableWidth);
+      .each((d, i, nodes) => {
+        const textElement = d3.select(nodes[i]);
+        this.renderMultilineText(textElement, d);
       });
 
     // バッジの描画
@@ -677,6 +691,106 @@ export class MindmapRenderer {
     }
 
     return text.substring(0, maxChars - 3) + '...';
+  }
+
+  /**
+   * テキストを複数行に分割する
+   */
+  private splitTextIntoLines(text: string, maxWidth: number, maxLines: number = 3): string[] {
+    const charWidth = 8; // 平均文字幅
+    const maxCharsPerLine = Math.floor(maxWidth / charWidth);
+    
+    if (maxCharsPerLine <= 3) {
+      return [text.substring(0, 1) + '...'];
+    }
+
+    const words = text.split(/\s+/);
+    const lines: string[] = [];
+    let currentLine = '';
+
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      
+      if (testLine.length <= maxCharsPerLine) {
+        currentLine = testLine;
+      } else {
+        if (currentLine) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          // 単語自体が長すぎる場合は切り詰める
+          lines.push(word.substring(0, maxCharsPerLine - 3) + '...');
+          currentLine = '';
+        }
+        
+        // 最大行数に達した場合は省略記号で終了
+        if (lines.length >= maxLines - 1) {
+          if (currentLine) {
+            const remainingSpace = maxCharsPerLine - currentLine.length - 3;
+            if (remainingSpace > 0) {
+              currentLine += '...';
+            } else {
+              currentLine = currentLine.substring(0, maxCharsPerLine - 3) + '...';
+            }
+            lines.push(currentLine);
+          } else if (lines.length < maxLines) {
+            lines.push('...');
+          }
+          break;
+        }
+      }
+    }
+    
+    if (currentLine && lines.length < maxLines) {
+      lines.push(currentLine);
+    }
+
+    return lines.length > 0 ? lines : [text.substring(0, maxCharsPerLine - 3) + '...'];
+  }
+
+  /**
+   * 複数行テキストをSVGに描画する
+   */
+  private renderMultilineText(textElement: d3.Selection<SVGTextElement, D3Node, any, any>, nodeData: D3Node): void {
+    const availableWidth = nodeData.width - this.NODE_PADDING * 2 - (this.getNodeIcon(nodeData.data) ? 24 : 0);
+    const lines = this.splitTextIntoLines(nodeData.data.title, availableWidth);
+    
+    // 既存のtspan要素をクリア
+    textElement.selectAll('tspan').remove();
+    
+    // 複数行の場合のみtspanを使用
+    if (lines.length > 1) {
+      const lineHeight = 16;
+      const totalHeight = lines.length * lineHeight;
+      const startY = -(totalHeight / 2) + (lineHeight / 2);
+      
+      lines.forEach((line, index) => {
+        textElement
+          .append('tspan')
+          .attr('x', this.getNodeIcon(nodeData.data) ? 8 : 0)
+          .attr('dy', index === 0 ? startY : lineHeight)
+          .text(line);
+      });
+    } else {
+      // 単一行の場合は直接textを設定
+      textElement.text(lines[0]);
+    }
+  }
+
+  /**
+   * テキストのY座標を計算する（複数行対応）
+   */
+  private calculateTextY(nodeData: D3Node): number {
+    const availableWidth = nodeData.width - this.NODE_PADDING * 2 - (this.getNodeIcon(nodeData.data) ? 24 : 0);
+    const lines = this.splitTextIntoLines(nodeData.data.title, availableWidth);
+    
+    if (lines.length > 1) {
+      // 複数行の場合はtspanのdyで調整するので、基準位置を返す
+      return 0;
+    } else {
+      // 単一行の場合は従来通り
+      return -8;
+    }
   }
 
   /**
