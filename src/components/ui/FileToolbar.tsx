@@ -9,7 +9,6 @@ import { useAppStore } from '../../stores/appStore';
 import { fileService, BrowserFileService } from '../../services/fileService';
 
 import { SettingsPanel } from './SettingsPanel';
-import { ContentLoadModal } from './ContentLoadModal';
 import type { FileLoadResult } from '../../services/fileService';
 import './SettingsPanel.css';
 
@@ -29,7 +28,6 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [showContentLoadModal, setShowContentLoadModal] = useState(false);
 
   /**
    * ファイル読み込みハンドラー
@@ -150,16 +148,44 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
   /**
    * スキーマベーステンプレート生成
    */
-  const handleGenerateFromSchema = () => {
-    setShowContentLoadModal(true);
+  /**
+   * 包括的要件定義サンプルを直接読み込む
+   */
+  const handleLoadComprehensiveSample = async () => {
+    try {
+      // contentLoaderServiceから直接包括的要件定義サンプルを読み込み
+      const result = await import('../../services/contentLoaderService').then(module => {
+        return module.contentLoaderService.loadContent({
+          source: 'sample',
+          sampleId: 'comprehensive-requirements',
+          format: 'json',
+          locale: 'ja'
+        });
+      });
+
+      // エディタに設定
+      updateContent(result.content);
+      
+      // 成功通知
+      addNotification({
+        message: '包括的要件定義サンプルを読み込みました',
+        type: 'success',
+        autoHide: true,
+        duration: 3000,
+      });
+      
+    } catch (error) {
+      console.error('Comprehensive sample loading failed:', error);
+      addNotification({
+        message: `サンプルの読み込みに失敗しました: ${error instanceof Error ? error.message : '不明なエラー'}`,
+        type: 'error',
+        autoHide: true,
+        duration: 5000,
+      });
+    }
   };
 
-  /**
-   * サンプルデータを読み込む
-   */
-  const handleLoadSample = () => {
-    setShowContentLoadModal(true);
-  };
+
 
   return (
     <div className={`file-toolbar ${className}`}>
@@ -193,13 +219,13 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
           ➕ 新規
         </button>
         
-        {/* 統合コンテンツ読み込みボタン */}
+        {/* 包括的要件定義サンプル読み込み */}
         <button
-          className="file-toolbar__button file-toolbar__button--content-load"
-          onClick={() => setShowContentLoadModal(true)}
-          title="テンプレート・サンプル読み込み"
+          className="file-toolbar__button file-toolbar__button--sample-load"
+          onClick={handleLoadComprehensiveSample}
+          title="包括的要件定義サンプルを読み込み"
         >
-          📚 コンテンツ読み込み
+          📋 包括的要件定義
         </button>
       </div>
 
@@ -255,11 +281,7 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
         onClose={() => setShowSettings(false)}
       />
 
-      {/* テンプレート生成モーダル */}
-      <ContentLoadModal
-        isOpen={showContentLoadModal}
-        onClose={() => setShowContentLoadModal(false)}
-      />
+
     </div>
   );
 };
