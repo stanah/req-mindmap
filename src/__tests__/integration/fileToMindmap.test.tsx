@@ -32,23 +32,9 @@ Object.defineProperty(global, 'showSaveFilePicker', {
   writable: true
 });
 
-// ResizeObserverのモック
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
-
-// D3.jsのSVG操作のモック
-Object.defineProperty(global.SVGElement.prototype, 'getBBox', {
-  value: vi.fn().mockReturnValue({
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 50
-  }),
-  writable: true
-});
+// これらのモックはsetup.tsで定義済み
+// - ResizeObserver
+// - SVGElement.prototype.getBBox
 
 describe('ファイル読み込みからマインドマップ表示までの統合テスト', () => {
   const testMindmapData: MindmapData = {

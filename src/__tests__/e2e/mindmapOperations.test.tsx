@@ -10,12 +10,9 @@ import type { MindmapData } from '../../types';
 // タイマーのモック
 vi.useFakeTimers();
 
-// ResizeObserverのモック
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+// これらのモックはsetup.tsで定義済み
+// - ResizeObserver
+// - SVGElement.prototype.getBBox
 
 // window.confirmのモック
 global.confirm = vi.fn().mockReturnValue(true);
@@ -27,16 +24,6 @@ const mockZoomBehavior = {
   translateTo: vi.fn(),
   on: vi.fn()
 };
-
-Object.defineProperty(global.SVGElement.prototype, 'getBBox', {
-  value: vi.fn().mockReturnValue({
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 50
-  }),
-  writable: true
-});
 
 // mockTransform変数を定義
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
