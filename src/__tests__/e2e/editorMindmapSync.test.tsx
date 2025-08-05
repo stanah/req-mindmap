@@ -2,7 +2,7 @@
  * エディタとマインドマップの同期のE2Eテスト
  */
 
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import type { MindmapData } from '../../types';
 import { useAppStore } from '../../stores';
 
@@ -85,14 +85,13 @@ describe('エディタとマインドマップの同期のE2Eテスト', () => {
   };
 
   beforeEach(() => {
-    // ストアをリセット
+    // ストアを完全にリセット
     const store = useAppStore.getState();
-    store.closeFile();
+    store.reset();
   });
 
   describe('エディタ→マインドマップ同期', () => {
     it('エディタでの基本的な編集が正しく動作する', () => {
-      // UIレンダリングを避けて純粋にストアテストを行う
       const store = useAppStore.getState();
       
       // 基本構造を直接ストアに設定
@@ -113,11 +112,16 @@ describe('エディタとマインドマップの同期のE2Eテスト', () => {
 
       // 新規ファイルとしてセット
       store.newFile();
-      store.updateContent(JSON.stringify(basicStructure, null, 2));
+      const jsonContent = JSON.stringify(basicStructure, null, 2);
+      store.updateContent(jsonContent);
+
+      // 最新の状態を再取得
+      const currentState = useAppStore.getState();
 
       // ストアに正しく保存されていることを確認
-      expect(store.file.fileContent).toContain('ルートノード');
-      expect(store.file.fileContent).toContain('子ノード1');
+      expect(currentState.file.fileContent).toContain('ルートノード');
+      expect(currentState.file.fileContent).toContain('子ノード1');
+      expect(currentState.file.isDirty).toBe(true);
     });
 
     it('エディタでのノード削除が正しく処理される', () => {
@@ -144,7 +148,8 @@ describe('エディタとマインドマップの同期のE2Eテスト', () => {
       };
 
       store.newFile();
-      store.updateContent(JSON.stringify(initialData, null, 2));
+      const initialContent = JSON.stringify(initialData, null, 2);
+      store.updateContent(initialContent);
 
       // バックエンドノードを削除
       const dataWithoutBackend = {
@@ -155,11 +160,15 @@ describe('エディタとマインドマップの同期のE2Eテスト', () => {
         }
       };
 
-      store.updateContent(JSON.stringify(dataWithoutBackend, null, 2));
+      const updatedContent = JSON.stringify(dataWithoutBackend, null, 2);
+      store.updateContent(updatedContent);
+
+      // 最新の状態を再取得
+      const currentState = useAppStore.getState();
 
       // バックエンドが削除されることを確認
-      expect(store.file.fileContent).not.toContain('バックエンド');
-      expect(store.file.fileContent).toContain('フロントエンド');
+      expect(currentState.file.fileContent).not.toContain('バックエンド');
+      expect(currentState.file.fileContent).toContain('フロントエンド');
     });
 
     it('エディタでのプロパティ変更が正しく処理される', () => {
@@ -179,7 +188,8 @@ describe('エディタとマインドマップの同期のE2Eテスト', () => {
       };
 
       store.newFile();
-      store.updateContent(JSON.stringify(simpleData, null, 2));
+      const initialContent = JSON.stringify(simpleData, null, 2);
+      store.updateContent(initialContent);
 
       // プロパティを変更
       const updatedData = {
@@ -192,11 +202,15 @@ describe('エディタとマインドマップの同期のE2Eテスト', () => {
         }
       };
 
-      store.updateContent(JSON.stringify(updatedData, null, 2));
+      const updatedContent = JSON.stringify(updatedData, null, 2);
+      store.updateContent(updatedContent);
+
+      // 最新の状態を再取得
+      const currentState = useAppStore.getState();
 
       // 変更を確認
-      expect(store.file.fileContent).toContain('completed');
-      expect(store.file.fileContent).not.toContain('pending');
+      expect(currentState.file.fileContent).toContain('completed');
+      expect(currentState.file.fileContent).not.toContain('pending');
     });
   });
 
@@ -221,11 +235,15 @@ describe('エディタとマインドマップの同期のE2Eテスト', () => {
       };
 
       store.newFile();
-      store.updateContent(JSON.stringify(simpleData, null, 2));
+      const jsonContent = JSON.stringify(simpleData, null, 2);
+      store.updateContent(jsonContent);
+
+      // 最新の状態を再取得
+      const currentState = useAppStore.getState();
 
       // ストアに内容が正しく保存されることを確認
-      expect(store.file.fileContent).toContain('プロジェクト');
-      expect(store.file.fileContent).toContain('フロントエンド');
+      expect(currentState.file.fileContent).toContain('プロジェクト');
+      expect(currentState.file.fileContent).toContain('フロントエンド');
     });
   });
 
@@ -250,7 +268,8 @@ describe('エディタとマインドマップの同期のE2Eテスト', () => {
       };
 
       store.newFile();
-      store.updateContent(JSON.stringify(initialData, null, 2));
+      const initialContent = JSON.stringify(initialData, null, 2);
+      store.updateContent(initialContent);
 
       // エディタでデータを編集（ノード追加）
       const editedData = {
@@ -267,13 +286,17 @@ describe('エディタとマインドマップの同期のE2Eテスト', () => {
         }
       };
 
-      store.updateContent(JSON.stringify(editedData, null, 2));
+      const editedContent = JSON.stringify(editedData, null, 2);
+      store.updateContent(editedContent);
+
+      // 最新の状態を再取得
+      const currentState = useAppStore.getState();
 
       // 新しいノードが追加されることを確認
-      expect(store.file.fileContent).toContain('テスト');
+      expect(currentState.file.fileContent).toContain('テスト');
     });
 
-    it('無効なJSONに対するエラーハンドリング', () => {
+    it('無効なJSONに対するエラーハンドリング', async () => {
       const store = useAppStore.getState();
 
       // 有効なデータを設定
@@ -287,12 +310,16 @@ describe('エディタとマインドマップの同期のE2Eテスト', () => {
       };
 
       store.newFile();
-      store.updateContent(JSON.stringify(validData, null, 2));
+      const validContent = JSON.stringify(validData, null, 2);
+      store.updateContent(validContent);
 
       // 無効なJSONを入力してエラーを発生させる
       const invalidJson = '{ "version": "1.0", "title": }';
       
       store.updateContent(invalidJson);
+
+      // parseContentのデバウンス処理とエラー処理の完了を十分に待つ
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // パースエラーが発生していることを確認
       const state = useAppStore.getState();
@@ -308,7 +335,11 @@ describe('エディタとマインドマップの同期のE2Eテスト', () => {
         }
       };
 
-      store.updateContent(JSON.stringify(fixedData, null, 2));
+      const fixedContent = JSON.stringify(fixedData, null, 2);
+      store.updateContent(fixedContent);
+
+      // parseContentの完了を十分に待つ
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // エラーが解消されることを確認
       const finalState = useAppStore.getState();
