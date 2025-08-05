@@ -51,7 +51,7 @@ export interface FileSaveOptions {
 
 // ブラウザ環境用のファイルサービス実装
 export class BrowserFileService implements FileService {
-  private watchers: Map<string, (content: string) => void> = new Map();
+  private watchers: Map<string, (content: string | File) => void> = new Map();
   // ドラッグアンドドロップ機能（将来実装予定）
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private _dragAndDropEnabled = false;
@@ -440,9 +440,6 @@ export class BrowserFileService implements FileService {
     this.watchers.clear();
   }
 
-  /**
-   * ファイル変更を通知する（テスト用）
-   */
   /**
    * ファイル変更を通知する（テスト用）
    */
@@ -990,6 +987,11 @@ export class VSCodeFileService implements FileService {
   stopWatching(): void {
     // VSCode API を使用した実装
     // 現在はプレースホルダー
+    throw new Error('VSCode file service not implemented yet');
+  }
+
+  // テスト用のメソッドも追加
+  notifyFileChange(_pathOrFile: string | File, _content?: string): void {
     throw new Error('VSCode file service not implemented yet');
   }
 

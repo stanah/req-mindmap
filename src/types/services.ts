@@ -21,17 +21,17 @@ export interface FileService {
 
   /**
    * ファイルに保存する
-   * @param path ファイルパス
-   * @param content ファイル内容
+   * @param pathOrData ファイルパスまたはデータ
+   * @param contentOrFormat ファイル内容またはフォーマット
    */
-  saveFile(path: string, content: string): Promise<void>;
+  saveFile(pathOrData: string | any, contentOrFormat?: string | 'json' | 'yaml'): Promise<void | { success: boolean; error?: string }>;
 
   /**
    * ファイルの変更を監視する
-   * @param path ファイルパス
+   * @param pathOrFile ファイルパスまたはFileオブジェクト
    * @param callback 変更時のコールバック
    */
-  watchFile(path: string, callback: (content: string) => void): void;
+  watchFile(pathOrFile: string | File, callback: (content: string | File) => void): void;
 
   /**
    * ファイルが存在するかチェック
