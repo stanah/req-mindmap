@@ -30,6 +30,37 @@ Object.defineProperty(global, 'showSaveFilePicker', {
   writable: true
 });
 
+// URL.createObjectURLとURL.revokeObjectURLのモック
+Object.defineProperty(global, 'URL', {
+  value: {
+    createObjectURL: vi.fn(() => 'blob:mock-url'),
+    revokeObjectURL: vi.fn()
+  },
+  writable: true
+});
+
+// document.createElementのモック
+Object.defineProperty(global, 'document', {
+  value: {
+    createElement: vi.fn((tagName: string) => {
+      if (tagName === 'a') {
+        return {
+          href: '',
+          download: '',
+          style: { display: '' },
+          click: vi.fn()
+        };
+      }
+      return {};
+    }),
+    body: {
+      appendChild: vi.fn(),
+      removeChild: vi.fn()
+    }
+  },
+  writable: true
+});
+
 describe('FileService', () => {
   let fileService: BrowserFileService;
 

@@ -114,6 +114,9 @@ export class BrowserFileService implements FileService {
   /**
    * ファイルを開く（File System Access API使用）
    */
+  /**
+   * ファイルを開く（File System Access API使用）
+   */
   async openFile(): Promise<{
     success: boolean;
     data?: any;
@@ -122,9 +125,121 @@ export class BrowserFileService implements FileService {
     error?: string;
   }> {
     try {
-      return { success: false, error: 'Not implemented' };
+      // File System Access APIが利用可能かチェック
+      if (!('showOpenFilePicker' in window)) {
+        return { 
+          success: false, 
+          error: 'ファイルシステムアクセスAPIが利用できません。ブラウザが対応していないか、HTTPSでアクセスしてください。' 
+        };
+      }
+
+      // ファイル選択ダイアログを表示
+      const [fileHandle] = await (window as any).showOpenFilePicker({
+        types: [
+          {
+            description: 'マインドマップファイル',
+            accept: {
+              'application/json': ['.json'],
+              'text/yaml': ['.yaml', '.yml'],
+            },
+          },
+        ],
+        excludeAcceptAllOption: true,
+        multiple: false,
+      });
+
+      // ファイルを読み込み
+      const file = await fileHandle.getFile();
+      const content = await file.text();
+      
+      // ファイル形式を検出
+      const format = this.detectFileFormat(file.name, content);
+      
+      if (format === 'unknown') {
+        return {
+          success: false,
+          error: `サポートされていないファイル形式です: ${file.name}`
+        };
+      }
+
+      // ファイル内容をパース
+      let data;
+      try {
+        if (format === 'json') {
+          data = JSON.parse(content);
+        } else if (format === 'yaml') {
+          // 簡単なYAMLパーサー（基本的な構造のみサポート）
+          try {
+            data = this.parseSimpleYaml(content);
+          } catch (yamlError) {
+            return {
+              success: false,
+              error: `YAML構文エラー: ${yamlError instanceof Error ? yamlError.message : String(yamlError)}`
+            };
+          }
+        }
+      } catch (parseError) {
+        return {
+          success: false,
+          error: `${format.toUpperCase()}構文エラー: ${parseError instanceof Error ? parseError.message : String(parseError)}`
+        };
+      }
+
+      // 最近使用したファイルに追加
+      this.addToRecentFiles({
+        name: file.name,
+        path: file.name, // ブラウザ環境では実パスは取得できない
+        lastModified: file.lastModified
+      });
+
+      return {
+        success: true,
+        data,
+        fileName: file.name,
+        format
+      };
+
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+// ユーザーがキャンセルした場合
+      if ((error as any)?.name === 'AbortError' || (error as any)?.message?.includes('cancelled') || (error as any)?.message?.includes('User cancelled')) {
+        return {
+          success: false,
+          error: 'ファイル選択がキャンセルされました'
+        };
+      }
+
+      // セキュリティエラー
+      if ((error as any)?.name === 'SecurityError' || (error as any)?.message?.includes('Security error')) {
+        return {
+          success: false,
+          error: 'セキュリティエラー: ファイルへのアクセスが拒否されました'
+        };
+      }
+
+      // ネットワークエラー
+      if ((error as any)?.name === 'NetworkError' || (error as any)?.message?.includes('Network error') || (error as any)?.message?.includes('network')) {
+        return {
+          success: false,
+          error: 'ネットワークエラー: ファイルの読み込みに失敗しました'
+        };
+      }
+
+      // エラーメッセージを解析
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      // ファイルシステムアクセスAPIが利用できない場合
+      if (errorMessage.includes('showOpenFilePicker') || errorMessage.includes('not a function')) {
+        return {
+          success: false,
+          error: 'ファイルシステムアクセスAPIが利用できません。ブラウザが対応していないか、HTTPSでアクセスしてください。'
+        };
+      }
+      
+      // その他のエラー
+      return {
+        success: false,
+        error: `ファイルの読み込みに失敗しました: ${errorMessage}`
+      };
     }
   }
 
@@ -228,22 +343,254 @@ export class BrowserFileService implements FileService {
     throw new Error('ブラウザ環境では直接パスでのファイル読み込みはサポートされていません。loadFileWithInfoメソッドを使用してください。');
   }
 
-  async saveFile(path: string, content: string): Promise<void> {
-    // ブラウザ環境では直接パスでのファイル保存は不可能
-    // ダウンロード方式での保存を実行
-    const filename = path.split('/').pop() || 'untitled.json';
-    await this.saveFileWithOptions(content, { filename });
+  async saveFile(pathOrData: string | any, contentOrFormat?: string | 'json' | 'yaml'): Promise<{ success: boolean; error?: string } | void> {
+    try {
+      // 引数のパターンを判定
+      let content: string;
+      let format: 'json' | 'yaml' = 'json';
+      
+      if (typeof pathOrData === 'string' && typeof contentOrFormat === 'string') {
+        // 元のインターフェース: saveFile(path, content)
+        const pathStr = String(pathOrData); // 文字列に確実に変換
+        const filename = pathStr.split('/').pop() || 'untitled.json';
+        await this.saveFileWithOptions(contentOrFormat, { filename });
+        return { success: true };
+      } else {
+        // 新しいインターフェース: saveFile(data, format)
+        if (typeof pathOrData === 'string') {
+          content = pathOrData;
+        } else {
+          format = (contentOrFormat as 'json' | 'yaml') || 'json';
+          if (format === 'json') {
+            content = JSON.stringify(pathOrData, null, 2);
+          } else {
+            // YAML形式の場合は簡易変換
+            content = this.convertToSimpleYaml(pathOrData);
+          }
+        }
+      }
+      
+      // File System Access API が利用可能かチェック
+      if (!('showSaveFilePicker' in window)) {
+        // フォールバック: ダウンロード方式
+        await this.saveFileWithOptions(content, { format });
+        return { success: true };
+      }
+
+      // ファイル形式に応じたオプション設定
+      const fileExtension = format === 'yaml' ? '.yaml' : '.json';
+      const mimeType = format === 'yaml' ? 'text/yaml' : 'application/json';
+      
+      // File System Access API を使用
+      const fileHandle = await (window as any).showSaveFilePicker({
+        types: [
+          {
+            description: `${format.toUpperCase()}ファイル`,
+            accept: {
+              [mimeType]: [fileExtension],
+            },
+          },
+        ],
+        suggestedName: `mindmap${fileExtension}`,
+      });
+
+      // ファイルに書き込み
+      const writable = await fileHandle.createWritable();
+      await writable.write(content);
+      await writable.close();
+      
+      return { success: true };
+      
+    } catch (error) {
+      // キャンセルエラー
+      if ((error as any)?.name === 'AbortError' || (error as any)?.message?.includes('cancelled')) {
+        return {
+          success: false,
+          error: 'ファイル保存がキャンセルされました'
+        };
+      }
+      
+      // サポートされていない形式のチェック
+      if ((contentOrFormat as any) === 'xml') {
+        return {
+          success: false,
+          error: 'サポートされていない形式です'
+        };
+      }
+      
+      return {
+        success: false,
+        error: `ファイルの保存に失敗しました: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
   }
 
-  watchFile(path: string, callback: (content: string) => void): void {
+  watchFile(pathOrFile: string | File, callback: (content: string | File) => void): void {
     // ファイル監視のコールバックを登録
-    this.watchers.set(path, callback);
+    if (pathOrFile instanceof File) {
+      this.watchers.set(pathOrFile.name, callback);
+    } else {
+      this.watchers.set(pathOrFile, callback);
+    }
   }
 
 
 
   stopWatching(): void {
     this.watchers.clear();
+  }
+
+  /**
+   * ファイル変更を通知する（テスト用）
+   */
+  /**
+   * ファイル変更を通知する（テスト用）
+   */
+  notifyFileChange(pathOrFile: string | File, content?: string): void {
+    if (pathOrFile instanceof File) {
+      // Fileオブジェクトが渡された場合
+      const callback = this.watchers.get(pathOrFile.name);
+      if (callback) {
+        callback(pathOrFile);
+      }
+    } else {
+      // パス文字列が渡された場合
+      const callback = this.watchers.get(pathOrFile);
+      if (callback && content !== undefined) {
+        callback(content);
+      }
+    }
+  }
+
+  /**
+   * 簡単なYAMLパーサー（基本的な構造のみサポート）
+   */
+  /**
+   * 簡単なYAMLパーサー（基本的な構造のみサポート）
+   */
+  /**
+   * 簡単なYAMLパーサー（基本的な構造のみサポート）
+   */
+  private parseSimpleYaml(yamlText: string): any {
+    try {
+      // 非常に基本的なYAML → JSON変換
+      // より高度なパースが必要な場合はjs-yamlライブラリなどを使用
+      const lines = yamlText.split('\n');
+      const result: any = {};
+      let currentObj = result;
+      const stack: any[] = [];
+      let hasValidContent = false;
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        
+        // 基本的な構文チェック
+        const colonIndex = trimmed.indexOf(':');
+        if (colonIndex === -1) {
+          // コロンがない行は無効な構文として扱う
+          if (trimmed.length > 0 && !trimmed.startsWith('-')) {
+            throw new Error(`無効なYAML構文: ${trimmed} (行 ${i + 1})`);
+          }
+          continue;
+        }
+        
+        const key = trimmed.substring(0, colonIndex).trim();
+        const value = trimmed.substring(colonIndex + 1).trim();
+        
+        // キーが空の場合はエラー
+        if (!key) {
+          throw new Error(`キーが空です: ${trimmed} (行 ${i + 1})`);
+        }
+        
+        // 引用符のバランスチェック
+        if (value.startsWith('"') && !value.endsWith('"')) {
+          throw new Error(`引用符が閉じられていません: ${trimmed} (行 ${i + 1})`);
+        }
+        
+        // 無効な文字をチェック
+        if (key.includes('"') && (!key.startsWith('"') || !key.endsWith('"'))) {
+          throw new Error(`キーの引用符が不正です: ${key} (行 ${i + 1})`);
+        }
+        
+        hasValidContent = true;
+        
+        if (value === '') {
+          // ネストしたオブジェクト
+          currentObj[key] = {};
+          stack.push(currentObj);
+          currentObj = currentObj[key];
+        } else if (value.startsWith('"') && value.endsWith('"')) {
+          // 文字列値
+          currentObj[key] = value.slice(1, -1);
+        } else if (value === 'true' || value === 'false') {
+          // ブール値
+          currentObj[key] = value === 'true';
+        } else if (!isNaN(Number(value))) {
+          // 数値
+          currentObj[key] = Number(value);
+        } else {
+          // その他の文字列
+          currentObj[key] = value;
+        }
+      }
+      
+      // 有効なコンテンツが一つもない場合はエラー
+      if (!hasValidContent) {
+        throw new Error('有効なYAMLコンテンツが見つかりません');
+      }
+      
+      return result;
+    } catch (error) {
+      throw new Error(`YAML解析エラー: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * 簡単なJSON→YAML変換（基本的な構造のみサポート）
+   */
+  private convertToSimpleYaml(obj: any, indent: number = 0): string {
+    const indentStr = '  '.repeat(indent);
+    let result = '';
+    
+    if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
+      for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+          result += `${indentStr}${key}:\n`;
+          result += this.convertToSimpleYaml(value, indent + 1);
+        } else if (Array.isArray(value)) {
+          result += `${indentStr}${key}:\n`;
+          for (const item of value) {
+            if (typeof item === 'object' && item !== null) {
+              result += `${indentStr}  -\n`;
+              result += this.convertToSimpleYaml(item, indent + 2);
+            } else {
+              result += `${indentStr}  - ${this.formatYamlValue(item)}\n`;
+            }
+          }
+        } else {
+          result += `${indentStr}${key}: ${this.formatYamlValue(value)}\n`;
+        }
+      }
+    }
+    
+    return result;
+  }
+  
+  private formatYamlValue(value: any): string {
+    if (typeof value === 'string') {
+      // 特殊文字を含む場合は引用符で囲む
+      if (value.includes(':') || value.includes('#') || value.includes('\n')) {
+        return `"${value}"`;
+      }
+      return value;
+    } else if (typeof value === 'number' || typeof value === 'boolean') {
+      return String(value);
+    } else if (value === null || value === undefined) {
+      return 'null';
+    }
+    return String(value);
   }
 
   async exists(_path: string): Promise<boolean> {

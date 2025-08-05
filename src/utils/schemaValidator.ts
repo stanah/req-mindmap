@@ -259,6 +259,33 @@ export class SchemaValidator {
           value: rule
         });
       }
+    } else if (rule.type === 'min') {
+      // min単体の検証ルール
+      if (typeof rule.min === 'number' && typeof rule.max === 'number' && rule.min > rule.max) {
+        errors.push({
+          path: `${path}`,
+          message: '範囲の最小値が最大値より大きくなっています',
+          value: rule
+        });
+      }
+    } else if (rule.type === 'max') {
+      // max単体の検証ルール
+      if (typeof rule.min === 'number' && typeof rule.max === 'number' && rule.min > rule.max) {
+        errors.push({
+          path: `${path}`,
+          message: '範囲の最小値が最大値より大きくなっています',
+          value: rule
+        });
+      }
+    } else if (rule.type === 'length') {
+      // 文字列長の検証ルール
+      if (typeof rule.min === 'number' && typeof rule.max === 'number' && rule.min > rule.max) {
+        errors.push({
+          path: `${path}`,
+          message: '文字数の最小値が最大値より大きくなっています',
+          value: rule
+        });
+      }
     }
   }
 
@@ -312,6 +339,22 @@ export class SchemaValidator {
                   value
                 });
               }
+            } else if (rule.type === 'min') {
+              if (typeof rule.min === 'number' && value < rule.min) {
+                errors.push({
+                  path,
+                  message: `値が範囲外です (最小: ${rule.min})`,
+                  value
+                });
+              }
+            } else if (rule.type === 'max') {
+              if (typeof rule.max === 'number' && value > rule.max) {
+                errors.push({
+                  path,
+                  message: `値が範囲外です (最大: ${rule.max})`,
+                  value
+                });
+              }
             }
           });
         }
@@ -334,6 +377,22 @@ export class SchemaValidator {
                   value
                 });
               }
+              if (typeof rule.max === 'number' && value.length > rule.max) {
+                errors.push({
+                  path,
+                  message: `文字数が超過しています (最大: ${rule.max})`,
+                  value
+                });
+              }
+            } else if (rule.type === 'minLength') {
+              if (typeof rule.min === 'number' && value.length < rule.min) {
+                errors.push({
+                  path,
+                  message: `文字数が不足しています (最小: ${rule.min})`,
+                  value
+                });
+              }
+            } else if (rule.type === 'maxLength') {
               if (typeof rule.max === 'number' && value.length > rule.max) {
                 errors.push({
                   path,
