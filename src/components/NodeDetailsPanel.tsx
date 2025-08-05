@@ -79,7 +79,7 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
   }
 
   return (
-    <div className="node-details">
+    <div className="node-details" data-testid="node-details-panel">
       <div className="node-details-header">
         <h3>{node.title}</h3>
         <button className="close-btn" onClick={onClose} title="閉じる">×</button>
