@@ -49,6 +49,7 @@ vi.mock('d3', () => {
     on: vi.fn(() => mockSelection),
     remove: vi.fn(() => mockSelection),
     classed: vi.fn(() => mockSelection),
+    call: vi.fn(() => mockSelection),
     node: vi.fn(() => ({ getBBox: vi.fn(() => ({ width: 100, height: 50 })) })),
   };
 
@@ -83,6 +84,10 @@ const localStorageMock = {
   removeItem: vi.fn(),
   clear: vi.fn(),
 };
+Object.defineProperty(global, 'localStorage', { value: localStorageMock });
+
+// localStorageMockをグローバルで利用可能にする
+(global as any).localStorageMock = localStorageMock;;
 Object.defineProperty(global, 'localStorage', { value: localStorageMock });
 
 // SVGのモック
