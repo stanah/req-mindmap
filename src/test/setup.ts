@@ -3,6 +3,20 @@
  */
 
 import '@testing-library/jest-dom';
+
+// Vitest用のjest-dom型定義を手動で拡張
+declare global {
+  namespace Vi {
+    interface JestAssertion<T = any> {
+      toBeInTheDocument(): T;
+      toHaveValue(value: any): T;
+      toBeDisabled(): T;
+      toHaveBeenCalled(): T;
+      toHaveBeenCalledWith(...args: any[]): T;
+      toHaveBeenCalledTimes(times: number): T;
+    }
+  }
+}
 import { vi } from 'vitest';
 import React from 'react';
 
