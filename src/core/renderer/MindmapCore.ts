@@ -124,22 +124,17 @@ export class MindmapCore {
    * ノードサイズの計算
    */
   private calculateNodeSizes(node: D3Node): void {
-    const measureText = (text: string): { width: number; height: number } => {
-      const maxWidth = this.settings.maxNodeWidth || 200;
-      const fontSize = 14;
-      const charWidth = fontSize * 0.6;
-      const lineHeight = fontSize * 1.4;
-      
-      const lines = Math.ceil((text.length * charWidth) / (maxWidth - this.NODE_PADDING * 2));
-      const width = Math.min(text.length * charWidth + this.NODE_PADDING * 2, maxWidth);
-      const height = lines * lineHeight + this.NODE_PADDING * 2;
-      
-      return { width, height };
-    };
-
-    const size = measureText(node.data.title);
-    node.width = Math.max(size.width, this.NODE_WIDTH);
-    node.height = Math.max(size.height, this.NODE_HEIGHT);
+    const maxWidth = this.settings.maxNodeWidth || 200;
+    console.log('calculateNodeSizes - maxWidth:', maxWidth, 'settings:', this.settings);
+    
+    // 複数行テキストのサイズを測定
+    const textMeasurement = this.measureMultilineText(node.data.title, maxWidth - this.NODE_PADDING * 2);
+    
+    // ノードの幅を固定（設定値または200px）
+    node.width = maxWidth;
+    
+    // 実際の行数に基づいて高さを設定
+    node.height = Math.max(textMeasurement.height + this.NODE_PADDING * 2, this.NODE_HEIGHT);
 
     // 子ノードのサイズも計算
     if (node.children) {
@@ -286,7 +281,7 @@ export class MindmapCore {
       .attr('stroke-width', 1)
       .attr('fill', '#fff');
 
-    // ノードテキスト
+    // ノードテキスト（複数行対応）
     nodeEnter
       .append('text')
       .attr('class', 'mindmap-node-text')
@@ -323,9 +318,25 @@ export class MindmapCore {
       .attr('y', (d: D3Node) => -d.height / 2)
       .attr('fill', (d: D3Node) => this.getNodeColor(d.data));
 
-    // テキストの更新
+    // テキストの更新（複数行対応）
     nodeUpdate.select('.mindmap-node-text')
-      .text((d: D3Node) => this.truncateText(d.data.title, d.width - this.NODE_PADDING * 2));
+      .each((d: D3Node, i, nodes) => {
+        const textElement = d3.select(nodes[i] as SVGTextElement);
+        
+        // 実際の行数を計算してノード高さを調整（幅は固定）
+        const actualLines = this.countActualLines(d.data.title, d.width - this.NODE_PADDING * 2);
+        const requiredHeight = actualLines * 16.8 + this.NODE_PADDING * 2;
+        if (requiredHeight > d.height) {
+          d.height = requiredHeight;
+          // 背景矩形の高さのみ更新（幅は変更しない）
+          nodeUpdate.filter((nd: D3Node) => nd === d)
+            .select('.mindmap-node-rect')
+            .attr('height', d.height)
+            .attr('y', -d.height / 2);
+        }
+        
+        this.renderMultilineText(textElement, d.data.title, d.width - this.NODE_PADDING * 2, d.height - this.NODE_PADDING * 2);
+      });
 
     // 不要なノードの削除
     nodeSelection.exit().remove();
@@ -355,6 +366,254 @@ export class MindmapCore {
     }
     
     return text.substring(0, maxChars - 3) + '...';
+  }
+
+  /**
+   * 実際の行数をカウント（renderMultilineTextと同じロジック）
+   */
+  private countActualLines(text: string, maxWidth: number): number {
+    const fontSize = 14;
+    const charWidth = fontSize * 1.0; // 日本語対応で幅を広く
+    
+    const paragraphs = text.split(/\n/);
+    const allLines: string[] = [];
+    
+    paragraphs.forEach(paragraph => {
+      if (paragraph.trim() === '') {
+        allLines.push('');
+        return;
+      }
+      
+      const paragraphWidth = paragraph.length * charWidth;
+      if (paragraphWidth <= maxWidth) {
+        allLines.push(paragraph);
+        return;
+      }
+      
+      const words = paragraph.split(/\s+/);
+      let currentLine = '';
+      
+      words.forEach(word => {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const testWidth = testLine.length * charWidth;
+        
+        if (testWidth <= maxWidth) {
+          currentLine = testLine;
+        } else {
+          if (currentLine) {
+            allLines.push(currentLine);
+            currentLine = word;
+            
+            while (word.length * charWidth > maxWidth) {
+              const maxChars = Math.floor(maxWidth / charWidth);
+              if (maxChars > 0) {
+                allLines.push(word.substring(0, maxChars));
+                word = word.substring(maxChars);
+              } else {
+                break;
+              }
+            }
+            currentLine = word;
+          } else {
+            while (word.length * charWidth > maxWidth) {
+              const maxChars = Math.floor(maxWidth / charWidth);
+              if (maxChars > 0) {
+                allLines.push(word.substring(0, maxChars));
+                word = word.substring(maxChars);
+              } else {
+                break;
+              }
+            }
+            currentLine = word;
+          }
+        }
+      });
+      
+      if (currentLine) {
+        allLines.push(currentLine);
+      }
+    });
+    
+    return allLines.length;
+  }
+
+  /**
+   * 複数行テキストの描画
+   */
+  private renderMultilineText(textElement: d3.Selection<SVGTextElement, unknown, null, undefined>, text: string, maxWidth: number, maxHeight: number): void {
+    console.log('renderMultilineText called with:', { text, maxWidth, maxHeight });
+    // 既存のtspan要素をクリア
+    textElement.selectAll('tspan').remove();
+    
+    const fontSize = 14;
+    const lineHeight = fontSize * 1.2;
+    const charWidth = fontSize * 1.0; // 日本語対応で幅を広く
+    
+    // 改行文字で分割
+    const paragraphs = text.split(/\n/);
+    console.log('Split paragraphs:', paragraphs);
+    const allLines: string[] = [];
+    
+    // 各段落をワードラップ
+    paragraphs.forEach(paragraph => {
+      if (paragraph.trim() === '') {
+        allLines.push(''); // 空行を保持
+        return;
+      }
+      
+      // 段落がmaxWidth以内に収まる場合はそのまま追加
+      const paragraphWidth = paragraph.length * charWidth;
+      if (paragraphWidth <= maxWidth) {
+        allLines.push(paragraph);
+        return;
+      }
+      
+      const words = paragraph.split(/\s+/);
+      let currentLine = '';
+      
+      words.forEach(word => {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const testWidth = testLine.length * charWidth;
+        
+        if (testWidth <= maxWidth) {
+          currentLine = testLine;
+        } else {
+          if (currentLine) {
+            allLines.push(currentLine);
+            currentLine = word;
+            
+            // 新しい行の単語も長すぎる場合は文字単位で分割
+            while (word.length * charWidth > maxWidth) {
+              const maxChars = Math.floor(maxWidth / charWidth);
+              if (maxChars > 0) {
+                allLines.push(word.substring(0, maxChars));
+                word = word.substring(maxChars);
+              } else {
+                break;
+              }
+            }
+            currentLine = word;
+          } else {
+            // 最初の単語が長すぎる場合も文字単位で分割
+            while (word.length * charWidth > maxWidth) {
+              const maxChars = Math.floor(maxWidth / charWidth);
+              if (maxChars > 0) {
+                allLines.push(word.substring(0, maxChars));
+                word = word.substring(maxChars);
+              } else {
+                break;
+              }
+            }
+            currentLine = word;
+          }
+        }
+      });
+      
+      if (currentLine) {
+        allLines.push(currentLine);
+      }
+    });
+    
+    // 改行が含まれている場合は高さ制限を緩和
+    const hasExplicitLineBreaks = text.includes('\n');
+    const maxLines = hasExplicitLineBreaks 
+      ? allLines.length  // 改行がある場合は全行表示
+      : Math.floor(maxHeight / lineHeight);  // 改行がない場合のみ高さ制限
+    
+    const displayLines = allLines.slice(0, maxLines);
+    
+    // 行数が制限を超える場合は省略記号を追加（改行がない場合のみ）
+    if (!hasExplicitLineBreaks && allLines.length > maxLines && maxLines > 0) {
+      if (displayLines.length > 0) {
+        const lastLine = displayLines[displayLines.length - 1];
+        displayLines[displayLines.length - 1] = lastLine.substring(0, Math.max(0, lastLine.length - 3)) + '...';
+      }
+    }
+    
+    // 各行をtspan要素として追加
+    const startY = -(displayLines.length - 1) * lineHeight / 2;
+    console.log('Final displayLines:', displayLines);
+    
+    displayLines.forEach((line, index) => {
+      console.log(`Adding tspan ${index}: "${line}"`);
+      const dyValue = index === 0 ? startY : lineHeight;
+      console.log(`Setting dy to: ${dyValue}`);
+      
+      const tspan = textElement
+        .append('tspan')
+        .attr('x', 0)
+        .attr('dy', dyValue)
+        .text(line);
+    });
+  }
+
+  /**
+   * 複数行テキストのサイズを測定
+   */
+  private measureMultilineText(text: string, maxWidth: number): { width: number; height: number; lines: number } {
+    const fontSize = 14;
+    const lineHeight = fontSize * 1.2;
+    const charWidth = fontSize * 1.0; // 日本語対応で幅を広く
+    
+    // 改行文字で分割
+    const paragraphs = text.split(/\n/);
+    const allLines: string[] = [];
+    let actualWidth = 0;
+    
+    // 各段落をワードラップ
+    paragraphs.forEach(paragraph => {
+      if (paragraph.trim() === '') {
+        allLines.push(''); // 空行を保持
+        return;
+      }
+      
+      // 段落がmaxWidth以内に収まる場合はそのまま追加
+      const paragraphWidth = paragraph.length * charWidth;
+      if (paragraphWidth <= maxWidth) {
+        allLines.push(paragraph);
+        actualWidth = Math.max(actualWidth, paragraphWidth);
+        return;
+      }
+      
+      const words = paragraph.split(/\s+/);
+      let currentLine = '';
+      
+      words.forEach(word => {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const testWidth = testLine.length * charWidth;
+        
+        if (testWidth <= maxWidth) {
+          currentLine = testLine;
+        } else {
+          if (currentLine) {
+            allLines.push(currentLine);
+            actualWidth = Math.max(actualWidth, currentLine.length * charWidth);
+            currentLine = word;
+          } else {
+            // 単語が長すぎる場合は強制的に分割
+            allLines.push(word);
+            actualWidth = Math.max(actualWidth, Math.min(word.length * charWidth, maxWidth));
+          }
+        }
+      });
+      
+      if (currentLine) {
+        allLines.push(currentLine);
+        actualWidth = Math.max(actualWidth, currentLine.length * charWidth);
+      }
+    });
+    
+    // 正確な行数計算（renderMultilineTextと同じロジック）
+    const hasExplicitLineBreaks = text.includes('\n');
+    const finalLines = hasExplicitLineBreaks ? allLines.length : allLines.length;
+    const textHeight = finalLines * lineHeight;
+    console.log('measureMultilineText:', { text: text.substring(0, 20) + '...', allLines: allLines.length, finalLines, textHeight });
+    
+    return {
+      width: actualWidth,
+      height: textHeight,
+      lines: finalLines
+    };
   }
 
   /**

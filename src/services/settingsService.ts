@@ -134,7 +134,7 @@ export class SettingsService {
         zoom: 1,
         center: { x: 0, y: 0 },
         nodeWidth: 160,
-        maxNodeWidth: 300,
+        maxNodeWidth: 200,
         nodeSpacing: 20,
         levelSpacing: 100,
         verticalSpacing: 1.0,
