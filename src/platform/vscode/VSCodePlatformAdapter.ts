@@ -3,6 +3,7 @@ import { VSCodeFileSystemAdapter } from './VSCodeFileSystemAdapter';
 import { VSCodeEditorAdapter } from './VSCodeEditorAdapter';
 import { VSCodeUIAdapter } from './VSCodeUIAdapter';
 import { VSCodeSettingsAdapter } from './VSCodeSettingsAdapter';
+import VSCodeApiSingleton from './VSCodeApiSingleton';
 
 /**
  * VSCode拡張環境用のメインプラットフォームアダプター
@@ -13,12 +14,19 @@ export class VSCodePlatformAdapter implements PlatformAdapter {
   public readonly editor: VSCodeEditorAdapter;
   public readonly ui: VSCodeUIAdapter;
   public readonly settings: VSCodeSettingsAdapter;
-
+  
   constructor() {
     this.fileSystem = new VSCodeFileSystemAdapter();
     this.editor = new VSCodeEditorAdapter();
     this.ui = new VSCodeUIAdapter();
     this.settings = new VSCodeSettingsAdapter();
+  }
+  
+  /**
+   * VSCode APIを安全に取得する（シングルトン経由）
+   */
+  static getVSCodeApi(): any {
+    return VSCodeApiSingleton.getInstance().getApi();
   }
 
   getPlatformType(): 'browser' | 'vscode' {
@@ -28,14 +36,18 @@ export class VSCodePlatformAdapter implements PlatformAdapter {
   async initialize(): Promise<void> {
     console.log('VSCodeプラットフォームアダプターを初期化しています...');
     
-    // VSCode API の初期化
-    // const vscode = acquireVsCodeApi();
-    
-    // 各アダプターの初期化
-    // await this.fileSystem.initialize();
-    // await this.editor.initialize();
-    // await this.ui.initialize();
-    // await this.settings.initialize();
+    // VSCode API シングルトンを使用
+    const singleton = VSCodeApiSingleton.getInstance();
+    if (singleton.isAvailable()) {
+      console.log('VSCode Webview環境を検出しました');
+      
+      // 初期化完了を通知
+      singleton.postMessage({
+        command: 'webviewReady'
+      });
+    } else {
+      console.log('非VSCode環境で実行しています（ブラウザモード）');
+    }
     
     console.log('VSCodeプラットフォームアダプターの初期化が完了しました');
   }

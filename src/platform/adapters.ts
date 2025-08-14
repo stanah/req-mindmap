@@ -1,5 +1,6 @@
 import type { PlatformAdapter } from './interfaces';
 import { BrowserPlatformAdapter } from './browser';
+import { VSCodePlatformAdapter } from './vscode';
 
 /**
  * プラットフォームアダプターのファクトリー
@@ -23,11 +24,12 @@ export class PlatformAdapterFactory {
   private static createAdapter(): PlatformAdapter {
     // VSCode拡張環境の検出
     if (this.isVSCodeEnvironment()) {
-      // VSCode拡張用のアダプターは将来実装
-      throw new Error('VSCode拡張環境はまだサポートされていません');
+      console.log('[PlatformAdapterFactory] VSCode環境を検出、VSCodePlatformAdapterを作成');
+      return new VSCodePlatformAdapter();
     }
 
     // デフォルトはブラウザ環境
+    console.log('[PlatformAdapterFactory] ブラウザ環境、BrowserPlatformAdapterを作成');
     return new BrowserPlatformAdapter();
   }
 

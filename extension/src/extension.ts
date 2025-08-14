@@ -1,6 +1,10 @@
 import * as vscode from 'vscode';
-import { MindmapWebviewProvider } from './MindmapWebviewProvider';
+import * as path from 'path';
 import { MindmapEditorProvider } from './MindmapEditorProvider';
+import { MindmapWebviewProvider } from './MindmapWebviewProvider';
+
+// アクティブなプレビューパネルを管理
+const previewPanels = new Map<string, vscode.WebviewPanel>();
 
 /**
  * VSCode拡張のメインエントリーポイント
@@ -28,6 +32,16 @@ export function activate(context: vscode.ExtensionContext) {
 
     // コマンドの登録
     const commands = [
+        // マインドマッププレビューを開くコマンド
+        vscode.commands.registerCommand('mindmapTool.openPreview', async (uri?: vscode.Uri) => {
+            await openMindmapPreview(uri, vscode.ViewColumn.Active, context);
+        }),
+
+        // マインドマッププレビューを横に開くコマンド  
+        vscode.commands.registerCommand('mindmapTool.openPreviewToSide', async (uri?: vscode.Uri) => {
+            await openMindmapPreview(uri, vscode.ViewColumn.Beside, context);
+        }),
+
         // マインドマップを開くコマンド
         vscode.commands.registerCommand('mindmapTool.openMindmap', async (uri?: vscode.Uri) => {
             try {
@@ -351,5 +365,82 @@ root:
         return templates[type].yaml;
     } else {
         return JSON.stringify(templates[type].json, null, 2);
+    }
+}
+
+/**
+ * マインドマッププレビューを開く関数
+ */
+async function openMindmapPreview(uri: vscode.Uri | undefined, viewColumn: vscode.ViewColumn, context: vscode.ExtensionContext): Promise<void> {
+    try {
+        let targetUri = uri;
+        if (!targetUri && vscode.window.activeTextEditor) {
+            targetUri = vscode.window.activeTextEditor.document.uri;
+        }
+        
+        if (!targetUri) {
+            vscode.window.showWarningMessage('プレビューするファイルが見つかりません');
+            return;
+        }
+
+        const document = await vscode.workspace.openTextDocument(targetUri);
+        const panelKey = targetUri.toString();
+
+        // 既存のプレビューパネルがあるかチェック
+        let panel = previewPanels.get(panelKey);
+        
+        if (panel) {
+            // 既存パネルがある場合は表示
+            panel.reveal(viewColumn);
+            return;
+        }
+
+        // 新しいWebviewパネルを作成
+        panel = vscode.window.createWebviewPanel(
+            'mindmapPreview',
+            `Mindmap Preview: ${path.basename(document.fileName)}`,
+            viewColumn,
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true,
+                localResourceRoots: [
+                    context.extensionUri,
+                    vscode.Uri.joinPath(context.extensionUri, 'webview')
+                ]
+            }
+        );
+
+        // パネルを管理マップに追加
+        previewPanels.set(panelKey, panel);
+
+        // パネルが閉じられた時の処理
+        panel.onDidDispose(() => {
+            previewPanels.delete(panelKey);
+        });
+
+        // Webviewプロバイダーを使ってコンテンツを設定
+        const webviewProvider = new MindmapWebviewProvider(context.extensionUri);
+        await webviewProvider.createWebview(panel, document);
+
+        // ドキュメント変更の監視
+        const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
+            if (e.document.uri.toString() === panelKey) {
+                // ドキュメントが変更されたらWebviewに通知
+                panel?.webview.postMessage({
+                    command: 'updateContent',
+                    content: e.document.getText(),
+                    fileName: e.document.fileName,
+                    uri: e.document.uri.toString()
+                });
+            }
+        });
+
+        // パネルが閉じられた時にリスナーを削除
+        panel.onDidDispose(() => {
+            changeDocumentSubscription.dispose();
+        });
+
+    } catch (error) {
+        vscode.window.showErrorMessage(`マインドマッププレビューを開けませんでした: ${error}`);
     }
 }

@@ -37,13 +37,9 @@ export class MindmapWebviewProvider {
      */
     private getWebviewContent(webview: vscode.Webview, document: vscode.TextDocument): string {
         // Webviewリソースのベースパス
-        const webviewPath = vscode.Uri.joinPath(this.extensionUri, 'dist', 'webview');
-        const webviewUri = webview.asWebviewUri(webviewPath);
+        const webviewPath = vscode.Uri.joinPath(this.extensionUri, 'webview');
 
-        // CSSとJSファイルのパス
-        const cssUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(webviewPath, 'assets', 'main.css')
-        );
+        // JSファイルのパス（CSSはインライン化されている）
         const jsUri = webview.asWebviewUri(
             vscode.Uri.joinPath(webviewPath, 'assets', 'main.js')
         );
@@ -64,8 +60,7 @@ export class MindmapWebviewProvider {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="${csp}">
-    <title>Mindmap Tool</title>
-    <link href="${cssUri}" rel="stylesheet">
+    <title>Mindmap Tool - ${path.basename(document.fileName)}</title>
     
     <style>
         body {
@@ -115,6 +110,9 @@ export class MindmapWebviewProvider {
     <script>
         // VSCode APIの初期化
         const vscode = acquireVsCodeApi();
+        
+        // Reactアプリ用にグローバル変数として保存（重複取得エラーを防ぐため）
+        window.vscodeApiInstance = vscode;
         
         // 初期データの設定
         window.initialData = {
@@ -239,7 +237,7 @@ export class MindmapWebviewProvider {
 
                     case 'exportRequest':
                         // エクスポート要求の処理
-                        this.handleExportRequest(message.format, message.data);
+                        this.handleExportRequest(message.format);
                         break;
 
                     case 'error':

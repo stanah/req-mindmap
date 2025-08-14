@@ -19,10 +19,19 @@ export class MindmapEditorProvider implements vscode.CustomTextEditorProvider {
         webviewPanel: vscode.WebviewPanel,
         token: vscode.CancellationToken
     ): Promise<void> {
-        // Webviewパネルの設定
-        webviewPanel.options = {
+        const documentUri = document.uri.toString();
+        
+        // ドキュメントとWebviewパネルを登録
+        this.activeDocuments.set(documentUri, document);
+        this.webviewPanels.set(documentUri, webviewPanel);
+
+        // Webviewパネルの設定（optionsは読み取り専用なので、webview.optionsを設定）
+        webviewPanel.webview.options = {
             enableScripts: true,
-            retainContextWhenHidden: true
+            localResourceRoots: [
+                this.context.extensionUri,
+                vscode.Uri.joinPath(this.context.extensionUri, 'webview')
+            ]
         };
 
         // Webviewを作成

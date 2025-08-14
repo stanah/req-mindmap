@@ -33,6 +33,18 @@
         "category": "Mindmap Tool"
       },
       {
+        "command": "mindmapTool.openPreview",
+        "title": "マインドマッププレビューを開く",
+        "category": "Mindmap Tool",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "mindmapTool.openPreviewToSide",
+        "title": "マインドマッププレビューを横に開く",
+        "category": "Mindmap Tool",
+        "icon": "$(preview)"
+      },
+      {
         "command": "mindmapTool.createNewMindmap",
         "title": "新しいマインドマップを作成",
         "category": "Mindmap Tool"
@@ -49,6 +61,14 @@
       }
     ],
     "menus": {
+      "editor/title": [
+        {
+          "command": "mindmapTool.openPreview",
+          "when": "resourceExtname == .json || resourceExtname == .yaml || resourceExtname == .yml",
+          "group": "navigation",
+          "alt": "mindmapTool.openPreviewToSide"
+        }
+      ],
       "explorer/context": [
         {
           "command": "mindmapTool.openMindmap",
@@ -66,6 +86,14 @@
       "commandPalette": [
         {
           "command": "mindmapTool.openMindmap",
+          "when": "resourceExtname == .json || resourceExtname == .yaml || resourceExtname == .yml"
+        },
+        {
+          "command": "mindmapTool.openPreview",
+          "when": "resourceExtname == .json || resourceExtname == .yaml || resourceExtname == .yml"
+        },
+        {
+          "command": "mindmapTool.openPreviewToSide",
           "when": "resourceExtname == .json || resourceExtname == .yaml || resourceExtname == .yml"
         }
       ]
@@ -170,6 +198,33 @@
       {
         "fileMatch": "*.mindmap.yml",
         "url": "./schemas/mindmap-data.schema.json"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "mindmapTool.mindmapEditor",
+        "displayName": "Mindmap Tool",
+        "selector": [
+          {
+            "filenamePattern": "*.json"
+          },
+          {
+            "filenamePattern": "*.yaml"
+          },
+          {
+            "filenamePattern": "*.yml"
+          },
+          {
+            "filenamePattern": "*.mindmap.json"
+          },
+          {
+            "filenamePattern": "*.mindmap.yaml"
+          },
+          {
+            "filenamePattern": "*.mindmap.yml"
+          }
+        ],
+        "priority": "option"
       }
     ]
   },

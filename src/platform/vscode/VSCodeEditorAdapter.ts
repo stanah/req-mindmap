@@ -1,10 +1,91 @@
 import type { EditorAdapter, EditorError } from '../interfaces';
+import { VSCodePlatformAdapter } from './VSCodePlatformAdapter';
 
 /**
  * VSCode拡張環境でのエディタ操作実装
  * 将来実装予定のスケルトン
  */
 export class VSCodeEditorAdapter implements EditorAdapter {
+  private vscode: VSCodeApi | null = null;
+  private messageHandlers = new Map<string, (data: unknown) => void>();
+  private contentChangeCallbacks = new Set<(content: string) => void>();
+  private cursorChangeCallbacks = new Set<(line: number, column: number) => void>();
+  private requestId = 0;
+  private currentContent = '';
+
+  constructor() {
+    this.initialize();
+  }
+
+  private initialize(): void {
+    const vscode = VSCodePlatformAdapter.getVSCodeApi();
+    if (vscode) {
+      this.vscode = vscode;
+      
+      // VSCodeからのメッセージを受信
+      window.addEventListener('message', (event) => {
+        const message = event.data;
+        
+        if (message.requestId && this.messageHandlers.has(message.requestId)) {
+          const handler = this.messageHandlers.get(message.requestId);
+          if (handler) {
+            handler(message);
+            this.messageHandlers.delete(message.requestId);
+          }
+        }
+        
+        // エディタイベントの処理
+        this.handleEditorEvent(message);
+      });
+    }
+  }
+
+  private handleEditorEvent(message: any): void {
+    switch (message.command) {
+      case 'contentChanged':
+        this.currentContent = message.content;
+        this.contentChangeCallbacks.forEach(callback => callback(message.content));
+        break;
+      case 'cursorPositionChanged':
+        this.cursorChangeCallbacks.forEach(callback => callback(message.line, message.column));
+        break;
+    }
+  }
+
+  private async sendMessage<T>(command: string, payload?: Record<string, unknown>): Promise<T> {
+    if (!this.vscode) {
+      throw new Error('VSCode API が利用できません');
+    }
+
+    return new Promise((resolve, reject) => {
+      const requestId = `${++this.requestId}`;
+      
+      // レスポンスハンドラーを登録
+      this.messageHandlers.set(requestId, (data: any) => {
+        if (data.error) {
+          reject(new Error(data.error));
+        } else {
+          resolve(data.result);
+        }
+      });
+
+      // メッセージを送信
+      this.vscode!.postMessage({
+        command,
+        requestId,
+        ...payload
+      });
+
+      // タイムアウト処理
+      setTimeout(() => {
+        if (this.messageHandlers.has(requestId)) {
+          this.messageHandlers.delete(requestId);
+          reject(new Error(`操作がタイムアウトしました: ${command}`));
+        }
+      }, 5000);
+    });
+  }
+
   getValue(): string {
     // VSCode API を使用してエディタの内容を取得
     // const vscode = acquireVsCodeApi();

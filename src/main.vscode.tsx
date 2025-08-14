@@ -5,9 +5,8 @@ import './index.css';
 
 // VSCode拡張環境用のメインエントリーポイント
 import { PlatformAdapterFactory } from './platform';
-// VSCode拡張環境用（将来実装予定）
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { VSCodePlatformAdapter } from './platform/vscode';
+import { VSCodePlatformAdapter } from './platform/vscode/VSCodePlatformAdapter';
+import VSCodeApiSingleton from './platform/vscode/VSCodeApiSingleton';
 
 // VSCode環境の検出と設定
 if (typeof window !== 'undefined' && 'acquireVsCodeApi' in window) {
@@ -85,9 +84,10 @@ async function initializeApp() {
   } catch (error) {
     console.error('アプリケーションの初期化に失敗しました:', error);
     
-    // エラーをVSCode拡張に通知
-    if (window.vscode) {
-      window.vscode.postMessage({
+    // VSCode拡張にエラーを通知
+    const singleton = VSCodeApiSingleton.getInstance();
+    if (singleton.isAvailable()) {
+      singleton.postMessage({
         command: 'initializationError',
         error: error instanceof Error ? error.message : String(error)
       });
