@@ -207,7 +207,7 @@ export interface AppActions {
 
   // エディタ操作
   /** エディタの内容を更新 */
-  updateContent: (content: string) => void;
+  updateContent: (content: string, fromVSCode?: boolean) => void;
   /** エディタ設定を更新 */
   updateEditorSettings: (settings: Partial<EditorSettings>) => void;
   /** エディタにフォーカス */

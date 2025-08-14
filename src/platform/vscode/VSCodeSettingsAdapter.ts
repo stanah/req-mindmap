@@ -1,5 +1,6 @@
 import type { SettingsAdapter } from '../interfaces';
 import { VSCodePlatformAdapter } from './VSCodePlatformAdapter';
+import type { VSCodeApi } from './VSCodeApiSingleton';
 
 /**
  * VSCode拡張環境での設定管理実装
@@ -113,18 +114,6 @@ export class VSCodeSettingsAdapter implements SettingsAdapter {
     }
 
     await this.sendMessage<void>('updateConfiguration', { key, value });
-    
-    throw new Error('VSCode拡張環境はまだ実装されていません');
-  }
-
-  async set<T>(_key: string, _value: T): Promise<void> {
-    // VSCode API を使用して設定値を保存
-    // const vscode = acquireVsCodeApi();
-    // await vscode.postMessage({
-    //   command: 'updateConfiguration',
-    //   key: key,
-    //   value: value
-    // });
     
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }

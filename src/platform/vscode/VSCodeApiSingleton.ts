@@ -3,7 +3,7 @@
  * VSCode APIは一度しか取得できないため、アプリケーション全体で共有するシングルトン
  */
 
-interface VSCodeApi {
+export interface VSCodeApi {
   postMessage: (message: unknown) => void;
   setState: (state: unknown) => void;
   getState: () => unknown;

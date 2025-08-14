@@ -38,7 +38,7 @@ declare global {
     };
     
     mindmapApp?: {
-      updateContent: (content: string) => void;
+      updateContent: (content: string, fromVSCode?: boolean) => void;
       saveFile: () => void;
       getCurrentContent: () => string;
     };

@@ -1,5 +1,6 @@
 import type { EditorAdapter, EditorError } from '../interfaces';
 import { VSCodePlatformAdapter } from './VSCodePlatformAdapter';
+import type { VSCodeApi } from './VSCodeApiSingleton';
 
 /**
  * VSCode拡張環境でのエディタ操作実装

@@ -19,17 +19,7 @@ if (typeof window !== 'undefined' && 'acquireVsCodeApi' in window) {
   // PlatformAdapterFactory.setInstance(vscodeAdapter);
 }
 
-// VSCode Webview用のグローバル関数を設定
-declare global {
-  interface Window {
-    mindmapApp: {
-      updateContent: (content: string) => void;
-      saveFile: () => void;
-      getCurrentContent: () => string;
-    };
-    vscode: any;
-  }
-}
+// VSCode Webview用のグローバル関数を設定（types/global.d.ts で定義済み）
 
 // アプリケーションの初期化
 async function initializeApp() {
