@@ -36,3 +36,8 @@ node_modules/
 # tasks/ 
 
 tsconfig.app.tsbuildinfo
+# VSCode Extension build artifacts
+extension/out/
+extension/webview/
+extension/pnpm-lock.yaml
+*.vsix
