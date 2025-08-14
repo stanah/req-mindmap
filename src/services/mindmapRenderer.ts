@@ -1121,9 +1121,33 @@ export class MindmapRenderer {
     if (!this.root) return;
 
     const svgElement = this.svg.node() as SVGSVGElement;
-    const svgRect = svgElement.getBoundingClientRect();
+    let svgRect = svgElement.getBoundingClientRect();
 
-    // SVGのサイズが0の場合は少し待ってから再試行
+    // VSCode環境でgetBoundingClientRectが正しく動作しない場合の対策
+    if (svgRect.width === 0 || svgRect.height === 0) {
+      // 親コンテナのサイズを取得
+      const parentElement = svgElement.parentElement;
+      if (parentElement) {
+        const parentRect = parentElement.getBoundingClientRect();
+        if (parentRect.width > 0 && parentRect.height > 0) {
+          svgRect = parentRect;
+        } else {
+          // 最後の手段として固定サイズを使用
+          svgRect = {
+            width: window.innerWidth || 800,
+            height: window.innerHeight || 600,
+            left: 0,
+            top: 0,
+            right: window.innerWidth || 800,
+            bottom: window.innerHeight || 600,
+            x: 0,
+            y: 0
+          } as DOMRect;
+        }
+      }
+    }
+
+    // まだサイズが0の場合は再試行
     if (svgRect.width === 0 || svgRect.height === 0) {
       setTimeout(() => this.centerView(), 100);
       return;

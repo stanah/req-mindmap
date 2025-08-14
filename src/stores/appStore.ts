@@ -911,7 +911,11 @@ export const useAppStore = create<AppStore>()(
         // ===== 内部ヘルパーメソッド =====
 
         parseContent: async (content: string) => {
+          console.log('parseContent開始 - content length:', content.length);
+          console.log('content preview:', content.substring(0, 200));
+          
           if (!content.trim()) {
+            console.log('コンテンツが空のため、パース処理をスキップ');
             set((state) => ({
               parse: {
                 ...state.parse,

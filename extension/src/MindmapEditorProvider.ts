@@ -74,7 +74,109 @@ export class MindmapEditorProvider implements vscode.CustomTextEditorProvider {
             changeColorThemeSubscription.dispose();
         });
 
-        // 初期設定をWebviewに送信
+        // 初期化完了後にコンテンツと設定を送信
+        setTimeout(() => {
+            this.updateWebviewContent(webviewPanel, document);
+            this.updateWebviewConfiguration(webviewPanel);
+        }, 100);
+
+        console.log(`マインドマップエディターが初期化されました: ${document.fileName}`);
+    }
+
+    /**
+     * Webviewからのメッセージを処理
+     */
+    private async handleWebviewMessage(
+        message: any,
+        document: vscode.TextDocument,
+        webviewPanel: vscode.WebviewPanel
+    ): Promise<void> {
+        try {
+            switch (message.command) {
+                case 'webviewReady':
+                    // Webviewの準備完了
+                    console.log('Webviewの準備が完了しました');
+                    this.updateWebviewContent(webviewPanel, document);
+                    this.updateWebviewConfiguration(webviewPanel);
+                    break;
+
+                case 'getInitialConfiguration':
+                    // 初期設定要求
+                    console.log('初期設定要求を受信');
+                    this.updateWebviewConfiguration(webviewPanel);
+                    break;
+
+                case 'updateDocument':
+                    // Webview側からドキュメント更新要求
+                    if (message.content && typeof message.content === 'string') {
+                        await this.updateDocument(document, message.content);
+                    }
+                    break;
+
+                case 'showError':
+                    // エラー表示
+                    vscode.window.showErrorMessage(message.message || 'エラーが発生しました');
+                    break;
+
+                case 'showWarning':
+                    // 警告表示
+                    vscode.window.showWarningMessage(message.message || '警告');
+                    break;
+
+                case 'showInformation':
+                    // 情報表示
+                    vscode.window.showInformationMessage(message.message || '情報');
+                    break;
+
+                case 'saveDocument':
+                    // ドキュメント保存
+                    await document.save();
+                    break;
+
+                case 'exportMindmap':
+                    // マインドマップのエクスポート
+                    await this.handleExportRequest(message);
+                    break;
+
+                default:
+                    console.log('未知のWebviewメッセージ:', message);
+            }
+        } catch (error) {
+            console.error('Webviewメッセージの処理でエラーが発生:', error);
+            vscode.window.showErrorMessage(`メッセージ処理エラー: ${error instanceof Error ? error.message : String(error)}`);
+        }
+    }
+
+    /**
+     * ドキュメントの内容を更新
+     */
+    private async updateDocument(document: vscode.TextDocument, content: string): Promise<void> {
+        const edit = new vscode.WorkspaceEdit();
+        const fullRange = new vscode.Range(
+            document.positionAt(0),
+            document.positionAt(document.getText().length)
+        );
+        
+        edit.replace(document.uri, fullRange, content);
+        await vscode.workspace.applyEdit(edit);
+    }
+
+    /**
+     * Webviewのコンテンツを更新
+     */
+    private updateWebviewContent(webviewPanel: vscode.WebviewPanel, document: vscode.TextDocument): void {
+        webviewPanel.webview.postMessage({
+            command: 'updateContent',
+            content: document.getText(),
+            fileName: document.fileName,
+            uri: document.uri.toString()
+        });
+    }
+
+    /**
+     * Webviewの設定を更新
+     */
+    private updateWebviewConfiguration(webviewPanel: vscode.WebviewPanel): void {
         webviewPanel.webview.postMessage({
             command: 'configurationChanged',
             configuration: this.getConfiguration()

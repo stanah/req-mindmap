@@ -94,6 +94,14 @@ export const MindmapPane: React.FC = () => {
 
     console.log('マインドマップを描画中:', parsedData.title, `(${count} nodes)`);
     rendererRef.current.render(parsedData);
+    
+    // VSCode環境での初期表示最適化
+    setTimeout(() => {
+      if (rendererRef.current) {
+        rendererRef.current.centerView();
+        rendererRef.current.resetView();
+      }
+    }, 100);
   }, [parsedData, countNodes]);
 
   // 設定の更新
@@ -156,12 +164,18 @@ export const MindmapPane: React.FC = () => {
       if (rendererRef.current) {
         // リサイズ後に少し遅延してビューを再調整
         setTimeout(() => {
-          rendererRef.current?.centerView();
+          rendererRef.current?.resetView();
         }, 100);
       }
     };
 
     window.addEventListener('resize', handleResize);
+    
+    // VSCode環境での初期リサイズ処理
+    if (typeof window !== 'undefined' && window.vscodeApiInstance) {
+      setTimeout(handleResize, 200);
+    }
+    
     return () => {
       window.removeEventListener('resize', handleResize);
     };
