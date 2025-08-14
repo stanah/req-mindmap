@@ -8,6 +8,8 @@ import { useAppStore } from '../../stores';
 import { MindmapCore } from '../../core';
 import type { RendererEventHandlers } from '../../core';
 import { PlatformAdapterFactory } from '../../platform';
+import { ThemeToggle } from '../../web/components/ui/ThemeToggle';
+import './MindmapViewer.css';
 
 export const MindmapViewer: React.FC = () => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -152,6 +154,11 @@ export const MindmapViewer: React.FC = () => {
 
   return (
     <div className="mindmap-viewer">
+      {/* VSCode用のツールバー */}
+      <div className="vscode-toolbar">
+        <ThemeToggle className="vscode-theme-toggle" />
+      </div>
+      
       <div className="mindmap-container">
         <svg
           ref={svgRef}
