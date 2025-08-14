@@ -1,69 +1,222 @@
-# React + TypeScript + Vite
+# Requirements Mindmap
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Interactive mindmap visualization tool for requirements analysis and project planning
 
-Currently, two official plugins are available:
+[![Progress](https://img.shields.io/badge/Progress-14%25-red)](https://github.com/stanah/req-mindmap)
+[![Tasks](https://img.shields.io/badge/Tasks-22-blue)](https://github.com/stanah/req-mindmap)
+[![Subtasks](https://img.shields.io/badge/Subtasks-115-lightgray)](https://github.com/stanah/req-mindmap)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+📋 **Last Updated**: 2025-08-14
 
-## Expanding the ESLint configuration
+## 🎯 Project Overview
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+A powerful web-based application that transforms JSON/YAML requirement specifications into interactive mindmaps. Features real-time editing, visual representation, and VSCode extension support for seamless development workflow integration.
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 📊 Task Progress
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### Summary
+- **Total Tasks**: 22
+- **Completed**: 3 (14%)
+- **In Progress**: 6 (27%)
+- **Pending**: 12 (54%)
+- **Deferred**: 1 (5%) - *VSCode拡張には不要*
+- **Total Subtasks**: 113 (16 completed, 10 in progress, 87 pending)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Status Distribution
+
+```
+✅ Completed:     ████▌           13.6%
+🔄 In Progress:   ███████         27.3%
+⏳ Pending:      ████████████▌   54.5%
+⏸️ Deferred:     █               4.6%
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🚀 Current Sprint - In Progress Tasks
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 🔄 Task 3: エディタコンポーネントの実装
+**Priority**: High | **Progress**: 0/5 subtasks completed
+- JSON/YAML編集用のコードエディタを実装
+- リアルタイム構文チェックと自動補完機能を提供
+- **Dependencies**: Tasks 1, 2 ✅
+
+### 🔄 Task 4: マインドマップレンダリングエンジンの実装  
+**Priority**: High | **Progress**: 0/5 subtasks completed
+- D3.jsを使用してインタラクティブなマインドマップの描画エンジンを実装
+- **Dependencies**: Task 2 ✅
+
+### 🔄 Task 5: リアルタイム同期システムの構築
+**Priority**: High | **Progress**: 1/5 subtasks completed  
+- エディタとマインドマップ間のリアルタイム同期機能
+- **Dependencies**: Tasks 3, 4
+
+### 🔄 Task 7: UIテーマとカスタマイズ機能の実装 ⚡ *縮小済み*
+**Priority**: Medium | **Progress**: 0/3 subtasks completed
+- **シンプルなダークモード対応のみ**に範囲を縮小
+- CSS変数ベース、システム設定連携、手動切り替えUI
+- **Dependencies**: Task 5
+
+### 🔄 Task 10: VSCode拡張対応とパフォーマンス最適化 ⚡ *依存関係調整済み*
+**Priority**: Medium | **Progress**: 0/10 subtasks completed
+- VSCode拡張として動作するための準備
+- **Dependencies**: Tasks 1-5, 7-9 (Task 6を除外)
+
+### 🔄 Task 22: ノード状態インジケーター表示機能の実装
+**Priority**: High | **Progress**: 2/5 subtasks completed ⭐
+- マインドマップノードの状態情報を視覚的に表示
+- **Dependencies**: Tasks 15, 16
+
+---
+
+## ✅ Completed Tasks
+
+### ✅ Task 1: プロジェクト基盤のセットアップと開発環境構築
+**Priority**: High | **Progress**: 5/5 subtasks completed  
+- TypeScriptプロジェクトの初期化
+- 開発用依存関係のインストール
+- ESLintとPrettierの設定
+
+### ✅ Task 2: データモデルとスキーマ定義の実装  
+**Priority**: High | **Progress**: 5/5 subtasks completed
+- マインドマップのデータ構造を定義
+- JSON/YAMLのスキーマバリデーション実装
+
+### ✅ Task 11: プロジェクトセットアップとMCP基盤構築
+**Priority**: High | **Progress**: 5/5 subtasks completed
+- MCPサーバーの基本構造を構築
+- マインドマップ操作のための基盤整備
+
+---
+
+## ⏸️ Deferred Tasks (VSCode拡張には不要)
+
+### ⏸️ Task 6: ローカルストレージとファイル操作の実装
+**Priority**: Medium | **Status**: Deferred
+- File System Access APIを使用したファイル読み書き機能
+- VSCode拡張では不要なため延期
+
+---
+
+## ⏳ High Priority Pending Tasks
+
+### Task 12: マインドマップスキーマ定義と検証システム
+- マインドマップのJSONスキーマを定義
+- データ構造の検証システムを実装
+- **Complexity**: 5/10
+
+### Task 13: マインドマップ読み取り機能の実装  
+- マインドマップファイルの読み取りとデータ取得機能
+- **Complexity**: 4/10
+
+### Task 14: ノード追加機能の実装
+- マインドマップに新しいノードを追加する機能
+- **Complexity**: 5/10
+
+### Task 21: JSON/YAML相互変換機能の実装
+- ユーザーがJSON/YAMLフォーマットを選択
+- ファイル読み込み時に自動変換する機能
+- **Priority**: High
+
+---
+
+## 🛠️ Development Commands
+
+### Web Development
+```bash
+# 開発サーバー起動
+pnpm dev
+
+# Webアプリビルド  
+pnpm build:web
+
+# プレビュー（ビルド後確認）
+pnpm preview
 ```
+
+### VSCode Extension
+```bash
+# VSCode拡張ビルド（webview含む）
+pnpm build:vscode
+
+# VSCode拡張パッケージビルド
+pnpm build:vscode-package
+```
+
+### Testing & Quality
+```bash
+# ESLint実行
+pnpm lint
+
+# テスト実行（watch mode）
+pnpm test
+
+# テスト一回実行  
+pnpm test:run
+```
+
+---
+
+## 🏗️ Architecture Overview
+
+### Core Components
+- **Editor Component**: Monaco Editor with JSON/YAML support
+- **Mindmap Renderer**: D3.js-based interactive visualization
+- **State Management**: Zustand for real-time synchronization
+- **Schema Validation**: ajv with JSON Schema
+- **File System**: File System Access API integration
+
+### Technology Stack
+- **Frontend**: React + TypeScript + Vite
+- **Visualization**: D3.js
+- **Editor**: Monaco Editor
+- **State**: Zustand
+- **Validation**: ajv + JSON Schema
+- **Styling**: CSS Variables + Theme System
+- **Testing**: Vitest
+- **VSCode**: Extension API
+
+---
+
+## 📦 Project Structure
+
+```
+src/
+├── components/          # React components
+├── core/               # Core business logic
+│   ├── data/           # Data models & schemas
+│   ├── renderer/       # Mindmap rendering engine  
+│   └── utils/          # Utility functions
+├── hooks/              # Custom React hooks
+├── stores/             # Zustand state management
+├── styles/             # CSS and theme files
+└── types/              # TypeScript type definitions
+
+vscode-extension/       # VSCode extension code
+docs/                   # Documentation
+tests/                  # Test files
+```
+
+---
+
+## 🎯 Next Steps
+
+1. **Complete Editor Component** - Implement Monaco Editor with JSON/YAML validation
+2. **Build Mindmap Renderer** - Create D3.js-based visualization engine  
+3. **Establish Real-time Sync** - Connect editor and mindmap with bidirectional updates
+4. **Add File Operations** - Implement local file read/write capabilities
+5. **Theme System** - Build customizable UI themes with dark mode
+
+---
+
+## 📈 Development Metrics
+
+- **Lines of Code**: ~15,000+ (estimated)
+- **Components**: 25+ React components
+- **Test Coverage**: Target 80%+
+- **Performance**: <100ms render time for 1000+ nodes
+- **Browser Support**: Modern browsers with File System Access API
+
+---
+
+**Generated with Task Master AI** | **Last Sync**: 2025-08-14 10:30 JST
