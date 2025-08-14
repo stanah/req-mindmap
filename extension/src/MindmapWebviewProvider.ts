@@ -41,7 +41,7 @@ export class MindmapWebviewProvider {
 
         // JSファイルのパス（CSSはインライン化されている）
         const jsUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(webviewPath, 'assets', 'main.js')
+            vscode.Uri.joinPath(webviewPath, 'assets', 'index.vscode.js')
         );
 
         // CSPの設定
