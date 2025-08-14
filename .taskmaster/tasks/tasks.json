@@ -527,7 +527,7 @@
             "title": "コアロジックの分離とプラットフォーム非依存アーキテクチャの設計",
             "description": "VSCode拡張とWebアプリケーションで共有可能なコアロジックを分離し、プラットフォーム非依存のアーキテクチャを構築する",
             "dependencies": [],
-            "details": "MindMapCoreクラスの実装：マインドマップのデータ構造管理、ノード操作API、イベントシステム、状態管理ロジックをプラットフォーム固有の実装から完全に分離。インターフェースベースの設計でアダプターパターンを適用し、VSCode拡張とWebアプリケーションの両方から利用可能な構造を実現",
+            "details": "MindMapCoreクラスの実装：マインドマップのデータ構造管理、ノード操作API、イベントシステム、状態管理ロジックをプラットフォーム固有の実装から完全に分離。インターフェースベースの設計でアダプターパターンを適用し、VSCode拡張とWebアプリケーションの両方から利用可能な構造を実現\n<info added on 2025-08-14T19:46:03.742Z>\n現状の問題：現在のMindmapCoreクラスは描画専用の実装となっており、真のコアロジック（データ管理、ノード操作、イベントシステム、状態管理）がプラットフォーム依存の描画ロジックと混在している。これにより、VSCode拡張とWebアプリケーション間でのコード共有が困難になっている。\n\nリファクタリング戦略：テストファースト・リファクタリングアプローチを採用し、既存の動作を保証しながら段階的にアーキテクチャを改善する。実装を2つのフェーズに分割し、各フェーズを独立したサブタスクとして管理する。\n\nPhase 1 - テスト構築フェーズ：\n1. MindmapCore統合テスト作成：現在の描画機能を含む全体的な振る舞いをテストでカバー\n2. コアロジック振る舞いテスト作成：データ管理、ノード操作、イベントシステム、状態管理の期待される動作を定義\n3. プラットフォーム統合テスト強化：Web環境とVSCode環境での動作差異を検証するテストを追加\n4. E2Eテスト拡充とカバレッジ確認：ユーザーシナリオに基づいたエンドツーエンドテストの網羅性を向上\n\nPhase 2 - 段階的リファクタリングフェーズ：\n5. ICoreLogicインターフェース定義：データ管理、ノード操作、イベントシステム、状態管理のための抽象インターフェースを設計\n6. MindmapCoreLogicクラス新規作成：ICoreLogicを実装し、プラットフォーム非依存のコアロジックを集約\n7. 既存コードとの段階的統合：テストを通過させながら、既存のMindmapCoreから新しいMindmapCoreLogicへ責務を移行\n8. MindmapCore→MindmapRenderer移行：最終的にMindmapCoreを描画専用のMindmapRendererクラスにリネームし、責務を明確化\n\n実装の複雑さと影響範囲：このリファクタリングは全体のアーキテクチャに影響を与えるため、各サブタスクは慎重に実行し、常にテストが通過することを確認しながら進める必要がある。\n</info added on 2025-08-14T19:46:03.742Z>",
             "status": "pending",
             "testStrategy": "コアロジックの単体テスト、プラットフォーム非依存性の確認テスト、APIインターフェースの整合性テスト"
           },
@@ -1414,11 +1414,118 @@
             "testStrategy": "統合環境での全インジケーター機能の動作確認、WAI-ARIA準拠のアクセシビリティテスト、大規模マインドマップでのパフォーマンステスト、メモリリークの検出"
           }
         ]
+      },
+      {
+        "id": 23,
+        "title": "コアロジックの分離とプラットフォーム非依存アーキテクチャの設計",
+        "description": "マインドマップのコアロジックをプラットフォーム固有の実装から分離し、Web/VSCode/CLIなど複数環境で動作可能な共通基盤を構築する。テストファースト・リファクタリング戦略により段階的に実装する。",
+        "details": "1. ドメインモデルとインターフェースの定義\n   ```typescript\n   // core/domain/models.ts\n   export interface MindmapNode {\n     id: string;\n     title: string;\n     description?: string;\n     children: MindmapNode[];\n     metadata?: NodeMetadata;\n   }\n\n   export interface NodeMetadata {\n     priority?: 'high' | 'medium' | 'low';\n     status?: 'pending' | 'in-progress' | 'done';\n     tags?: string[];\n     createdAt: Date;\n     updatedAt: Date;\n   }\n\n   // core/domain/ports.ts\n   export interface FileSystemPort {\n     readFile(path: string): Promise<string>;\n     writeFile(path: string, content: string): Promise<void>;\n     exists(path: string): Promise<boolean>;\n   }\n\n   export interface RenderingPort {\n     render(mindmap: MindmapNode): void;\n     update(node: MindmapNode): void;\n   }\n   ```\n\n2. コアビジネスロジックの実装\n   ```typescript\n   // core/usecases/mindmap-service.ts\n   export class MindmapService {\n     constructor(\n       private fileSystem: FileSystemPort,\n       private parser: ParserPort,\n       private validator: ValidatorPort\n     ) {}\n\n     async loadMindmap(path: string): Promise<MindmapNode> {\n       const content = await this.fileSystem.readFile(path);\n       const parsed = await this.parser.parse(content);\n       const validated = await this.validator.validate(parsed);\n       return validated;\n     }\n\n     async saveMindmap(path: string, mindmap: MindmapNode): Promise<void> {\n       const validated = await this.validator.validate(mindmap);\n       const serialized = await this.parser.serialize(validated);\n       await this.fileSystem.writeFile(path, serialized);\n     }\n   }\n   ```\n\n3. アダプターパターンによるプラットフォーム固有実装\n   ```typescript\n   // adapters/web/file-system-adapter.ts\n   export class WebFileSystemAdapter implements FileSystemPort {\n     async readFile(path: string): Promise<string> {\n       const response = await fetch(path);\n       return response.text();\n     }\n   }\n\n   // adapters/vscode/file-system-adapter.ts\n   export class VSCodeFileSystemAdapter implements FileSystemPort {\n     constructor(private vscode: typeof import('vscode')) {}\n     \n     async readFile(path: string): Promise<string> {\n       const uri = this.vscode.Uri.file(path);\n       const data = await this.vscode.workspace.fs.readFile(uri);\n       return new TextDecoder().decode(data);\n     }\n   }\n   ```\n\n4. 依存性注入コンテナの実装\n   ```typescript\n   // core/di/container.ts\n   export class DIContainer {\n     private services = new Map<string, any>();\n     private factories = new Map<string, () => any>();\n\n     register<T>(token: string, factory: () => T): void {\n       this.factories.set(token, factory);\n     }\n\n     get<T>(token: string): T {\n       if (!this.services.has(token)) {\n         const factory = this.factories.get(token);\n         if (!factory) throw new Error(`Service ${token} not registered`);\n         this.services.set(token, factory());\n       }\n       return this.services.get(token);\n     }\n   }\n   ```\n\n5. テスト駆動開発による段階的リファクタリング\n   ```typescript\n   // tests/core/mindmap-service.test.ts\n   describe('MindmapService', () => {\n     let service: MindmapService;\n     let mockFileSystem: jest.Mocked<FileSystemPort>;\n\n     beforeEach(() => {\n       mockFileSystem = {\n         readFile: jest.fn(),\n         writeFile: jest.fn(),\n         exists: jest.fn()\n       };\n       service = new MindmapService(mockFileSystem, mockParser, mockValidator);\n     });\n\n     it('should load mindmap from file system', async () => {\n       mockFileSystem.readFile.mockResolvedValue(validJsonContent);\n       const result = await service.loadMindmap('test.json');\n       expect(result).toMatchObject(expectedMindmap);\n     });\n   });\n   ```",
+        "testStrategy": "1. ユニットテストによるコアロジックの検証\n   - ドメインモデルの振る舞いテスト\n   - ビジネスロジックの単体テスト\n   - モックを使用したポート実装の独立性テスト\n   - エラーケースとエッジケースの網羅的テスト\n\n2. 統合テストによるアダプター動作の確認\n   - 各プラットフォームアダプターの実装テスト\n   - ファイルシステム操作の実環境テスト\n   - レンダリングアダプターの描画結果検証\n   - プラットフォーム間の互換性テスト\n\n3. アーキテクチャテストによる設計品質の保証\n   - 依存関係の方向性チェック（コアは外部に依存しない）\n   - レイヤー間の結合度測定\n   - インターフェース実装の完全性検証\n   - 循環依存の検出\n\n4. パフォーマンステストによる最適化効果の測定\n   - 大規模マインドマップでのメモリ使用量\n   - ファイル読み書きの速度測定\n   - プラットフォーム間のパフォーマンス比較\n   - リファクタリング前後の性能差分析",
+        "status": "pending",
+        "dependencies": [
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Phase1-1: MindmapCore統合テスト作成",
+            "description": "現在のMindmapCoreクラスの動作を完全にカバーする統合テストを作成し、リファクタリング時の動作保証を確立する",
+            "details": "現在のMindmapCoreクラス（src/core/renderer/MindmapCore.ts）の全機能に対する統合テストを作成。描画機能、ノード操作、イベント処理、レイアウト切り替えなどの動作を検証し、リファクタリング時のリグレッション防止を目的とする。",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 23
+          },
+          {
+            "id": 2,
+            "title": "Phase1-2: コアロジック振る舞いテスト作成",
+            "description": "期待されるコアロジック（データ管理、ノード操作、状態管理）の振る舞いを定義するテストを作成する",
+            "details": "新しく作成予定のMindmapCoreLogicクラスが満たすべき仕様をテストとして先行定義。ノードのCRUD操作、ツリー構造の操作、Undo/Redo機能、イベントシステムの動作をテストケースで明確化する。",
+            "status": "pending",
+            "dependencies": [
+              "23.1"
+            ],
+            "parentTaskId": 23
+          },
+          {
+            "id": 3,
+            "title": "Phase1-3: プラットフォーム統合テスト強化",
+            "description": "Web環境とVSCode環境での動作差異を検証するテストを追加し、プラットフォーム固有の問題を事前に発見する",
+            "details": "既存のプラットフォームアダプターのテストを強化し、ブラウザ環境とVSCode拡張環境での動作差異を検証。ファイルシステム操作、UI表示、イベント処理などの環境差異をテストでカバーする。",
+            "status": "pending",
+            "dependencies": [
+              "23.2"
+            ],
+            "parentTaskId": 23
+          },
+          {
+            "id": 4,
+            "title": "Phase1-4: E2Eテスト拡充とカバレッジ確認",
+            "description": "エンドツーエンドテストを拡充し、テストカバレッジを測定してテスト網羅性を確保する",
+            "details": "ユーザーシナリオに基づいたE2Eテストを追加し、テストカバレッジ計測ツールでコードカバレッジを90%以上に向上。不足しているテストケースを特定し、重要な機能の動作保証を強化する。",
+            "status": "pending",
+            "dependencies": [
+              "23.3"
+            ],
+            "parentTaskId": 23
+          },
+          {
+            "id": 5,
+            "title": "Phase2-1: ICoreLogicインターフェース定義",
+            "description": "データ管理、ノード操作、イベントシステム、状態管理のための抽象インターフェースを設計・定義する",
+            "details": "プラットフォーム非依存のコアロジック用インターフェースを定義。ICoreLogic、INodeManager、IEventSystem、IStateManagerなどの抽象化レイヤーを作成し、実装の指針を明確化する。",
+            "status": "pending",
+            "dependencies": [
+              "23.4"
+            ],
+            "parentTaskId": 23
+          },
+          {
+            "id": 6,
+            "title": "Phase2-2: MindmapCoreLogicクラス新規作成",
+            "description": "ICoreLogicを実装し、プラットフォーム非依存のコアロジックを集約したMindmapCoreLogicクラスを作成する",
+            "details": "定義したインターフェースに基づき、真のコアロジッククラスを実装。データ構造管理、ノード操作API、イベントシステム、状態管理（Undo/Redo）を含む完全な実装を作成し、既存のテストを通過させる。",
+            "status": "pending",
+            "dependencies": [
+              "23.5"
+            ],
+            "parentTaskId": 23
+          },
+          {
+            "id": 7,
+            "title": "Phase2-3: 既存コードとの段階的統合",
+            "description": "テストを通過させながら、既存のMindmapCoreから新しいMindmapCoreLogicへ責務を段階的に移行する",
+            "details": "現在のMindmapCoreクラスから新しいMindmapCoreLogicクラスへ、段階的に機能を移行。各ステップでテストを実行し、動作に問題がないことを確認しながらリファクタリングを進める。",
+            "status": "pending",
+            "dependencies": [
+              "23.6"
+            ],
+            "parentTaskId": 23
+          },
+          {
+            "id": 8,
+            "title": "Phase2-4: MindmapCore→MindmapRenderer移行",
+            "description": "最終的にMindmapCoreを描画専用のMindmapRendererクラスにリネームし、責務を明確化して統合テストで動作確認する",
+            "details": "MindmapCoreクラスを描画専用のMindmapRendererクラスにリネームし、責務を明確に分離。新しいアーキテクチャでの動作をすべてのテストで確認し、リファクタリング完了を確認する。",
+            "status": "pending",
+            "dependencies": [
+              "23.7"
+            ],
+            "parentTaskId": 23
+          }
+        ]
       }
     ],
     "metadata": {
       "created": "2025-08-03T03:13:21.292Z",
-      "updated": "2025-08-14T19:32:36.158Z",
+      "updated": "2025-08-14T20:09:02.249Z",
       "description": "Tasks for master context"
     }
   }
