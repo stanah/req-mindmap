@@ -2,6 +2,13 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 
 /**
+ * 正規表現用文字列エスケープ
+ */
+function escapeRegExp(string: string): string {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
  * マインドマップWebviewプロバイダー
  */
 export class MindmapWebviewProvider {
@@ -261,6 +268,11 @@ export class MindmapWebviewProvider {
                         vscode.window.showWarningMessage(message.message);
                         break;
 
+                    case 'jumpToNodeInFile':
+                        // マインドマップファイル内のノードジャンプ要求の処理
+                        this.handleJumpToNodeInFile(webview, document, message);
+                        break;
+
                     default:
                         console.log('未知のメッセージ:', message);
                         break;
@@ -305,6 +317,94 @@ export class MindmapWebviewProvider {
 
         } catch (error) {
             vscode.window.showErrorMessage(`エクスポートに失敗しました: ${error}`);
+        }
+    }
+
+    /**
+     * マインドマップファイル内のノードジャンプ要求を処理
+     */
+    private async handleJumpToNodeInFile(webview: vscode.Webview, document: vscode.TextDocument, message: any): Promise<void> {
+        try {
+            const { nodeId, requestId } = message;
+            const content = document.getText();
+            
+            // ノードIDを検索するパターン
+            const patterns = [
+                // JSON: "id": "nodeId"
+                new RegExp(`"id"\\s*:\\s*"${escapeRegExp(nodeId)}"`, 'i'),
+                // YAML: id: nodeId
+                new RegExp(`^\\s*id\\s*:\\s*"?${escapeRegExp(nodeId)}"?`, 'gmi'),
+                // 単純な文字列検索（フォールバック）
+                new RegExp(escapeRegExp(nodeId), 'i')
+            ];
+
+            let line = 0;
+            let column = 0;
+            let found = false;
+
+            // 各パターンでマッチを試行
+            for (const pattern of patterns) {
+                const match = content.match(pattern);
+                if (match && match.index !== undefined) {
+                    // マッチした位置を行・列番号に変換
+                    const position = document.positionAt(match.index);
+                    line = position.line;
+                    column = position.character;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                throw new Error(`ノード "${nodeId}" が見つかりませんでした`);
+            }
+
+            // 既存の開いているエディタを探す（左側を優先）
+            const matchingEditors = vscode.window.visibleTextEditors.filter(
+                editor => editor.document.uri.toString() === document.uri.toString()
+            );
+
+            let targetEditor: vscode.TextEditor;
+            
+            if (matchingEditors.length > 0) {
+                // 複数ある場合は左側（ViewColumn.One）を優先
+                targetEditor = matchingEditors.find(editor => editor.viewColumn === vscode.ViewColumn.One) 
+                    || matchingEditors[0];
+                
+                // そのエディタにフォーカスを移す（新しいタブを開かない）
+                await vscode.window.showTextDocument(document, targetEditor.viewColumn, false);
+            } else {
+                // 既存のエディタがない場合は左側に開く
+                targetEditor = await vscode.window.showTextDocument(document, vscode.ViewColumn.One);
+            }
+
+            // カーソル位置を設定
+            const position = new vscode.Position(line, column);
+            targetEditor.selection = new vscode.Selection(position, position);
+            targetEditor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenterIfOutsideViewport);
+
+            console.log(`ノードジャンプ成功: ${nodeId} -> ${line + 1}:${column + 1}`);
+
+            // レスポンスを送信
+            if (requestId) {
+                webview.postMessage({
+                    requestId,
+                    result: { success: true, nodeId, line: line + 1, column: column + 1 }
+                });
+            }
+
+        } catch (error) {
+            const errorMessage = `ノードジャンプに失敗しました: ${error instanceof Error ? error.message : String(error)}`;
+            console.error(errorMessage);
+            vscode.window.showErrorMessage(errorMessage);
+
+            // エラーレスポンスを送信
+            if (message.requestId) {
+                webview.postMessage({
+                    requestId: message.requestId,
+                    error: errorMessage
+                });
+            }
         }
     }
 }

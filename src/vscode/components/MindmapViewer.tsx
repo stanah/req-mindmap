@@ -7,6 +7,7 @@ import React, { useRef, useEffect, useMemo } from 'react';
 import { useAppStore } from '../../stores';
 import { MindmapCore } from '../../core';
 import type { RendererEventHandlers } from '../../core';
+import { PlatformAdapterFactory } from '../../platform';
 
 export const MindmapViewer: React.FC = () => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -21,9 +22,21 @@ export const MindmapViewer: React.FC = () => {
 
   // イベントハンドラーの定義
   const eventHandlers: RendererEventHandlers = useMemo(() => ({
-    onNodeClick: (nodeId: string, event: MouseEvent) => {
+    onNodeClick: async (nodeId: string, event: MouseEvent) => {
       console.log('ノードクリック:', nodeId);
       selectNode(nodeId);
+      
+      // マインドマップファイル内の該当ノード定義箇所にジャンプ
+      try {
+        const platformAdapter = PlatformAdapterFactory.getInstance();
+        if (platformAdapter.getPlatformType() === 'vscode') {
+          const editorAdapter = platformAdapter.editor;
+          await (editorAdapter as any).jumpToNodeInCurrentFile(nodeId);
+          console.log(`ノードジャンプ実行: ${nodeId}`);
+        }
+      } catch (error) {
+        console.error('ノードジャンプに失敗:', error);
+      }
       
       // ダブルクリックでフォーカス
       if (event.detail === 2 && rendererRef.current) {

@@ -142,6 +142,20 @@ export class VSCodeEditorAdapter implements EditorAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
+  /**
+   * 現在のファイル内で指定されたノードIDの定義箇所にジャンプする
+   */
+  async jumpToNodeInCurrentFile(nodeId: string): Promise<void> {
+    try {
+      await this.sendMessage('jumpToNodeInFile', {
+        nodeId
+      });
+    } catch (error) {
+      console.error('ノードジャンプに失敗しました:', error);
+      throw error;
+    }
+  }
+
   highlight(_startLine: number, _startColumn: number, _endLine: number, _endColumn: number): void {
     // VSCode API を使用して範囲をハイライト
     // const vscode = acquireVsCodeApi();
