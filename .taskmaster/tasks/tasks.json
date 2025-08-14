@@ -462,130 +462,45 @@
       },
       {
         "id": 8,
-        "title": "高度な機能群の実装（タグ、進捗管理、テンプレート）",
-        "description": "タグシステム、進捗管理、テンプレート機能などの高度な機能を実装する",
-        "details": "1. タグ・ラベルシステム\n   ```typescript\n   interface TagSystem {\n     tags: Map<string, TagDefinition>;\n     addTag(node: string, tag: string): void;\n     filterByTag(tag: string): MindMapNode[];\n     getTagStats(): TagStatistics;\n   }\n   ```\n\n2. 進捗管理機能\n   - ノード単位の進捗率設定\n   - 親ノードの自動集計\n   - 進捗ダッシュボード\n   - ガントチャート表示\n\n3. テンプレートシステム\n   - 組み込みテンプレート\n   - カスタムテンプレートの作成・管理\n   - テンプレートギャラリー",
-        "testStrategy": "1. タグフィルタリングのテスト\n2. 進捗計算ロジックのテスト\n3. テンプレート適用のテスト\n4. 機能間の統合テスト",
-        "priority": "medium",
+        "title": "高度な機能群の実装（タグ、進捗管理）",
+        "description": "タグシステムと進捗管理機能を実装する",
+        "status": "pending",
         "dependencies": [
           5,
           6
         ],
-        "status": "pending",
+        "priority": "medium",
+        "details": "1. タグ・ラベルシステム\n   ```typescript\n   interface TagSystem {\n     tags: Map<string, TagDefinition>;\n     addTag(node: string, tag: string): void;\n     filterByTag(tag: string): MindMapNode[];\n     getTagStats(): TagStatistics;\n   }\n   ```\n\n2. 進捗管理機能\n   - ノード単位の進捗率設定\n   - 親ノードの自動集計\n   - 進捗ダッシュボード\n   - ガントチャート表示",
+        "testStrategy": "1. タグフィルタリングのテスト\n2. 進捗計算ロジックのテスト\n3. 機能間の統合テスト",
         "subtasks": [
           {
             "id": 1,
             "title": "タグシステムの基本実装",
             "description": "タグの定義、追加、削除、フィルタリングなどの基本的なタグ管理機能を実装する",
+            "status": "pending",
             "dependencies": [],
             "details": "TagDefinitionインターフェースの定義、タグの追加・削除メソッド、タグによるノードフィルタリング機能、タグの統計情報取得機能を実装。タグの色分けやアイコン設定、タグの階層構造サポート、タグのバリデーション機能も含む",
-            "status": "pending",
             "testStrategy": "タグの追加・削除の単体テスト、フィルタリング機能の正確性テスト、複数タグの組み合わせフィルタリングテスト、タグ統計の計算テスト"
           },
           {
             "id": 2,
             "title": "進捗管理システムの実装",
             "description": "ノード単位の進捗率設定と親ノードへの自動集計機能を実装する",
+            "status": "pending",
             "dependencies": [],
             "details": "ノードごとの進捗率プロパティの追加、子ノードの進捗から親ノードの進捗を自動計算するロジック、進捗の可視化用データ構造、進捗変更時のイベント通知システム、進捗の履歴管理機能を実装",
-            "status": "pending",
             "testStrategy": "進捗計算ロジックの単体テスト、階層構造での進捗集計テスト、循環参照時の処理テスト、大規模データでのパフォーマンステスト"
           },
           {
             "id": 3,
             "title": "進捗ダッシュボードとガントチャートの実装",
             "description": "進捗管理の可視化機能としてダッシュボードとガントチャート表示を実装する",
+            "status": "pending",
             "dependencies": [
-              "8.2"
+              2
             ],
             "details": "進捗ダッシュボードコンポーネントの作成、全体進捗の集計表示、カテゴリ別進捗表示、ガントチャート用のデータ変換処理、タイムライン表示機能、マイルストーン管理、クリティカルパスの可視化を実装",
-            "status": "pending",
             "testStrategy": "ダッシュボードのレンダリングテスト、ガントチャートのデータ変換テスト、大規模データでの描画パフォーマンステスト、インタラクティブ機能のテスト"
-          },
-          {
-            "id": 4,
-            "title": "テンプレートシステムの基盤実装",
-            "description": "テンプレートの定義、保存、読み込み、適用の基本機能を実装する",
-            "dependencies": [],
-            "details": "テンプレート構造の定義、テンプレートのシリアライズ・デシリアライズ機能、テンプレートメタデータ管理、テンプレート適用時の変数置換機能、テンプレートのバリデーション、カスタムテンプレートの保存・読み込み機能を実装",
-            "status": "pending",
-            "testStrategy": "テンプレート適用の単体テスト、変数置換の正確性テスト、不正なテンプレートのバリデーションテスト、テンプレートの永続化テスト"
-          },
-          {
-            "id": 5,
-            "title": "テンプレートギャラリーと組み込みテンプレートの実装",
-            "description": "組み込みテンプレートの作成とテンプレートギャラリー機能を実装する",
-            "dependencies": [
-              "8.4"
-            ],
-            "details": "プロジェクト管理、要件定義、SWOT分析などの組み込みテンプレートの作成、テンプレートギャラリーUI、テンプレートのプレビュー機能、テンプレートの検索・フィルタリング機能、テンプレートのインポート・エクスポート機能、テンプレートの評価・共有機能を実装",
-            "status": "pending",
-            "testStrategy": "組み込みテンプレートの構造テスト、ギャラリーUIの機能テスト、テンプレートのインポート・エクスポートテスト、検索機能の精度テスト"
-          }
-        ]
-      },
-      {
-        "id": 9,
-        "title": "エクスポート機能とショートカットシステムの実装",
-        "description": "様々な形式へのエクスポート機能とカスタマイズ可能なショートカットキーシステムを実装する",
-        "details": "1. エクスポート機能\n   ```typescript\n   class ExportManager {\n     async exportToPDF(mindmap: MindMapNode): Promise<Blob> {\n       // html2canvasとjsPDFを使用\n     }\n     \n     exportToSVG(mindmap: MindMapNode): string {\n       // D3.jsのSVG出力を利用\n     }\n     \n     exportToMermaid(mindmap: MindMapNode): string {\n       // Mermaid記法への変換\n     }\n   }\n   ```\n\n2. ショートカットキーシステム\n   - Mousetrapを使用したキーバインディング\n   - カスタマイズ可能なキーマップ\n   - コンフリクト検出\n   - ショートカット一覧表示\n\n3. Excel/CSV出力\n   - 階層構造の保持\n   - メタデータの列マッピング",
-        "testStrategy": "1. 各種エクスポート形式の出力テスト\n2. ショートカットキーの動作テスト\n3. キーバインディングの競合テスト\n4. 大規模データのエクスポートテスト",
-        "priority": "low",
-        "dependencies": [
-          4,
-          5
-        ],
-        "status": "pending",
-        "subtasks": [
-          {
-            "id": 1,
-            "title": "PDFエクスポート機能の実装",
-            "description": "html2canvasとjsPDFを使用してマインドマップをPDF形式でエクスポートする機能を実装する",
-            "dependencies": [],
-            "details": "html2canvasでマインドマップのDOM要素をcanvasに変換し、jsPDFでPDF化する。大きなマインドマップの場合は複数ページに分割する処理も実装。ページサイズ（A4、A3等）や向き（縦・横）の選択機能、フォント埋め込み、圧縮オプションも提供する",
-            "status": "pending",
-            "testStrategy": "様々なサイズのマインドマップでPDF出力をテストし、レイアウト崩れがないことを確認。日本語フォントの表示、大規模データでのメモリ使用量、出力速度を測定"
-          },
-          {
-            "id": 2,
-            "title": "SVG/Mermaidエクスポート機能の実装",
-            "description": "D3.jsを活用したSVG出力とMermaid記法への変換機能を実装する",
-            "dependencies": [],
-            "details": "D3.jsで生成されたSVG要素を直接エクスポートする機能と、マインドマップ構造をMermaid記法のフローチャート形式に変換する機能を実装。SVGはスタイル情報を含む完全な形式で出力し、Mermaidは階層構造を保持した読みやすい記法に変換する",
-            "status": "pending",
-            "testStrategy": "SVG出力の完全性テスト（スタイル、アニメーション属性の保持）、Mermaid記法の構文エラーチェック、変換後の構造の正確性検証"
-          },
-          {
-            "id": 3,
-            "title": "Excel/CSV出力機能の実装",
-            "description": "階層構造とメタデータを保持したExcel/CSV形式でのエクスポート機能を実装する",
-            "dependencies": [],
-            "details": "SheetJSを使用してExcel形式（.xlsx）での出力を実装。階層をインデントや列で表現し、メタデータ（優先度、ステータス、担当者、タグ等）を個別の列にマッピング。CSV出力では階層レベルを示す列を追加し、文字エンコーディングはUTF-8 BOM付きで日本語対応",
-            "status": "pending",
-            "testStrategy": "階層構造の正確な出力テスト、メタデータの完全性確認、大規模データでのメモリ効率テスト、Excel/CSVインポート時の互換性テスト"
-          },
-          {
-            "id": 4,
-            "title": "ショートカットキーシステムの基盤実装",
-            "description": "Mousetrapを使用したカスタマイズ可能なキーバインディングシステムを構築する",
-            "dependencies": [],
-            "details": "Mousetrapライブラリを統合し、デフォルトのキーマップ定義、ユーザーカスタマイズ機能、キーバインディングの登録・解除システムを実装。モーダル状態やフォーカス状態に応じたコンテキスト別キーマップの切り替え機能も含む。設定はlocalStorageに保存",
-            "status": "pending",
-            "testStrategy": "各種ショートカットキーの動作確認、モーダル時のキー無効化テスト、カスタムキーバインディングの永続化テスト、ブラウザ標準ショートカットとの競合回避テスト"
-          },
-          {
-            "id": 5,
-            "title": "ショートカット管理UIとエクスポート統合",
-            "description": "ショートカット一覧表示・編集UIとエクスポート機能の統合インターフェースを実装する",
-            "dependencies": [
-              "9.1",
-              "9.2",
-              "9.3",
-              "9.4"
-            ],
-            "details": "ショートカットキーの一覧表示モーダル、キーバインディングエディタ、コンフリクト検出・警告機能を実装。エクスポート機能は統一されたダイアログUIで各形式を選択可能にし、エクスポート前のプレビュー機能も提供。よく使うエクスポート形式へのクイックアクセスショートカットも設定可能",
-            "status": "pending",
-            "testStrategy": "UI操作の統合テスト、ショートカット編集時のリアルタイム反映テスト、エクスポートダイアログの各オプション動作確認、プレビュー機能の精度テスト"
           }
         ]
       },
@@ -603,8 +518,7 @@
           4,
           5,
           7,
-          8,
-          9
+          8
         ],
         "status": "in-progress",
         "subtasks": [
