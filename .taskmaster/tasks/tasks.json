@@ -543,39 +543,6 @@
             "testStrategy": "VSCode Extension Testフレームワークを使用した統合テスト、モックを使用したAPI呼び出しテスト、拡張機能のアクティベーションテスト"
           },
           {
-            "id": 3,
-            "title": "仮想スクロールとReact最適化の実装",
-            "description": "大量ノードに対応する仮想スクロール機能を実装し、React.memoとuseMemoを活用してレンダリングパフォーマンスを最適化する",
-            "dependencies": [
-              "10.1"
-            ],
-            "details": "react-windowまたはreact-virtualizeを使用した仮想スクロールの実装、可視領域のみのノードレンダリング、React.memoによるコンポーネントの再レンダリング抑制、useMemoを使用した計算結果のメモ化、useCallbackによるイベントハンドラの最適化、React DevToolsプロファイラーを使用したパフォーマンス測定",
-            "status": "pending",
-            "testStrategy": "1000ノード以上でのレンダリングパフォーマンステスト、メモリ使用量のプロファイリング、スクロール動作の滑らかさテスト、React DevToolsでの再レンダリング回数の測定"
-          },
-          {
-            "id": 4,
-            "title": "Web Workerによる重い処理の非同期化とバンドル最適化",
-            "description": "計算量の多い処理をWeb Workerに移行し、バンドルサイズを最適化して初期読み込み時間を短縮する",
-            "dependencies": [
-              "10.3"
-            ],
-            "details": "Web Worker実装：大規模JSONのパース処理、マインドマップのレイアウト計算、ファイルの検証処理。バンドル最適化：動的インポートによるコード分割、Tree Shakingの最適化、terserによる圧縮設定、webpack-bundle-analyzerでの分析、不要な依存関係の削除",
-            "status": "pending",
-            "testStrategy": "Web Worker通信のユニットテスト、バンドルサイズの計測（目標: 初期バンドル < 200KB）、Lighthouseスコアの測定、並列処理のパフォーマンステスト"
-          },
-          {
-            "id": 5,
-            "title": "PWA対応とオフライン機能の実装",
-            "description": "Service Workerを使用したオフライン対応とPWAとしてのインストール機能を実装する",
-            "dependencies": [
-              "10.4"
-            ],
-            "details": "Service Worker実装：静的アセットのキャッシュ戦略、オフライン時のフォールバック、バックグラウンド同期。PWAマニフェスト：アイコン設定、スプラッシュスクリーン、インストールプロンプト。段階的機能読み込み：重要度に応じた機能の遅延読み込み、プログレッシブエンハンスメント",
-            "status": "pending",
-            "testStrategy": "オフライン動作テスト、Service Workerのライフサイクルテスト、PWAインストールフローのテスト、キャッシュ戦略の検証、Lighthouse PWA監査"
-          },
-          {
             "id": 6,
             "title": "VSCode拡張用ノード詳細パネルコンポーネントの実装",
             "description": "VSCode拡張のMindmapViewerに、Web版のNodeDetailsPanelと同様のノード詳細表示パネルを実装する",
@@ -768,7 +735,7 @@
         "dependencies": [
           12
         ],
-        "status": "pending",
+        "status": "deferred",
         "subtasks": [
           {
             "id": 1,
@@ -1451,7 +1418,7 @@
     ],
     "metadata": {
       "created": "2025-08-03T03:13:21.292Z",
-      "updated": "2025-08-14T17:41:34.424Z",
+      "updated": "2025-08-14T17:54:22.282Z",
       "description": "Tasks for master context"
     }
   }
