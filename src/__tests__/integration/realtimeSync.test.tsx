@@ -34,7 +34,7 @@ describe('リアルタイム同期機能の基本テスト', () => {
   describe('同期機能のインフラ確認', () => {
     it('デバウンス機能のタイマーが動作する', () => {
       // デバウンス関数をテスト
-      let callCount = 0;
+      const _callCount = 0;
       const debouncedFunction = vi.fn(() => {
         callCount++;
       });
@@ -116,7 +116,7 @@ root:
         const parsed = mockYamlParse(yamlContent);
         expect(parsed.version).toBe('1.0');
         expect(parsed.title).toBe('YAMLテスト');
-      } catch (error) {
+      } catch {
         // YAMLライブラリが利用できない場合のフォールバック
         expect(true).toBe(true); // テストをパスさせる
       }

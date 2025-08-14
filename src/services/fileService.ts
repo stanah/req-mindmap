@@ -53,7 +53,7 @@ export interface FileSaveOptions {
 export class BrowserFileService implements FileService {
   private watchers: Map<string, (content: string | File) => void> = new Map();
   // ドラッグアンドドロップ機能（将来実装予定）
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   private _dragAndDropEnabled = false;
   private recentFiles: any[] = [];
 
@@ -178,10 +178,10 @@ export class BrowserFileService implements FileService {
             };
           }
         }
-      } catch (parseError) {
+      } catch (_parseError) {
         return {
           success: false,
-          error: `${format.toUpperCase()}構文エラー: ${parseError instanceof Error ? parseError.message : String(parseError)}`
+          error: `${format.toUpperCase()}構文エラー: ${_parseError instanceof Error ? _parseError.message : String(_parseError)}`
         };
       }
 

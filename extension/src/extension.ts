@@ -13,7 +13,7 @@ export function activate(context: vscode.ExtensionContext) {
     console.log('Mindmap Tool拡張が有効化されました');
 
     // Webviewプロバイダーの登録
-    const webviewProvider = new MindmapWebviewProvider(context.extensionUri);
+    const _webviewProvider = new MindmapWebviewProvider(context.extensionUri);
     
     // カスタムエディタープロバイダーの登録
     const editorProvider = new MindmapEditorProvider(context);
@@ -176,7 +176,7 @@ export function activate(context: vscode.ExtensionContext) {
                 }
 
                 const document = activeEditor.document;
-                const content = document.getText();
+                const _content = document.getText();
 
                 // スキーマ検証の実行（実装は将来追加）
                 vscode.window.showInformationMessage('スキーマ検証機能は開発中です');

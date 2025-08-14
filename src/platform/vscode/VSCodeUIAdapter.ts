@@ -127,7 +127,7 @@ export class VSCodeUIAdapter implements UIAdapter {
     }
 
     // VSCode側でプログレス表示を開始
-    const progressId = `progress_${++this.requestId}`;
+    const _progressId = `progress_${++this.requestId}`;
     
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }

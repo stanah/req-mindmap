@@ -100,7 +100,7 @@ export class BrowserSettingsAdapter implements SettingsAdapter {
         if (event.newValue !== null) {
           try {
             newValue = JSON.parse(event.newValue);
-          } catch (parseError) {
+          } catch {
             newValue = event.newValue;
           }
         } else {
