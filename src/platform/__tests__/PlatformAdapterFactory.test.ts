@@ -98,16 +98,15 @@ describe('PlatformAdapterFactory', () => {
   });
 
   describe('VSCode環境の検出', () => {
-    it('VSCode環境が検出された場合はエラーを投げること', () => {
+    it('VSCode環境が検出された場合はVSCodePlatformAdapterを作成すること', () => {
       // VSCode環境をモック
       Object.defineProperty(window, 'acquireVsCodeApi', {
         value: vi.fn(),
         configurable: true
       });
 
-      expect(() => {
-        PlatformAdapterFactory.getInstance();
-      }).toThrow('VSCode拡張環境はまだサポートされていません');
+      const adapter = PlatformAdapterFactory.getInstance();
+      expect(adapter.getPlatformType()).toBe('vscode');
 
       // モックをクリーンアップ
       delete (window as any).acquireVsCodeApi;

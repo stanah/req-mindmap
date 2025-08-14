@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render } from '@testing-library/react';
-import App from '../../App';
+import App from '../../web/App';
 
 // タイマーのモック
 vi.useFakeTimers();
@@ -34,7 +34,7 @@ describe('リアルタイム同期機能の基本テスト', () => {
   describe('同期機能のインフラ確認', () => {
     it('デバウンス機能のタイマーが動作する', () => {
       // デバウンス関数をテスト
-      const _callCount = 0;
+      let callCount = 0;
       const debouncedFunction = vi.fn(() => {
         callCount++;
       });
