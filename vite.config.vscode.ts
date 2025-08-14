@@ -23,7 +23,8 @@ export default defineConfig({
     // VSCode Webviewでは単一のHTMLファイルが必要
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.vscode.html')
+        main: resolve(__dirname, 'index.vscode.html'),
+        vscode: resolve(__dirname, 'src/vscode/main.tsx')
       },
       output: {
         // VSCode Webviewでは相対パスを使用
