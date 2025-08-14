@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "build:vscode": "vite build --config vite.config.vscode.ts && rm -rf extension/webview && mkdir -p extension/webview && cp -r dist/webview/* extension/webview/",
     "build:extension": "./scripts/build-vscode.sh",
+    "compile": "cd extension && pnpm run compile",
     "compile:extension": "cd extension && pnpm run compile",
     "build:all": "pnpm run build:vscode && pnpm run compile:extension",
     "lint": "eslint .",

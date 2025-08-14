@@ -237,7 +237,7 @@ export class MindmapWebviewProvider {
 
                     case 'exportRequest':
                         // エクスポート要求の処理
-                        this.handleExportRequest(message.format);
+                        this.handleExportRequest(message.format, message.data);
                         break;
 
                     case 'error':

@@ -6,6 +6,8 @@ import { MindmapWebviewProvider } from './MindmapWebviewProvider';
  */
 export class MindmapEditorProvider implements vscode.CustomTextEditorProvider {
     private webviewProvider: MindmapWebviewProvider;
+    private activeDocuments = new Map<string, vscode.TextDocument>();
+    private webviewPanels = new Map<string, vscode.WebviewPanel>();
 
     constructor(private readonly context: vscode.ExtensionContext) {
         this.webviewProvider = new MindmapWebviewProvider(context.extensionUri);
@@ -181,6 +183,20 @@ export class MindmapEditorProvider implements vscode.CustomTextEditorProvider {
             command: 'configurationChanged',
             configuration: this.getConfiguration()
         });
+    }
+
+    /**
+     * エクスポート要求を処理
+     */
+    private async handleExportRequest(message: any): Promise<void> {
+        try {
+            // エクスポート機能の実装
+            console.log('エクスポート要求を処理:', message);
+            vscode.window.showInformationMessage('エクスポート機能は準備中です');
+        } catch (error) {
+            console.error('エクスポート処理でエラーが発生:', error);
+            vscode.window.showErrorMessage(`エクスポートエラー: ${error instanceof Error ? error.message : String(error)}`);
+        }
     }
 
     /**

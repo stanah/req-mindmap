@@ -31,7 +31,6 @@ import { generateId, detectFileFormat, deepClone, findNodeById } from '../utils/
 import { createNodeMapping, getNodeIdAtCursor, getEditorPositionForNode, type NodeMappingResult } from '../utils/nodeMapping';
 import { settingsService } from '../services/settingsService';
 import { performanceMonitor } from '../utils/performanceMonitor';
-import type { Theme, CustomThemeConfig } from '../types/theme';
 import VSCodeApiSingleton from '../platform/vscode/VSCodeApiSingleton';
 
 /**
