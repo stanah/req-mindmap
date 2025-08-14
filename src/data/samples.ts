@@ -19,9 +19,9 @@ export const sampleJSON = `{
             "id": "user-auth",
             "title": "ユーザー認証",
             "description": "ログイン・ログアウト・パスワード管理機能",
+            "priority": "high",
+            "status": "todo",
             "metadata": {
-              "priority": "high",
-              "status": "todo",
               "assignee": "田中",
               "estimatedHours": 40
             },
@@ -29,17 +29,20 @@ export const sampleJSON = `{
               {
                 "id": "login",
                 "title": "ログイン機能",
-                "description": "メールアドレスとパスワードによるログイン"
+                "description": "メールアドレスとパスワードによるログイン",
+                "priority": "high"
               },
               {
                 "id": "logout",
                 "title": "ログアウト機能",
-                "description": "セッション終了とリダイレクト"
+                "description": "セッション終了とリダイレクト",
+                "priority": "medium"
               },
               {
                 "id": "password-reset",
                 "title": "パスワードリセット",
-                "description": "メール経由でのパスワード再設定"
+                "description": "メール経由でのパスワード再設定",
+                "priority": "low"
               }
             ]
           },
@@ -47,9 +50,9 @@ export const sampleJSON = `{
             "id": "product-catalog",
             "title": "商品カタログ",
             "description": "商品の表示・検索・フィルタリング機能",
+            "priority": "high",
+            "status": "in-progress",
             "metadata": {
-              "priority": "high",
-              "status": "in-progress",
               "assignee": "佐藤",
               "estimatedHours": 60
             },
@@ -57,17 +60,20 @@ export const sampleJSON = `{
               {
                 "id": "product-list",
                 "title": "商品一覧表示",
-                "description": "カテゴリ別商品一覧の表示"
+                "description": "カテゴリ別商品一覧の表示",
+                "priority": "high"
               },
               {
                 "id": "product-search",
                 "title": "商品検索",
-                "description": "キーワード・価格・カテゴリでの検索"
+                "description": "キーワード・価格・カテゴリでの検索",
+                "priority": "medium"
               },
               {
                 "id": "product-detail",
                 "title": "商品詳細",
-                "description": "商品の詳細情報・画像・レビュー表示"
+                "description": "商品の詳細情報・画像・レビュー表示",
+                "priority": "medium"
               }
             ]
           },
@@ -75,9 +81,9 @@ export const sampleJSON = `{
             "id": "shopping-cart",
             "title": "ショッピングカート",
             "description": "商品の追加・削除・数量変更機能",
+            "priority": "medium",
+            "status": "todo",
             "metadata": {
-              "priority": "medium",
-              "status": "todo",
               "assignee": "鈴木",
               "estimatedHours": 30
             }
@@ -93,9 +99,9 @@ export const sampleJSON = `{
             "id": "performance",
             "title": "性能要件",
             "description": "レスポンス時間・スループット・可用性",
+            "priority": "high",
+            "status": "review",
             "metadata": {
-              "priority": "high",
-              "status": "review",
               "assignee": "山田"
             },
             "children": [
@@ -107,7 +113,8 @@ export const sampleJSON = `{
               {
                 "id": "concurrent-users",
                 "title": "同時接続数",
-                "description": "1000ユーザー同時接続対応"
+                "description": "1000ユーザー同時接続対応",
+                "priority": "low"
               }
             ]
           },
@@ -115,9 +122,9 @@ export const sampleJSON = `{
             "id": "security",
             "title": "セキュリティ要件",
             "description": "データ保護・アクセス制御・監査",
+            "priority": "high",
+            "status": "todo",
             "metadata": {
-              "priority": "high",
-              "status": "todo",
               "assignee": "高橋"
             }
           }
@@ -132,9 +139,9 @@ export const sampleJSON = `{
             "id": "frontend",
             "title": "フロントエンド",
             "description": "React + TypeScript + Vite",
+            "priority": "medium",
+            "status": "done",
             "metadata": {
-              "priority": "medium",
-              "status": "done",
               "assignee": "開発チーム"
             }
           },
@@ -142,9 +149,9 @@ export const sampleJSON = `{
             "id": "backend",
             "title": "バックエンド",
             "description": "Node.js + Express + PostgreSQL",
+            "priority": "medium",
+            "status": "in-progress",
             "metadata": {
-              "priority": "medium",
-              "status": "in-progress",
               "assignee": "開発チーム"
             }
           }
