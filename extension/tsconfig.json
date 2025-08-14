@@ -14,10 +14,16 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "typeRoots": ["./node_modules/@types"],
+        "types": ["vscode", "node"]
     },
+    "include": [
+        "src/**/*"
+    ],
     "exclude": [
         "node_modules",
-        ".vscode-test"
+        ".vscode-test",
+        "out"
     ]
 }
