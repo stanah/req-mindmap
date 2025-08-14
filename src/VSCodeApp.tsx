@@ -31,7 +31,7 @@ function VSCodeApp() {
       case 'updateContent':
         // VSCode側からのコンテンツ更新
         setCurrentContent(message.content);
-        updateContent(message.content);
+        updateContent(message.content, true); // fromVSCode: true
         break;
         
       case 'configurationChanged':
@@ -66,13 +66,21 @@ function VSCodeApp() {
         });
       }
       
+      // 初期ファイル内容を読み込み（VSCodeからの初期データ）
+      if (window.initialData?.content) {
+        const initialContent = window.initialData.content;
+        console.log('初期ファイル内容を読み込み:', window.initialData.fileName, `(${initialContent.length}文字)`);
+        setCurrentContent(initialContent);
+        updateContent(initialContent);
+      }
+      
       setIsVSCodeReady(true);
       
       // VSCode用のグローバル関数を設定
       window.mindmapApp = {
         updateContent: (content: string) => {
           setCurrentContent(content);
-          updateContent(content);
+          updateContent(content, true); // fromVSCode: true
         },
         
         saveFile: () => {
@@ -93,7 +101,7 @@ function VSCodeApp() {
       console.warn('VSCode API が利用できません');
       setIsVSCodeReady(true); // ブラウザモードとして続行
     }
-  }, [handleVSCodeMessage, updateContent, currentContent]);
+  }, [handleVSCodeMessage, updateContent]);
 
   // アプリケーションの初期化
   useEffect(() => {

@@ -112,6 +112,36 @@ class VSCodeApiSingleton {
     const api = this.getApi();
     return api ? api.getState() : null;
   }
+
+  /**
+   * ドキュメント更新をVSCodeエディタに送信
+   */
+  updateDocumentContent(content: string): boolean {
+    return this.postMessage({
+      command: 'updateDocument',
+      content
+    });
+  }
+
+  /**
+   * エラーメッセージをVSCodeに送信
+   */
+  showError(message: string): boolean {
+    return this.postMessage({
+      command: 'showError',
+      message
+    });
+  }
+
+  /**
+   * 情報メッセージをVSCodeに送信
+   */
+  showInformation(message: string): boolean {
+    return this.postMessage({
+      command: 'showInformation',
+      message
+    });
+  }
 }
 
 export default VSCodeApiSingleton;

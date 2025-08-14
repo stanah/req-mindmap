@@ -31,6 +31,8 @@ import { generateId, detectFileFormat, deepClone, findNodeById } from '../utils/
 import { createNodeMapping, getNodeIdAtCursor, getEditorPositionForNode, type NodeMappingResult } from '../utils/nodeMapping';
 import { settingsService } from '../services/settingsService';
 import { performanceMonitor } from '../utils/performanceMonitor';
+import type { Theme, CustomThemeConfig } from '../types/theme';
+import VSCodeApiSingleton from '../platform/vscode/VSCodeApiSingleton';
 
 /**
  * 初期ファイル状態
@@ -378,7 +380,7 @@ export const useAppStore = create<AppStore>()(
 
         // ===== エディタ操作 =====
 
-        updateContent: (content: string) => {
+        updateContent: (content: string, fromVSCode?: boolean) => {
           const { file } = get();
           const isDirty = content !== file.fileContent;
           
@@ -396,6 +398,12 @@ export const useAppStore = create<AppStore>()(
             lastFileContent: content,
             lastOpenFile: file.currentFile || undefined,
           });
+
+          // VSCode環境でプレビュー側からの変更の場合、VSCodeエディタに同期
+          if (!fromVSCode && typeof window !== 'undefined' && window.vscodeApiInstance) {
+            const singleton = VSCodeApiSingleton.getInstance();
+            singleton.updateDocumentContent(content);
+          }
 
           // デバウンス処理でパースを実行
           if (contentUpdateTimer) {
