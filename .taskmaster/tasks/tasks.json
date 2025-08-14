@@ -225,7 +225,7 @@
             "description": "D3.jsのforceSimulationを使用して、ノードとリンクの動的配置を管理するレイアウトエンジンを実装する",
             "dependencies": [],
             "details": "1. forceSimulationの初期化と設定\n   - ノード間の反発力（charge）の調整\n   - リンクの距離と強度の設定\n   - 中心力と境界制約の実装\n   - アルファ値の減衰率の最適化\n\n2. 動的レイアウト更新機能\n   - ノード追加・削除時の再計算\n   - リアルタイムレイアウト調整\n   - フォース値の動的変更API\n\n3. パフォーマンス最適化\n   - クアッドツリーの活用\n   - 計算頻度の調整\n   - 大規模グラフ対応",
-            "status": "pending",
+            "status": "in-progress",
             "testStrategy": "1. 各種フォース設定の動作確認テスト\n2. ノード配置の収束性テスト\n3. 1000ノード以上での計算速度測定\n4. レイアウトの安定性検証"
           },
           {
@@ -236,7 +236,7 @@
               "4.1"
             ],
             "details": "1. ノード形状のレンダリング\n   - 矩形、円形、楕円形のサポート\n   - カスタムパスによる特殊形状\n   - グラデーション、影、境界線の適用\n\n2. テキストレンダリング機能\n   - 自動テキスト折り返しアルゴリズム\n   - フォントサイズの動的調整\n   - マルチライン対応\n   - テキストのトリミングと省略表示\n\n3. アイコン・バッジシステム\n   - SVGアイコンライブラリの統合\n   - ステータスバッジの表示\n   - プログレスインジケーター\n   - カスタムシンボルのサポート",
-            "status": "pending",
+            "status": "in-progress",
             "testStrategy": "1. 各種ノード形状の描画テスト\n2. テキスト折り返しの境界値テスト\n3. SVG要素のDOMスナップショットテスト\n4. レンダリング品質の視覚的検証"
           },
           {
@@ -247,7 +247,7 @@
               "4.2"
             ],
             "details": "1. ズーム・パン機能\n   - d3.zoomの実装と設定\n   - スムーズなズームトランジション\n   - ズーム範囲の制限設定\n   - ダブルクリックでのズームリセット\n\n2. ノードドラッグ機能\n   - ドラッグイベントハンドラー\n   - 物理シミュレーションとの統合\n   - ドラッグ中の視覚フィードバック\n   - マルチセレクションドラッグ\n\n3. タッチデバイス対応\n   - タッチイベントの処理\n   - ピンチズームの実装\n   - タッチドラッグの最適化",
-            "status": "pending",
+            "status": "in-progress",
             "testStrategy": "1. マウスイベントのシミュレーションテスト\n2. タッチイベントの動作確認\n3. ズーム範囲制限のテスト\n4. ドラッグ操作の精度測定"
           },
           {
@@ -258,7 +258,7 @@
               "4.3"
             ],
             "details": "1. 展開・折りたたみアニメーション\n   - スムーズな展開トランジション\n   - 子ノードのフェードイン/アウト\n   - レイアウトの再計算と補間\n   - イージング関数の適用\n\n2. ホバーエフェクト\n   - ツールチップの表示アニメーション\n   - ノードのハイライト効果\n   - 関連リンクの強調表示\n   - プレビューカードの実装\n\n3. トランジション管理\n   - アニメーションキューの実装\n   - 並行アニメーションの制御\n   - パフォーマンス最適化\n   - requestAnimationFrameの活用",
-            "status": "pending",
+            "status": "in-progress",
             "testStrategy": "1. アニメーション完了タイミングのテスト\n2. 60FPS維持の性能テスト\n3. 複数アニメーション同時実行テスト\n4. メモリリークの検証"
           },
           {
@@ -269,7 +269,7 @@
               "4.4"
             ],
             "details": "1. 仮想化レンダリング\n   - ビューポート内のノードのみ描画\n   - オフスクリーンノードの軽量化\n   - LOD（Level of Detail）システム\n   - プログレッシブレンダリング\n\n2. WebGLレンダラーの統合\n   - Three.jsとの連携オプション\n   - GPUアクセラレーション\n   - インスタンスレンダリング\n   - テクスチャアトラスの活用\n\n3. キャッシング戦略\n   - レンダリング結果のキャッシュ\n   - 計算結果のメモ化\n   - 差分レンダリングの実装\n   - Web Workerでの並列処理",
-            "status": "pending",
+            "status": "in-progress",
             "testStrategy": "1. 10000ノードでのFPS測定\n2. メモリ使用量の監視テスト\n3. 初期レンダリング時間の測定\n4. スクロール時のパフォーマンステスト"
           }
         ]
@@ -293,7 +293,7 @@
             "description": "エディタとマインドマップの状態を管理するZustandストアを実装する",
             "dependencies": [],
             "details": "AppStateインターフェースに基づいたZustandストアの実装。mindMapData、editorContent、selectedNodeの状態管理と、updateMindMap、updateEditor、selectNode、clearSelectionなどのアクションを実装。状態の永続化（localStorage）とハイドレーション機能も含む。",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "ストアの初期化テスト、各アクションの動作確認テスト、状態の永続化と復元のテスト、複数コンポーネント間での状態共有テスト"
           },
           {
@@ -304,7 +304,7 @@
               "5.1"
             ],
             "details": "エディタのonChangeイベントをデバウンス（300ms）で処理し、パース処理を実行。差分検出アルゴリズムを使用して変更箇所のみを更新。構文エラー時は最後の有効な状態を保持し、エラーインジケーターを表示。React.memoとuseMemoを使用した再レンダリング最適化。",
-            "status": "pending",
+            "status": "in-progress",
             "testStrategy": "デバウンス動作の検証、差分検出の正確性テスト、構文エラー時の状態保持テスト、パフォーマンステスト（1000ノード以上での動作確認）"
           },
           {
@@ -315,7 +315,7 @@
               "5.1"
             ],
             "details": "ノードクリック時のエディタ内該当箇所へのスクロールとハイライト機能。ノードのドラッグ＆ドロップによる構造変更のエディタ反映。ノード編集（インライン編集）の双方向バインディング。選択ノードの視覚的フィードバック（エディタ側でのハイライト表示）。",
-            "status": "pending",
+            "status": "in-progress",
             "testStrategy": "ノード選択時のスクロール位置の正確性テスト、ドラッグ＆ドロップ後のエディタコンテンツ整合性テスト、インライン編集の同期テスト、複数ノード選択時の動作テスト"
           },
           {
@@ -632,7 +632,7 @@
           8,
           9
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -651,7 +651,7 @@
               "10.1"
             ],
             "details": "VSCodeAdapterクラスの実装：VSCode APIとの統合（TextDocument、TreeDataProvider、WebviewPanel）、コマンドパレット統合、エディタとの双方向通信、ファイルシステムアクセス、拡張機能の設定管理。manifest（package.json）の構成とアクティベーションイベントの定義",
-            "status": "pending",
+            "status": "in-progress",
             "testStrategy": "VSCode Extension Testフレームワークを使用した統合テスト、モックを使用したAPI呼び出しテスト、拡張機能のアクティベーションテスト"
           },
           {
@@ -686,6 +686,53 @@
             "details": "Service Worker実装：静的アセットのキャッシュ戦略、オフライン時のフォールバック、バックグラウンド同期。PWAマニフェスト：アイコン設定、スプラッシュスクリーン、インストールプロンプト。段階的機能読み込み：重要度に応じた機能の遅延読み込み、プログレッシブエンハンスメント",
             "status": "pending",
             "testStrategy": "オフライン動作テスト、Service Workerのライフサイクルテスト、PWAインストールフローのテスト、キャッシュ戦略の検証、Lighthouse PWA監査"
+          },
+          {
+            "id": 6,
+            "title": "VSCode拡張用ノード詳細パネルコンポーネントの実装",
+            "description": "VSCode拡張のMindmapViewerに、Web版のNodeDetailsPanelと同様のノード詳細表示パネルを実装する",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 10
+          },
+          {
+            "id": 7,
+            "title": "VSCode拡張用ノード編集機能（詳細パネル内）の実装",
+            "description": "詳細パネル内でノード情報（タイトル、説明、カスタムフィールドなど）を編集できる機能を実装する",
+            "details": "",
+            "status": "pending",
+            "dependencies": [
+              "10.6"
+            ],
+            "parentTaskId": 10
+          },
+          {
+            "id": 8,
+            "title": "VSCode拡張用ノード追加機能（子・兄弟追加）の実装",
+            "description": "選択ノードに対して「子を追加」「兄弟を追加」ボタンを表示し、新しいノードを追加する機能を実装する",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 10
+          },
+          {
+            "id": 9,
+            "title": "VSCode拡張用ノード削除機能の実装",
+            "description": "選択ノードを削除する機能と確認ダイアログを実装する",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 10
+          },
+          {
+            "id": 10,
+            "title": "VSCode拡張用ツールバーUIの実装",
+            "description": "ズーム、レイアウト切り替え、ノード操作ボタンなどのツールバーUIを実装する",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 10
           }
         ]
       },
@@ -1444,79 +1491,79 @@
       },
       {
         "id": 22,
-        "title": "ノード基本情報簡易表示機能の実装",
-        "description": "マインドマップのノードにpriority、status等の基本情報を視覚的に表示する機能を実装する。色、アイコン、最小限のオーバーレイを使用して情報を効果的に伝達する。",
-        "details": "1. 優先度視覚インジケーターの実装\n   ```typescript\n   interface PriorityIndicator {\n     high: { color: '#ff4444', borderWidth: 3, cornerRadius: 2 };\n     medium: { color: '#ffaa00', borderWidth: 2, cornerRadius: 1 };\n     low: { color: '#44aa00', borderWidth: 1, cornerRadius: 0 };\n   }\n\n   const applyPriorityStyles = (node: HTMLElement, priority: string) => {\n     const styles = PRIORITY_STYLES[priority];\n     node.style.borderColor = styles.color;\n     node.style.borderWidth = `${styles.borderWidth}px`;\n     node.style.borderRadius = `${styles.cornerRadius}px`;\n   };\n   ```\n\n2. ステータス視覚インジケーターの実装\n   ```typescript\n   import { mdiCheckCircle, mdiClock, mdiAlert, mdiCancel } from '@mdi/js';\n\n   const STATUS_ICONS = {\n     completed: { icon: mdiCheckCircle, bg: '#e8f5e9' },\n     inProgress: { icon: mdiClock, bg: '#fff3e0' },\n     blocked: { icon: mdiAlert, bg: '#ffebee' },\n     cancelled: { icon: mdiCancel, bg: '#f5f5f5' }\n   };\n\n   const renderStatusIcon = (status: string): SVGElement => {\n     const iconPath = STATUS_ICONS[status]?.icon;\n     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');\n     svg.setAttribute('viewBox', '0 0 24 24');\n     svg.innerHTML = `<path d=\"${iconPath}\" />`;\n     return svg;\n   };\n   ```\n\n3. 最小限テキストオーバーレイの実装\n   ```typescript\n   class InfoOverlay {\n     private tooltip: HTMLElement;\n\n     show(node: MindmapNode, event: MouseEvent) {\n       this.tooltip = document.createElement('div');\n       this.tooltip.className = 'node-info-overlay';\n       this.tooltip.innerHTML = `\n         <div class=\"info-row\">優先度: ${node.priority}</div>\n         <div class=\"info-row\">ステータス: ${node.status}</div>\n         <div class=\"info-row\">更新日: ${formatDate(node.updatedAt)}</div>\n       `;\n\n       const rect = event.target.getBoundingClientRect();\n       this.tooltip.style.position = 'absolute';\n       this.tooltip.style.left = `${rect.left}px`;\n       this.tooltip.style.top = `${rect.bottom + 5}px`;\n       document.body.appendChild(this.tooltip);\n     }\n\n     hide() {\n       if (this.tooltip) {\n         this.tooltip.remove();\n       }\n     }\n   }\n   ```\n\n4. カラー凡例機能の実装\n   ```typescript\n   const renderLegend = () => {\n     const legend = document.createElement('div');\n     legend.className = 'mindmap-legend';\n     \n     const sections = [\n       { title: '優先度', items: PRIORITY_STYLES },\n       { title: 'ステータス', items: STATUS_ICONS }\n     ];\n\n     sections.forEach(section => {\n       const group = document.createElement('div');\n       group.innerHTML = `<h4>${section.title}</h4>`;\n       \n       Object.entries(section.items).forEach(([key, value]) => {\n         const item = document.createElement('div');\n         item.className = 'legend-item';\n         item.innerHTML = `\n           <span class=\"legend-indicator\" style=\"background: ${value.color || value.bg}\"></span>\n           <span class=\"legend-label\">${key}</span>\n         `;\n         group.appendChild(item);\n       });\n       \n       legend.appendChild(group);\n     });\n\n     return legend;\n   };\n   ```\n\n5. CSSスタイル定義\n   ```css\n   .mindmap-node {\n     position: relative;\n     transition: all 0.3s ease;\n     border: 2px solid transparent;\n   }\n\n   .node-status-icon {\n     position: absolute;\n     top: -8px;\n     right: -8px;\n     width: 16px;\n     height: 16px;\n     border-radius: 50%;\n     background: white;\n     box-shadow: 0 2px 4px rgba(0,0,0,0.1);\n   }\n\n   .node-info-overlay {\n     background: rgba(0, 0, 0, 0.9);\n     color: white;\n     padding: 8px 12px;\n     border-radius: 4px;\n     font-size: 12px;\n     z-index: 1000;\n     box-shadow: 0 2px 8px rgba(0,0,0,0.2);\n   }\n\n   .mindmap-legend {\n     position: fixed;\n     bottom: 20px;\n     right: 20px;\n     background: white;\n     border: 1px solid #ddd;\n     border-radius: 8px;\n     padding: 16px;\n     box-shadow: 0 2px 8px rgba(0,0,0,0.1);\n   }\n   ```",
-        "testStrategy": "1. 視覚インジケーターの表示テスト\n   - 各優先度レベル（high/medium/low）に対応する境界線の色と太さの確認\n   - ステータスアイコンの正しい表示と位置の検証\n   - 異なるノードサイズでのインジケーター表示の適応性テスト\n   - ダークモード対応の確認\n\n2. インタラクションテスト\n   - ホバー時のオーバーレイ表示タイミング（遅延なし）の確認\n   - オーバーレイの位置計算が画面端で適切に調整されることの検証\n   - マウスアウト時のオーバーレイ非表示の確認\n   - タッチデバイスでのタップ操作の動作確認\n\n3. パフォーマンステスト\n   - 100個以上のノードでのレンダリング速度測定\n   - インジケーター更新時の再描画効率の確認\n   - メモリリークの検出（オーバーレイの生成・破棄）\n\n4. アクセシビリティテスト\n   - スクリーンリーダーでの情報読み上げ確認\n   - キーボードナビゲーションでのオーバーレイ表示\n   - 色覚多様性に対応したカラースキームの検証\n   - WCAG 2.1 AAレベルのコントラスト比の確認",
-        "status": "pending",
+        "title": "ノード状態インジケーター表示機能の実装",
+        "description": "マインドマップのノードにpriority、status等の状態情報を視覚的にインジケーターとして表示する機能を実装する。色分け、アイコン、コンパクトなビジュアル要素を使用してノードの状態を直感的に把握できるようにする。",
+        "status": "in-progress",
         "dependencies": [
           15,
           16
         ],
         "priority": "high",
+        "details": "1. 優先度カラーインジケーターの実装\n   ```typescript\n   interface PriorityIndicator {\n     high: { color: '#ff4444', borderWidth: 3, glowEffect: true };\n     medium: { color: '#ffaa00', borderWidth: 2, glowEffect: false };\n     low: { color: '#44aa00', borderWidth: 1, glowEffect: false };\n   }\n\n   const applyPriorityIndicator = (node: HTMLElement, priority: string) => {\n     const styles = PRIORITY_INDICATORS[priority];\n     node.style.borderColor = styles.color;\n     node.style.borderWidth = `${styles.borderWidth}px`;\n     if (styles.glowEffect) {\n       node.style.boxShadow = `0 0 8px ${styles.color}`;\n     }\n   };\n   ```\n\n2. ステータスアイコンインジケーターの実装\n   ```typescript\n   import { mdiCheckCircle, mdiClock, mdiAlert, mdiCancel } from '@mdi/js';\n\n   const STATUS_INDICATORS = {\n     completed: { icon: mdiCheckCircle, color: '#4caf50', position: 'top-right' },\n     inProgress: { icon: mdiClock, color: '#ff9800', position: 'top-right' },\n     blocked: { icon: mdiAlert, color: '#f44336', position: 'top-right' },\n     cancelled: { icon: mdiCancel, color: '#9e9e9e', position: 'top-right' }\n   };\n\n   const renderStatusIndicator = (status: string): SVGElement => {\n     const indicator = STATUS_INDICATORS[status];\n     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');\n     svg.setAttribute('viewBox', '0 0 24 24');\n     svg.style.fill = indicator.color;\n     svg.innerHTML = `<path d=\"${indicator.icon}\" />`;\n     return svg;\n   };\n   ```\n\n3. コンパクト状態表示バッジの実装\n   ```typescript\n   class StateIndicatorBadge {\n     private badgeElement: HTMLElement;\n\n     render(node: MindmapNode): HTMLElement {\n       this.badgeElement = document.createElement('div');\n       this.badgeElement.className = 'state-indicator-badge';\n       \n       // 優先度ドット\n       if (node.priority) {\n         const priorityDot = document.createElement('span');\n         priorityDot.className = `priority-dot priority-${node.priority}`;\n         this.badgeElement.appendChild(priorityDot);\n       }\n\n       // ステータスミニアイコン\n       if (node.status) {\n         const statusIcon = this.createMiniStatusIcon(node.status);\n         this.badgeElement.appendChild(statusIcon);\n       }\n\n       // 進捗バー（あれば）\n       if (node.progress !== undefined) {\n         const progressBar = this.createMiniProgressBar(node.progress);\n         this.badgeElement.appendChild(progressBar);\n       }\n\n       return this.badgeElement;\n     }\n   }\n   ```\n\n4. インジケーター凡例パネルの実装\n   ```typescript\n   const renderIndicatorLegend = () => {\n     const legend = document.createElement('div');\n     legend.className = 'indicator-legend';\n     legend.setAttribute('role', 'complementary');\n     legend.setAttribute('aria-label', 'インジケーター凡例');\n     \n     const sections = [\n       { \n         title: '優先度', \n         items: Object.entries(PRIORITY_INDICATORS).map(([key, value]) => ({\n           label: key,\n           visual: `<span class=\"priority-dot\" style=\"background: ${value.color}\"></span>`\n         }))\n       },\n       { \n         title: 'ステータス', \n         items: Object.entries(STATUS_INDICATORS).map(([key, value]) => ({\n           label: key,\n           visual: `<svg><path d=\"${value.icon}\" fill=\"${value.color}\"/></svg>`\n         }))\n       }\n     ];\n\n     sections.forEach(section => {\n       const group = document.createElement('div');\n       group.className = 'legend-section';\n       group.innerHTML = `<h4>${section.title}</h4>`;\n       \n       section.items.forEach(item => {\n         const row = document.createElement('div');\n         row.className = 'legend-item';\n         row.innerHTML = `${item.visual}<span>${item.label}</span>`;\n         group.appendChild(row);\n       });\n       \n       legend.appendChild(group);\n     });\n\n     return legend;\n   };\n   ```\n\n5. CSSスタイル定義\n   ```css\n   .mindmap-node {\n     position: relative;\n     transition: border-color 0.3s ease, box-shadow 0.3s ease;\n   }\n\n   .state-indicator-badge {\n     position: absolute;\n     top: -4px;\n     right: -4px;\n     display: flex;\n     gap: 4px;\n     align-items: center;\n     background: white;\n     padding: 2px 6px;\n     border-radius: 12px;\n     box-shadow: 0 1px 3px rgba(0,0,0,0.2);\n   }\n\n   .priority-dot {\n     width: 8px;\n     height: 8px;\n     border-radius: 50%;\n     display: inline-block;\n   }\n\n   .priority-dot.priority-high { background: #ff4444; }\n   .priority-dot.priority-medium { background: #ffaa00; }\n   .priority-dot.priority-low { background: #44aa00; }\n\n   .status-mini-icon {\n     width: 14px;\n     height: 14px;\n   }\n\n   .indicator-legend {\n     position: fixed;\n     bottom: 20px;\n     right: 20px;\n     background: rgba(255, 255, 255, 0.95);\n     backdrop-filter: blur(10px);\n     border-radius: 8px;\n     padding: 12px;\n     box-shadow: 0 2px 12px rgba(0,0,0,0.1);\n     max-width: 200px;\n   }\n   ```",
+        "testStrategy": "1. インジケーター表示の視覚的検証\n   - 各優先度レベルのカラーインジケーターが正しく表示されることの確認\n   - ステータスアイコンの色と位置が仕様通りであることの検証\n   - バッジ内の要素配置とサイズの確認\n   - 異なるノードサイズでのインジケーターのスケーリング確認\n\n2. 状態変更の動的更新テスト\n   - priorityやstatusの変更時にインジケーターが即座に更新されることの確認\n   - 複数の状態が同時に変更された場合の表示確認\n   - アニメーション効果のスムーズさの検証\n\n3. パフォーマンステスト\n   - 100個以上のノードでインジケーターを表示した際のレンダリング速度\n   - 状態更新時の再描画効率の測定\n   - メモリ使用量の監視（DOM要素の適切な管理）\n\n4. アクセシビリティテスト\n   - インジケーターの意味がスクリーンリーダーで読み上げられることの確認\n   - 色覚多様性に配慮したインジケーターデザインの検証\n   - キーボードナビゲーションでの凡例パネルへのアクセス確認\n   - WCAG 2.1基準への準拠確認",
         "subtasks": [
           {
             "id": 1,
-            "title": "優先度視覚インジケーターのReactコンポーネント実装",
-            "description": "マインドマップノードの優先度（high/medium/low）を境界線の色と太さで視覚的に表現するReactコンポーネントを実装する",
+            "title": "優先度カラーインジケーターのReactコンポーネント実装",
+            "description": "マインドマップノードの優先度（high/medium/low）を境界線の色、太さ、グロー効果で視覚的に表現するReactコンポーネントを実装する",
+            "status": "in-progress",
             "dependencies": [],
-            "details": "PriorityIndicatorコンポーネントを作成し、優先度に応じた境界線スタイル（色、太さ、角の丸み）を適用する。高優先度は赤色で太い境界線、中優先度はオレンジ色で中程度の境界線、低優先度は緑色で細い境界線を使用。CSSモジュールまたはstyled-componentsを使用してスタイルを管理し、ダークモード対応も考慮する",
-            "status": "pending",
-            "testStrategy": "各優先度レベルのスタイルが正しく適用されることを確認するユニットテスト、スナップショットテストでUIの一貫性を検証、異なるノードサイズでの表示確認、ダークモードでの色の視認性テスト"
+            "details": "PriorityIndicatorコンポーネントを作成し、優先度に応じたビジュアルインジケーター（色、境界線の太さ、高優先度のグロー効果）を適用する。高優先度は赤色で太い境界線とグロー効果、中優先度はオレンジ色で中程度の境界線、低優先度は緑色で細い境界線を使用。CSS-in-JSまたはCSSモジュールを使用してスタイルを管理し、ダークモード対応も考慮する",
+            "testStrategy": "各優先度レベルのインジケーターが正しく適用されることを確認するユニットテスト、スナップショットテストでUIの一貫性を検証、異なるノードサイズでの表示確認、ダークモードでの視認性テスト"
           },
           {
             "id": 2,
-            "title": "ステータスアイコンのSVGレンダリングシステム実装",
-            "description": "ノードのステータス（completed/inProgress/blocked/cancelled）を表すアイコンをSVGで動的にレンダリングするシステムを構築する",
+            "title": "ステータスアイコンインジケーターのSVGレンダリングシステム実装",
+            "description": "ノードのステータス（completed/inProgress/blocked/cancelled）を表すミニアイコンをSVGで動的にレンダリングし、適切な色で表示するシステムを構築する",
+            "status": "in-progress",
             "dependencies": [],
-            "details": "@mdi/jsライブラリのアイコンを使用してステータスを視覚化。各ステータスに対応するアイコンとバックグラウンドカラーのマッピングを定義し、ノードの右上に配置。アイコンは16x16pxのサイズで、白背景に薄い影を付けて視認性を向上。React.memoを使用してレンダリングパフォーマンスを最適化",
-            "status": "pending",
-            "testStrategy": "各ステータスタイプに正しいアイコンが表示されることの確認、アイコンの位置計算が正確であることの検証、異なるブラウザでのSVGレンダリングの互換性テスト、アイコンのクリック可能エリアのテスト"
+            "details": "@mdi/jsライブラリのアイコンを使用してステータスをコンパクトに視覚化。各ステータスに対応するアイコンと色のマッピングを定義し、ノードの右上にインジケーターとして配置。アイコンは14x14pxのサイズで、状態に応じた色を適用。React.memoを使用してレンダリングパフォーマンスを最適化",
+            "testStrategy": "各ステータスタイプに正しいアイコンと色が表示されることの確認、アイコンの位置計算が正確であることの検証、異なるブラウザでのSVGレンダリングの互換性テスト"
           },
           {
             "id": 3,
-            "title": "ホバー時情報オーバーレイのツールチップ実装",
-            "description": "ノードにマウスホバーした際に優先度、ステータス、更新日時を表示する軽量なツールチップコンポーネントを実装する",
-            "dependencies": [
-              "22.1",
-              "22.2"
-            ],
-            "details": "React Portal を使用してbody直下にツールチップをレンダリング。ノードのbounding rectを計算して適切な位置に配置し、画面端では自動的に位置を調整。useDebounceフックを使用してちらつきを防止。アクセシビリティのためaria-describedby属性を設定",
+            "title": "コンパクト状態表示バッジコンポーネントの実装",
+            "description": "優先度ドット、ステータスアイコン、進捗バーなどを組み合わせたコンパクトな状態表示バッジを実装する",
             "status": "pending",
-            "testStrategy": "ホバーイベントでツールチップが表示されることの確認、画面端での位置自動調整のテスト、マウスアウトで確実に非表示になることの検証、複数ノードの高速ホバー切り替え時の動作確認"
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "StateIndicatorBadgeコンポーネントを作成し、ノードの状態情報を最小限のスペースで表示。優先度は小さな色付きドット、ステータスはミニアイコン、進捗は細いプログレスバーで表現。白背景に薄い影を付けて視認性を確保し、ノードの右上に配置。複数の情報がある場合は横並びに表示",
+            "testStrategy": "バッジ内の各要素が正しく表示されることの確認、複数の状態情報の組み合わせ表示テスト、レスポンシブ性の確認、異なるノードサイズでの適応性テスト"
           },
           {
             "id": 4,
-            "title": "カラー凡例コンポーネントとトグル機能の実装",
-            "description": "優先度とステータスの色・アイコンの意味を説明する凡例コンポーネントを作成し、表示/非表示のトグル機能を実装する",
-            "dependencies": [
-              "22.1",
-              "22.2"
-            ],
-            "details": "画面右下に固定配置される凡例パネルを実装。優先度セクションには各色の意味、ステータスセクションには各アイコンの意味を表示。useStateでトグル状態を管理し、localStorageに保存して永続化。アニメーション付きでスムーズに開閉",
+            "title": "インジケーター凡例パネルコンポーネントの実装",
+            "description": "優先度カラーとステータスアイコンの意味を説明するコンパクトな凡例パネルを作成し、表示制御機能を実装する",
             "status": "pending",
-            "testStrategy": "凡例の各項目が正しく表示されることの確認、トグル機能の動作テスト、localStorageへの状態保存と復元のテスト、レスポンシブデザインでの表示確認"
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "画面右下に半透明の背景で固定配置される凡例パネルを実装。優先度セクションには各色ドットの意味、ステータスセクションには各アイコンの意味をコンパクトに表示。useStateで表示/非表示を管理し、localStorageに状態を保存。backdrop-filterでモダンなぼかし効果を適用",
+            "testStrategy": "凡例の各項目が正しく表示されることの確認、表示/非表示の切り替え機能テスト、localStorageへの状態保存と復元のテスト、小画面でのレイアウト確認"
           },
           {
             "id": 5,
-            "title": "統合テストとアクセシビリティ対応",
-            "description": "全ての視覚インジケーター機能を統合し、アクセシビリティとパフォーマンスを確保する",
-            "dependencies": [
-              "22.1",
-              "22.2",
-              "22.3",
-              "22.4"
-            ],
-            "details": "全機能を統合したNodeVisualizationコンポーネントを作成。スクリーンリーダー対応のためaria-labelとrole属性を適切に設定。キーボードナビゲーションのサポート。React.memoとuseMemoを使用してレンダリング最適化。100ノード以上の大規模マインドマップでもスムーズに動作することを確保",
+            "title": "インジケーターシステムの統合とパフォーマンス最適化",
+            "description": "全てのインジケーター機能を統合し、アクセシビリティ対応とパフォーマンス最適化を実施する",
             "status": "pending",
-            "testStrategy": "統合環境での全機能の動作確認、WAI-ARIA準拠のアクセシビリティテスト、キーボードナビゲーションのテスト、100ノード以上でのパフォーマンステスト（60fps維持）"
+            "dependencies": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "details": "NodeStateIndicatorコンポーネントとして全機能を統合。aria-labelでインジケーターの意味を説明し、スクリーンリーダー対応を実装。React.memoとuseMemoで不要な再レンダリングを防止。CSS containmentプロパティを使用してレイアウト計算を最適化。100ノード以上でも60fpsを維持",
+            "testStrategy": "統合環境での全インジケーター機能の動作確認、WAI-ARIA準拠のアクセシビリティテスト、大規模マインドマップでのパフォーマンステスト、メモリリークの検出"
           }
         ]
       }
     ],
     "metadata": {
       "created": "2025-08-03T03:13:21.292Z",
-      "updated": "2025-08-03T13:07:31.099Z",
+      "updated": "2025-08-14T17:20:35.215Z",
       "description": "Tasks for master context"
     }
   }
