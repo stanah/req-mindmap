@@ -403,6 +403,9 @@ export class MindmapCore {
     // 優先度バッジの描画
     this.drawPriorityBadges(nodeUpdate);
 
+    // ステータスバッジの描画
+    this.drawStatusBadges(nodeUpdate);
+
     // 不要なノードの削除
     nodeSelection.exit().remove();
   }
@@ -496,13 +499,39 @@ export class MindmapCore {
     
     switch (priority) {
       case 'critical':
-        return { text: '!!', color: '#ffffff', bgColor: '#dc2626' };
+        return { text: 'CRITICAL', color: '#ffffff', bgColor: '#dc2626' };
       case 'high':
-        return { text: '!', color: '#ffffff', bgColor: '#ef4444' };
+        return { text: 'HIGH', color: '#ffffff', bgColor: '#ef4444' };
       case 'medium':
-        return { text: 'M', color: '#ffffff', bgColor: '#f59e0b' };
+        return { text: 'MEDIUM', color: '#ffffff', bgColor: '#f59e0b' };
       case 'low':
-        return { text: 'L', color: '#ffffff', bgColor: '#10b981' };
+        return { text: 'LOW', color: '#ffffff', bgColor: '#10b981' };
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * ステータスバッジの情報を取得
+   */
+  private getStatusBadgeInfo(node: MindmapNode): { text: string; color: string; bgColor: string } | null {
+    const status = node.status;
+    
+    switch (status) {
+      case 'draft':
+        return { text: 'DRAFT', color: '#ffffff', bgColor: '#9ca3af' };
+      case 'pending':
+        return { text: 'PENDING', color: '#ffffff', bgColor: '#6b7280' };
+      case 'in-progress':
+        return { text: 'WORKING', color: '#ffffff', bgColor: '#3b82f6' };
+      case 'review':
+        return { text: 'REVIEW', color: '#ffffff', bgColor: '#f59e0b' };
+      case 'done':
+        return { text: 'DONE', color: '#ffffff', bgColor: '#10b981' };
+      case 'cancelled':
+        return { text: 'CANCELLED', color: '#ffffff', bgColor: '#ef4444' };
+      case 'deferred':
+        return { text: 'DEFERRED', color: '#ffffff', bgColor: '#8b5cf6' };
       default:
         return null;
     }
@@ -521,9 +550,10 @@ export class MindmapCore {
       if (!badgeInfo) return;
 
       const nodeGroup = d3.select(nodes[i] as SVGGElement);
-      const badgeSize = 16;
-      const badgeX = d.width / 2 - badgeSize / 2 - 4;
-      const badgeY = -d.height / 2 + 4;
+      const badgeHeight = 16;
+      const badgeWidth = badgeInfo.text.length * 6 + 8; // 文字数に応じて幅を調整
+      const badgeX = d.width / 2 - badgeWidth - 4;
+      const badgeY = -d.height / 2 - 8;
 
       // バッジグループ作成
       const badgeGroup = nodeGroup
@@ -531,10 +561,13 @@ export class MindmapCore {
         .attr('class', 'priority-badge')
         .attr('transform', `translate(${badgeX}, ${badgeY})`);
 
-      // バッジ背景
+      // バッジ背景（長方形）
       badgeGroup
-        .append('circle')
-        .attr('r', badgeSize / 2)
+        .append('rect')
+        .attr('width', badgeWidth)
+        .attr('height', badgeHeight)
+        .attr('rx', 3)
+        .attr('ry', 3)
         .attr('fill', badgeInfo.bgColor)
         .attr('stroke', '#ffffff')
         .attr('stroke-width', 1);
@@ -542,9 +575,65 @@ export class MindmapCore {
       // バッジテキスト
       badgeGroup
         .append('text')
+        .attr('x', badgeWidth / 2)
+        .attr('y', badgeHeight / 2)
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'central')
-        .attr('font-size', '10px')
+        .attr('font-size', '8px')
+        .attr('font-weight', 'bold')
+        .attr('fill', badgeInfo.color)
+        .text(badgeInfo.text);
+    });
+  }
+
+  /**
+   * ステータスバッジを描画
+   */
+  private drawStatusBadges(nodeUpdate: d3.Selection<SVGGElement, D3Node, SVGGElement, unknown>): void {
+    // 既存のステータスバッジを削除
+    nodeUpdate.selectAll('.status-badge').remove();
+
+    // ステータスバッジの描画
+    nodeUpdate.each((d: D3Node, i, nodes) => {
+      const badgeInfo = this.getStatusBadgeInfo(d.data);
+      if (!badgeInfo) return;
+
+      const nodeGroup = d3.select(nodes[i] as SVGGElement);
+      
+      // 優先度バッジがある場合のX位置を計算
+      const priorityBadgeInfo = this.getPriorityBadgeInfo(d.data);
+      const priorityBadgeWidth = priorityBadgeInfo ? priorityBadgeInfo.text.length * 6 + 8 : 0;
+      
+      const badgeHeight = 16;
+      const badgeWidth = badgeInfo.text.length * 6 + 8;
+      const badgeX = d.width / 2 - badgeWidth - priorityBadgeWidth - 8; // 優先度バッジの左隣に配置
+      const badgeY = -d.height / 2 - 8;
+
+      // バッジグループ作成
+      const badgeGroup = nodeGroup
+        .append('g')
+        .attr('class', 'status-badge')
+        .attr('transform', `translate(${badgeX}, ${badgeY})`);
+
+      // バッジ背景（長方形）
+      badgeGroup
+        .append('rect')
+        .attr('width', badgeWidth)
+        .attr('height', badgeHeight)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .attr('fill', badgeInfo.bgColor)
+        .attr('stroke', '#ffffff')
+        .attr('stroke-width', 1);
+
+      // バッジテキスト
+      badgeGroup
+        .append('text')
+        .attr('x', badgeWidth / 2)
+        .attr('y', badgeHeight / 2)
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'central')
+        .attr('font-size', '8px')
         .attr('font-weight', 'bold')
         .attr('fill', badgeInfo.color)
         .text(badgeInfo.text);

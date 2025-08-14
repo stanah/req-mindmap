@@ -89,7 +89,7 @@ export interface MindmapNode {
   color?: string;
   icon?: string;
   priority?: 'critical' | 'high' | 'medium' | 'low';
-  status?: 'todo' | 'in-progress' | 'done' | 'blocked';
+  status?: 'draft' | 'pending' | 'in-progress' | 'review' | 'done' | 'cancelled' | 'deferred';
   createdAt?: string;
   updatedAt?: string;
   assignee?: string;

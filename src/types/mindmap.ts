@@ -126,7 +126,7 @@ export interface MindmapNode {
   /** ノードの優先度（オプション） */
   priority?: 'critical' | 'high' | 'medium' | 'low';
   /** ノードのステータス（オプション） */
-  status?: 'todo' | 'in-progress' | 'done' | 'blocked';
+  status?: 'draft' | 'pending' | 'in-progress' | 'review' | 'done' | 'cancelled' | 'deferred';
   /** 作成日時 */
   createdAt?: string;
   /** 更新日時 */
