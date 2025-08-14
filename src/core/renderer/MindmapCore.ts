@@ -370,13 +370,15 @@ export class MindmapCore {
       );
     }
 
-    // 背景矩形のサイズ更新
+    // 背景矩形のサイズ更新（優先度インジケーター対応）
     nodeUpdate.select('.mindmap-node-rect')
       .attr('width', (d: D3Node) => d.width)
       .attr('height', (d: D3Node) => d.height)
       .attr('x', (d: D3Node) => -d.width / 2)
       .attr('y', (d: D3Node) => -d.height / 2)
-      .attr('fill', (d: D3Node) => this.getNodeColor(d.data));
+      .attr('fill', (d: D3Node) => this.getNodeColor(d.data))
+      .attr('stroke', (d: D3Node) => this.getPriorityBorderColor(d.data))
+      .attr('stroke-width', (d: D3Node) => this.getPriorityBorderWidth(d.data));
 
     // テキストの更新（複数行対応）
     nodeUpdate.select('.mindmap-node-text')
@@ -398,6 +400,9 @@ export class MindmapCore {
         this.renderMultilineText(textElement, d.data.title, d.width - this.NODE_PADDING * 2, d.height - this.NODE_PADDING * 2);
       });
 
+    // 優先度バッジの描画
+    this.drawPriorityBadges(nodeUpdate);
+
     // 不要なノードの削除
     nodeSelection.exit().remove();
   }
@@ -410,8 +415,140 @@ export class MindmapCore {
       return node.color;
     }
 
+    // 優先度に応じた背景色の微調整
     const theme = this.settings.theme || 'light';
-    return theme === 'dark' ? '#2d2d2d' : '#ffffff';
+    const baseColor = theme === 'dark' ? '#2d2d2d' : '#ffffff';
+    
+    // 優先度に応じて背景色を微調整
+    const priority = node.priority;
+    if (priority && theme === 'light') {
+      switch (priority) {
+        case 'critical':
+          return '#fef2f2'; // クリティカル：強い赤系背景
+        case 'high':
+          return '#fef2f2'; // 赤系の薄い背景
+        case 'medium':
+          return '#fffbeb'; // オレンジ系の薄い背景
+        case 'low':
+          return '#f0fdf4'; // 緑系の薄い背景
+      }
+    } else if (priority && theme === 'dark') {
+      switch (priority) {
+        case 'critical':
+          return '#4f1f1f'; // クリティカル：より強い赤系暗い背景
+        case 'high':
+          return '#3f1f1f'; // 赤系の暗い背景
+        case 'medium':
+          return '#3f2f1f'; // オレンジ系の暗い背景
+        case 'low':
+          return '#1f3f2f'; // 緑系の暗い背景
+      }
+    }
+    
+    return baseColor;
+  }
+
+  /**
+   * 優先度に応じた境界線の色を取得
+   */
+  private getPriorityBorderColor(node: MindmapNode): string {
+    const priority = node.priority;
+    
+    switch (priority) {
+      case 'critical':
+        return '#dc2626'; // クリティカル：濃い赤
+      case 'high':
+        return '#ef4444'; // 赤
+      case 'medium':
+        return '#f59e0b'; // オレンジ
+      case 'low':
+        return '#10b981'; // 緑
+      default:
+        return '#e0e0e0'; // デフォルトのグレー
+    }
+  }
+
+  /**
+   * 優先度に応じた境界線の太さを取得
+   */
+  private getPriorityBorderWidth(node: MindmapNode): number {
+    const priority = node.priority;
+    
+    switch (priority) {
+      case 'critical':
+        return 4; // クリティカル：最も太い境界線
+      case 'high':
+        return 3; // 太い境界線
+      case 'medium':
+        return 2; // 中程度の境界線
+      case 'low':
+        return 1; // 細い境界線
+      default:
+        return 1; // デフォルト
+    }
+  }
+
+  /**
+   * 優先度バッジの情報を取得
+   */
+  private getPriorityBadgeInfo(node: MindmapNode): { text: string; color: string; bgColor: string } | null {
+    const priority = node.priority;
+    
+    switch (priority) {
+      case 'critical':
+        return { text: '!!', color: '#ffffff', bgColor: '#dc2626' };
+      case 'high':
+        return { text: '!', color: '#ffffff', bgColor: '#ef4444' };
+      case 'medium':
+        return { text: 'M', color: '#ffffff', bgColor: '#f59e0b' };
+      case 'low':
+        return { text: 'L', color: '#ffffff', bgColor: '#10b981' };
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * 優先度バッジを描画
+   */
+  private drawPriorityBadges(nodeUpdate: d3.Selection<SVGGElement, D3Node, SVGGElement, unknown>): void {
+    // 既存のバッジを削除
+    nodeUpdate.selectAll('.priority-badge').remove();
+
+    // 優先度バッジの描画
+    nodeUpdate.each((d: D3Node, i, nodes) => {
+      const badgeInfo = this.getPriorityBadgeInfo(d.data);
+      if (!badgeInfo) return;
+
+      const nodeGroup = d3.select(nodes[i] as SVGGElement);
+      const badgeSize = 16;
+      const badgeX = d.width / 2 - badgeSize / 2 - 4;
+      const badgeY = -d.height / 2 + 4;
+
+      // バッジグループ作成
+      const badgeGroup = nodeGroup
+        .append('g')
+        .attr('class', 'priority-badge')
+        .attr('transform', `translate(${badgeX}, ${badgeY})`);
+
+      // バッジ背景
+      badgeGroup
+        .append('circle')
+        .attr('r', badgeSize / 2)
+        .attr('fill', badgeInfo.bgColor)
+        .attr('stroke', '#ffffff')
+        .attr('stroke-width', 1);
+
+      // バッジテキスト
+      badgeGroup
+        .append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'central')
+        .attr('font-size', '10px')
+        .attr('font-weight', 'bold')
+        .attr('fill', badgeInfo.color)
+        .text(badgeInfo.text);
+    });
   }
 
   /**

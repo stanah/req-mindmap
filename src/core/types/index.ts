@@ -88,7 +88,7 @@ export interface MindmapNode {
   type?: string;
   color?: string;
   icon?: string;
-  priority?: 'high' | 'medium' | 'low';
+  priority?: 'critical' | 'high' | 'medium' | 'low';
   status?: 'todo' | 'in-progress' | 'done' | 'blocked';
   createdAt?: string;
   updatedAt?: string;

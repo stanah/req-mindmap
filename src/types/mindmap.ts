@@ -124,7 +124,7 @@ export interface MindmapNode {
   /** ノードのアイコン（オプション） */
   icon?: string;
   /** ノードの優先度（オプション） */
-  priority?: 'high' | 'medium' | 'low';
+  priority?: 'critical' | 'high' | 'medium' | 'low';
   /** ノードのステータス（オプション） */
   status?: 'todo' | 'in-progress' | 'done' | 'blocked';
   /** 作成日時 */
