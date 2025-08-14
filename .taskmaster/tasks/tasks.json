@@ -1448,7 +1448,7 @@
             "title": "Phase1-2: コアロジック振る舞いテスト作成",
             "description": "期待されるコアロジック（データ管理、ノード操作、状態管理）の振る舞いを定義するテストを作成する",
             "details": "新しく作成予定のMindmapCoreLogicクラスが満たすべき仕様をテストとして先行定義。ノードのCRUD操作、ツリー構造の操作、Undo/Redo機能、イベントシステムの動作をテストケースで明確化する。",
-            "status": "pending",
+            "status": "done",
             "dependencies": [
               "23.1"
             ],
@@ -1525,7 +1525,7 @@
     ],
     "metadata": {
       "created": "2025-08-03T03:13:21.292Z",
-      "updated": "2025-08-14T20:09:02.249Z",
+      "updated": "2025-08-14T20:14:09.713Z",
       "description": "Tasks for master context"
     }
   }
