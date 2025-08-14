@@ -22,16 +22,14 @@ export default defineConfig({
     
     // VSCode Webviewでは単一のHTMLファイルが必要
     rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.vscode.html'),
-        vscode: resolve(__dirname, 'src/vscode/main.tsx')
-      },
+      input: resolve(__dirname, 'index.vscode.html'),
       output: {
         // VSCode Webviewでは相対パスを使用
         format: 'iife',
         entryFileNames: 'assets/[name].js',
         chunkFileNames: 'assets/[name].js',
-        assetFileNames: 'assets/[name].[ext]'
+        assetFileNames: 'assets/[name].[ext]',
+        inlineDynamicImports: true
       }
     },
 

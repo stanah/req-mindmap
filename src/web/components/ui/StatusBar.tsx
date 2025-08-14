@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useAppStore } from '../../stores/appStore';
-import { performanceMonitor } from '../../utils/performanceMonitor';
+import { useAppStore } from '../../../stores/appStore';
+import { performanceMonitor } from '../../../utils/performanceMonitor';
 import './StatusBar.css';
 
 export const StatusBar: React.FC = () => {
@@ -16,7 +16,7 @@ export const StatusBar: React.FC = () => {
   const optimizeMemory = useAppStore(state => state.optimizeMemory);
 
   // パフォーマンス情報の状態
-  const [memoryInfo, setMemoryInfo] = useState<import('../../utils/performanceMonitor').MemoryInfo | null>(null);
+  const [memoryInfo, setMemoryInfo] = useState<import('../../../utils/performanceMonitor').MemoryInfo | null>(null);
   const [showPerformanceDetails, setShowPerformanceDetails] = useState(false);
 
   // メモリ情報を定期的に更新

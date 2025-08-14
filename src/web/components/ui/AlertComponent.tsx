@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useAppStore } from '../../stores/appStore';
+import { useAppStore } from '../../../stores/appStore';
 import './AlertComponent.css';
 
 export const AlertComponent: React.FC = () => {

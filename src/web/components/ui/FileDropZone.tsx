@@ -5,8 +5,8 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { useAppStore } from '../../stores/appStore';
-import type { FileLoadResult } from '../../services/fileService';
+import { useAppStore } from '../../../stores/appStore';
+import type { FileLoadResult } from '../../../services/fileService';
 
 interface FileDropZoneProps {
   children: React.ReactNode;

@@ -5,10 +5,10 @@
 
 import React, { useState, useCallback } from 'react';
 import './ContentLoadModal.css';
-import { useAppStore } from '../../stores/appStore';
-import { contentLoaderService } from '../../services/contentLoaderService';
-import type { ContentLoadOptions } from '../../services/contentLoaderService';
-import type { TemplateGeneratorOptions } from '../../services/templateGeneratorService';
+import { useAppStore } from '../../../stores/appStore';
+import { contentLoaderService } from '../../../services/contentLoaderService';
+import type { ContentLoadOptions } from '../../../services/contentLoaderService';
+import type { TemplateGeneratorOptions } from '../../../services/templateGeneratorService';
 
 /**
  * Props

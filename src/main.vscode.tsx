@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import App from './vscode/VSCodeApp';
 import './index.css';
 
 // VSCode拡張環境用のメインエントリーポイント

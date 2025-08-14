@@ -5,11 +5,11 @@
  */
 
 import React, { useRef, useState } from 'react';
-import { useAppStore } from '../../stores/appStore';
-import { fileService, BrowserFileService } from '../../services/fileService';
+import { useAppStore } from '../../../stores/appStore';
+import { fileService, BrowserFileService } from '../../../services/fileService';
 
 import { SettingsPanel } from './SettingsPanel';
-import type { FileLoadResult } from '../../services/fileService';
+import type { FileLoadResult } from '../../../services/fileService';
 import './SettingsPanel.css';
 
 interface FileToolbarProps {
@@ -135,7 +135,7 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
   const handleLoadComprehensiveSample = async () => {
     try {
       // contentLoaderServiceから直接包括的要件定義サンプルを読み込み
-      const result = await import('../../services/contentLoaderService').then(module => {
+      const result = await import('../../../services/contentLoaderService').then(module => {
         return module.contentLoaderService.loadContent({
           source: 'sample',
           sampleId: 'comprehensive-requirements',

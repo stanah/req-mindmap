@@ -182,14 +182,18 @@ export class MindmapParser {
       // ルートノードの検証
       const rootValidation = this.validateNode(data.root, 'root');
       errors.push(...rootValidation.errors);
-      warnings.push(...rootValidation.warnings);
+      if (rootValidation.warnings) {
+        warnings.push(...rootValidation.warnings);
+      }
     }
 
     // カスタムスキーマバリデーション
     if (options.validateSchema && this.customSchema) {
       const schemaValidation = this.validateWithCustomSchema(data);
       errors.push(...schemaValidation.errors);
-      warnings.push(...schemaValidation.warnings);
+      if (schemaValidation.warnings) {
+        warnings.push(...schemaValidation.warnings);
+      }
     }
 
     return {
@@ -251,7 +255,9 @@ export class MindmapParser {
         const childPath = `${path}.children[${index}]`;
         const childValidation = this.validateNode(child, childPath);
         errors.push(...childValidation.errors);
-        warnings.push(...childValidation.warnings);
+        if (childValidation.warnings) {
+          warnings.push(...childValidation.warnings);
+        }
       });
     }
 

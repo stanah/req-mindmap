@@ -77,7 +77,7 @@ export const EditorPane: React.FC = () => {
     if (!model) return;
 
     // ParserServiceを使用してリアルタイム構文チェック
-    import('../services').then(({ parserService }) => {
+    import('../../services').then(({ parserService }) => {
       const syntaxErrors = parserService.getParseErrors(content);
       
       // 構文エラーのマーカーを設定（テスト環境対応）

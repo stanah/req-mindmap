@@ -5,8 +5,8 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { useAppStore } from '../../stores/appStore';
-import { templateGeneratorService } from '../../services/templateGeneratorService';
+import { useAppStore } from '../../../stores/appStore';
+import { templateGeneratorService } from '../../../services/templateGeneratorService';
 import './TemplateModal.css';
 
 interface TemplateModalProps {
