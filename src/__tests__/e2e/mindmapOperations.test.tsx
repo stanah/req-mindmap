@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import App from '../../App';
+import App from '../../web/App';
 import type { MindmapData } from '../../types';
 
 // タイマーのモック
@@ -56,8 +56,8 @@ const mockMindmapRenderer = {
   setZoomLevel: vi.fn(),
 };
 
-vi.mock('../../services/mindmapRenderer', () => ({
-  MindmapRenderer: vi.fn().mockImplementation(() => mockMindmapRenderer)
+vi.mock('../../core/renderer/MindmapCore', () => ({
+  MindmapCore: vi.fn().mockImplementation(() => mockMindmapRenderer)
 }));
 
 // D3の選択機能をモック

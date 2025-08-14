@@ -5,7 +5,7 @@
  * 表示領域内のノードのみを描画する仮想化機能を提供します。
  */
 
-import type { D3Node } from '../services/mindmapRenderer';
+import type { D3Node } from '../core/renderer/MindmapCore';
 
 /**
  * ビューポート情報

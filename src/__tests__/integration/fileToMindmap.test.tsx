@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import App from '../../App';
+import App from '../../web/App';
 import type { MindmapData } from '../../types';
 import { useAppStore } from '../../stores';
 
@@ -49,9 +49,10 @@ vi.mock('@monaco-editor/react', () => ({
   ),
 }));
 
-// MindmapRendererのモック
-vi.mock('../../services/mindmapRenderer', () => ({
-  MindmapRenderer: vi.fn().mockImplementation((svgElement: SVGElement) => {
+// MindmapCoreのモック
+vi.mock('../../core/renderer/MindmapCore', () => ({
+  MindmapCore: vi.fn().mockImplementation((options: any) => {
+    const svgElement = options.container;
     const mockRenderer = {
       render: vi.fn((data: any) => {
         // マインドマップのノードをSVGに追加

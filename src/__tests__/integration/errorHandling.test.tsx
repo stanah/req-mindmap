@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import React from 'react';
-import App from '../../App';
+import App from '../../web/App';
 
 // console.errorのモック
 const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});

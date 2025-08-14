@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { VirtualizationManager, SpatialIndex, type Viewport, type NodeBounds } from '../virtualization';
-import type { D3Node } from '../../services/mindmapRenderer';
+import type { D3Node } from '../../core/renderer/MindmapCore';
 import type { MindmapNode } from '../../types/mindmap';
 
 // テスト用のD3Nodeを作成するヘルパー
