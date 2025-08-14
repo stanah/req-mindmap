@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:vscode": "vite build --config vite.config.vscode.ts",
+    "build:vscode": "vite build --config vite.config.vscode.ts && rm -rf extension/webview && mkdir -p extension/webview && cp -r dist/webview/* extension/webview/",
     "build:extension": "./scripts/build-vscode.sh",
     "lint": "eslint .",
     "preview": "vite preview",
