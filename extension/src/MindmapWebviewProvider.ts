@@ -70,12 +70,21 @@ export class MindmapWebviewProvider {
             font-size: var(--vscode-font-size);
             color: var(--vscode-foreground);
             background-color: var(--vscode-editor-background);
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
         }
         
         #root {
-            width: 100vw;
+            width: 100%;
             height: 100vh;
+            min-height: 100vh;
             overflow: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
         }
         
         /* VSCodeテーマとの統合 */
