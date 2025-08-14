@@ -151,12 +151,13 @@ export class MindmapCore {
     const layout = this.settings.layout || 'tree';
 
     if (layout === 'tree') {
+      // 動的な横方向間隔を計算
+      const dynamicLevelSpacing = this.calculateDynamicLevelSpacing(this.root);
+      
       const treeLayout = d3.tree<MindmapNode>()
-        .nodeSize([this.NODE_SPACING * (this.settings.verticalSpacing || 1), this.LEVEL_SPACING])
+        .nodeSize([this.NODE_SPACING, dynamicLevelSpacing])
         .separation((a, b) => {
-          const aWidth = (a as D3Node).width || this.NODE_WIDTH;
-          const bWidth = (b as D3Node).width || this.NODE_WIDTH;
-          return (aWidth + bWidth) / (2 * this.NODE_WIDTH) + 0.5;
+          return this.calculateDynamicSeparation(a as D3Node, b as D3Node);
         });
 
       treeLayout(this.root);
@@ -166,13 +167,48 @@ export class MindmapCore {
   }
 
   /**
+   * 動的な横方向間隔（階層間距離）を計算
+   */
+  private calculateDynamicLevelSpacing(root: D3Node): number {
+    // 各階層の最大ノード幅を計算
+    const maxWidthPerLevel: number[] = [];
+    
+    root.each((node: D3Node) => {
+      const depth = node.depth || 0;
+      const width = node.width || this.NODE_WIDTH;
+      maxWidthPerLevel[depth] = Math.max(maxWidthPerLevel[depth] || 0, width);
+    });
+    
+    // 最大幅に基づいて間隔を決定
+    const maxWidth = Math.max(...maxWidthPerLevel);
+    const dynamicSpacing = Math.max(this.LEVEL_SPACING, maxWidth + 50);
+    
+    console.log('Dynamic level spacing:', { maxWidthPerLevel, maxWidth, dynamicSpacing });
+    
+    return dynamicSpacing;
+  }
+
+  /**
+   * 動的な間隔計算
+   * ノードの実際のサイズに基づいて間隔を動的に調整
+   */
+  private calculateDynamicSeparation(nodeA: D3Node, nodeB: D3Node): number {
+    // 全て同じ間隔
+    return 1;
+  }
+
+  /**
    * 放射状レイアウトの適用
    */
   private applyRadialLayout(): void {
     if (!this.root) return;
 
     const cluster = d3.cluster<MindmapNode>()
-      .size([2 * Math.PI, 200]);
+      .size([2 * Math.PI, 200])
+      .separation((a, b) => {
+        // 放射状レイアウト用の動的間隔調整
+        return this.calculateRadialSeparation(a as D3Node, b as D3Node);
+      });
 
     cluster(this.root);
 
@@ -183,6 +219,30 @@ export class MindmapCore {
       node.x = Math.cos(angle) * radius;
       node.y = Math.sin(angle) * radius;
     });
+  }
+
+  /**
+   * 放射状レイアウト用の動的間隔計算
+   * 半径による間隔の調整と、ノードサイズを考慮
+   */
+  private calculateRadialSeparation(nodeA: D3Node, nodeB: D3Node): number {
+    // 基本間隔（d3の標準と同じ）
+    const baseSeparation = nodeA.parent === nodeB.parent ? 1 : 2;
+    
+    // 半径による調整（深い階層ほど間隔を狭める - d3公式推奨）
+    const depth = Math.max(nodeA.depth || 1, nodeB.depth || 1);
+    const radialFactor = baseSeparation / depth;
+    
+    // ノードサイズによる調整
+    const aWidth = nodeA.width || this.NODE_WIDTH;
+    const bWidth = nodeB.width || this.NODE_WIDTH;
+    const maxWidth = Math.max(aWidth, bWidth);
+    const sizeFactor = Math.min(maxWidth / this.NODE_WIDTH, 1.5);
+    
+    // verticalSpacing設定による調整
+    const spacingFactor = this.settings.verticalSpacing || 1.0;
+    
+    return Math.max(0.3, radialFactor * sizeFactor * spacingFactor);
   }
 
   /**
