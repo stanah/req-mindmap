@@ -9,6 +9,7 @@ import { useAppStore } from '../../../stores/appStore';
 import { fileService, BrowserFileService } from '../../../services/fileService';
 
 import { SettingsPanel } from './SettingsPanel';
+import { ThemeToggle } from './ThemeToggle';
 import type { FileLoadResult } from '../../../services/fileService';
 import './SettingsPanel.css';
 
@@ -212,6 +213,8 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
 
 {/* 設定ボタン */}
       <div className="file-toolbar__group">
+        <ThemeToggle className="file-toolbar__theme-toggle" />
+        
         <button
           className="file-toolbar__button"
           onClick={() => setShowSettings(true)}

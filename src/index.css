@@ -1,3 +1,21 @@
+/* CSS変数の定義 */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #1f2937;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+  --primary-color: #2563eb;
+}
+
+/* ダークテーマ */
+[data-theme="dark"] {
+  --bg-color: #1f2937;
+  --text-color: #f9fafb;
+  --text-secondary: #d1d5db;
+  --border-color: #374151;
+  --primary-color: #60a5fa;
+}
+
 /* グローバルスタイル */
 * {
   box-sizing: border-box;
@@ -16,9 +34,10 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-color, #ffffff);
-  color: var(--text-color, #1f2937);
+  background-color: var(--bg-color);
+  color: var(--text-color);
   line-height: 1.5;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 #root {

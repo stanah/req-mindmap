@@ -19,6 +19,16 @@
   gap: 8px;
 }
 
+/* テーマトグルボタン */
+.file-toolbar__theme-toggle {
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+.file-toolbar__theme-toggle .theme-toggle__label {
+  font-size: 12px;
+}
+
 .file-toolbar__button {
   display: flex;
   align-items: center;
