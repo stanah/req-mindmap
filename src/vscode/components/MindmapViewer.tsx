@@ -19,7 +19,7 @@ export const MindmapViewer: React.FC = () => {
   const parsedData = useAppStore(state => state.parse.parsedData);
   const mindmapSettings = useAppStore(state => state.ui.mindmapSettings);
   const selectedNodeId = useAppStore(state => state.ui.selectedNodeId);
-  const cursorCorrespondingNodeId = useAppStore(state => state.ui.cursorCorrespondingNodeId);
+  const _cursorCorrespondingNodeId = useAppStore(state => state.ui.cursorCorrespondingNodeId);
   const selectNode = useAppStore(state => state.selectNode);
 
   // イベントハンドラーの定義

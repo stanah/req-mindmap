@@ -93,7 +93,7 @@ export class VSCodeFileSystemAdapter implements FileSystemAdapter {
       throw new Error('VSCode API が利用できません');
     }
 
-    const watcherId = `watcher_${++this.requestId}`;
+    const _watcherId = `watcher_${++this.requestId}`;
     
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }

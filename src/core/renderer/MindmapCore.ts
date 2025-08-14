@@ -540,7 +540,7 @@ export class MindmapCore {
   /**
    * 優先度バッジを描画
    */
-  private drawPriorityBadges(nodeUpdate: d3.Selection<SVGGElement, D3Node, SVGGElement, unknown>): void {
+  private drawPriorityBadges(nodeUpdate: d3.Selection<SVGGElement, D3Node, d3.BaseType, unknown>): void {
     // 既存のバッジを削除
     nodeUpdate.selectAll('.priority-badge').remove();
 
@@ -589,7 +589,7 @@ export class MindmapCore {
   /**
    * ステータスバッジを描画
    */
-  private drawStatusBadges(nodeUpdate: d3.Selection<SVGGElement, D3Node, SVGGElement, unknown>): void {
+  private drawStatusBadges(nodeUpdate: d3.Selection<SVGGElement, D3Node, d3.BaseType, unknown>): void {
     // 既存のステータスバッジを削除
     nodeUpdate.selectAll('.status-badge').remove();
 
@@ -825,7 +825,7 @@ export class MindmapCore {
       const dyValue = index === 0 ? startY : lineHeight;
       console.log(`Setting dy to: ${dyValue}`);
       
-      const tspan = textElement
+      const _tspan = textElement
         .append('tspan')
         .attr('x', 0)
         .attr('dy', dyValue)

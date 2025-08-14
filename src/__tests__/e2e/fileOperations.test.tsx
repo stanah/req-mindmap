@@ -15,7 +15,7 @@ const mockFileHandle = {
   kind: 'file' as const
 };
 
-const mockWritableStream = {
+const _mockWritableStream = {
   write: vi.fn(),
   close: vi.fn()
 };
@@ -60,7 +60,7 @@ vi.mock('../../App', () => ({
 const localStorageMock = (global as any).localStorageMock;
 
 describe('ファイル操作ワークフローのE2Eテスト', () => {
-  const testMindmapData: MindmapData = {
+  const _testMindmapData: MindmapData = {
     version: '1.0',
     title: 'E2Eテストマインドマップ',
     description: 'エンドツーエンドテスト用のデータ',

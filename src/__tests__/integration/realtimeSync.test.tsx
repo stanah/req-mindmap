@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render } from '@testing-library/react';
-import App from '../../App';
+import App from '../../web/App';
 
 // タイマーのモック
 vi.useFakeTimers();
@@ -116,7 +116,7 @@ root:
         const parsed = mockYamlParse(yamlContent);
         expect(parsed.version).toBe('1.0');
         expect(parsed.title).toBe('YAMLテスト');
-      } catch (error) {
+      } catch {
         // YAMLライブラリが利用できない場合のフォールバック
         expect(true).toBe(true); // テストをパスさせる
       }

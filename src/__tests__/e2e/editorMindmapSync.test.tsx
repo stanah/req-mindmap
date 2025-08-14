@@ -9,7 +9,7 @@ import { useAppStore } from '../../stores';
 // UIレンダリングなしの純粋なストアテスト
 
 describe('エディタとマインドマップの同期のE2Eテスト', () => {
-  const syncTestData: MindmapData = {
+  const _syncTestData: MindmapData = {
     version: '1.0',
     title: '同期テストマインドマップ',
     description: 'エディタとマインドマップの同期テスト用データ',

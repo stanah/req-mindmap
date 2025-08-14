@@ -111,15 +111,15 @@ describe('エラーハンドリングの基本テスト', () => {
 
   describe('エラー処理のユーティリティテスト', () => {
     it('エラーオブジェクトからメッセージを抽出する', () => {
-      const error = new Error('Test error message');
-      const message = error instanceof Error ? error.message : '不明なエラー';
+      const _error = new Error('Test error message');
+      const message = _error instanceof Error ? _error.message : '不明なエラー';
       
       expect(message).toBe('Test error message');
     });
 
     it('非エラーオブジェクトからメッセージを抽出する', () => {
-      const error = 'String error';
-      const message = error instanceof Error ? error.message : '不明なエラー';
+      const _error = 'String error';
+      const message = _error instanceof Error ? _error.message : '不明なエラー';
       
       expect(message).toBe('不明なエラー');
     });

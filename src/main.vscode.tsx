@@ -5,7 +5,7 @@ import './index.css';
 
 // VSCode拡張環境用のメインエントリーポイント
 import { PlatformAdapterFactory } from './platform';
-import { VSCodePlatformAdapter } from './platform/vscode/VSCodePlatformAdapter';
+import { VSCodePlatformAdapter as _VSCodePlatformAdapter } from './platform/vscode/VSCodePlatformAdapter';
 import VSCodeApiSingleton from './platform/vscode/VSCodeApiSingleton';
 
 // VSCode環境の検出と設定
