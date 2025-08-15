@@ -3,8 +3,9 @@ import { useAppStore } from '../../stores';
 import { useMindmapSync } from '../../hooks';
 import { MindmapCore } from '../../core';
 import type { RendererEventHandlers } from '../../core';
-import { NodeDetailsPanel } from './NodeDetailsPanel';
+import { NodeDetailsPanel } from '../../components/shared/NodeDetailsPanel';
 import './MindmapPane.css';
+import '../../styles/NodeDetailsPanel.css';
 
 export const MindmapPane: React.FC = () => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -354,7 +355,11 @@ export const MindmapPane: React.FC = () => {
           <NodeDetailsPanel 
             nodeId={selectedNodeId}
             data={parsedData}
+            isVisible={true}
+            onToggle={() => selectNode(null)}
             onClose={() => selectNode(null)}
+            mode="web"
+            position="sidebar"
           />
         </div>
       )}

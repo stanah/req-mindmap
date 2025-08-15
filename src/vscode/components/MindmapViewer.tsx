@@ -10,9 +10,9 @@ import type { RendererEventHandlers } from '../../core';
 import type { MindmapNode } from '../../types';
 import { PlatformAdapterFactory } from '../../platform';
 import { ThemeToggle } from '../../web/components/ui/ThemeToggle';
-import { NodeDetailsPanel } from './NodeDetailsPanel';
+import { NodeDetailsPanel } from '../../components/shared/NodeDetailsPanel';
 import './MindmapViewer.css';
-import './NodeDetailsPanel.css';
+import '../../styles/NodeDetailsPanel.css';
 
 export const MindmapViewer: React.FC = () => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -78,7 +78,9 @@ export const MindmapViewer: React.FC = () => {
       }
       
       // 再描画
-      rendererRef.current.render(updatedData);
+      if (updatedData) {
+        rendererRef.current.render(updatedData);
+      }
     } catch (error) {
       console.error('ノード更新に失敗:', error);
     }
@@ -258,6 +260,8 @@ export const MindmapViewer: React.FC = () => {
         isVisible={isPanelVisible}
         onToggle={() => setIsPanelVisible(!isPanelVisible)}
         onNodeUpdate={handleNodeUpdate}
+        mode="vscode"
+        position="bottom"
       />
     </div>
   );

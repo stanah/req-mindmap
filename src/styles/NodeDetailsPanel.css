@@ -1,7 +1,9 @@
 /**
- * VSCode拡張用ノード詳細パネルのスタイル（画面下部固定）
+ * ノード詳細パネルの共通スタイル
+ * Web版・VSCode拡張版両方で使用
  */
 
+/* VSCode拡張版スタイル（画面下部固定） */
 .vscode-node-details-panel {
   position: fixed;
   bottom: 0;
@@ -23,6 +25,42 @@
   transform: translateY(0);
 }
 
+/* Web版スタイル（サイドバー表示） */
+.node-details {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  max-height: 80vh;
+  transition: all 0.3s ease;
+}
+
+.node-details.sidebar {
+  width: 100%;
+  height: 100%;
+}
+
+.node-details.bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 40vh;
+  z-index: 1000;
+}
+
+.node-details.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.node-details.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* パネルヘッダー */
 .panel-header {
   display: flex;
@@ -32,6 +70,11 @@
   background: var(--vscode-panel-background, #f8f8f8);
   border-bottom: 1px solid var(--vscode-panel-border, #e0e0e0);
   min-height: 32px;
+}
+
+.node-details .panel-header {
+  background: #f8f8f8;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .panel-title {
@@ -52,7 +95,8 @@
   color: var(--vscode-editor-foreground, #000000);
 }
 
-.toggle-btn {
+.toggle-btn,
+.close-btn {
   background: transparent;
   border: none;
   color: var(--vscode-button-foreground, #666666);
@@ -64,13 +108,27 @@
   transition: background-color 0.2s ease;
 }
 
-.toggle-btn:hover {
+.toggle-btn:hover,
+.close-btn:hover {
   background: var(--vscode-button-hoverBackground, rgba(0, 0, 0, 0.1));
 }
 
-.toggle-btn:focus {
+.toggle-btn:focus,
+.close-btn:focus {
   outline: 1px solid var(--vscode-focusBorder, #007acc);
   outline-offset: 1px;
+}
+
+/* Web版での閉じるボタン */
+.node-details .close-btn {
+  color: #666666;
+  font-size: 16px;
+  padding: 2px 6px;
+}
+
+.node-details .close-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #000000;
 }
 
 /* パネル内容 */
@@ -78,6 +136,10 @@
   overflow-y: auto;
   max-height: calc(40vh - 32px);
   padding: 12px 16px 16px;
+}
+
+.node-details .panel-content {
+  max-height: calc(80vh - 32px);
 }
 
 .no-selection {
@@ -188,75 +250,6 @@
 .link-url:hover {
   text-decoration: underline;
   color: var(--vscode-textLink-activeForeground, #005a9e);
-}
-
-/* ダークテーマ対応 */
-@media (prefers-color-scheme: dark) {
-  .vscode-node-details-panel {
-    background: var(--vscode-panel-background, #1e1e1e);
-    border-top-color: var(--vscode-panel-border, #3e3e3e);
-  }
-  
-  .panel-header {
-    background: var(--vscode-panel-background, #1e1e1e);
-    border-bottom-color: var(--vscode-panel-border, #3e3e3e);
-  }
-  
-  .details-section {
-    background: var(--vscode-editor-background, #1e1e1e);
-    border-color: var(--vscode-panel-border, #3e3e3e);
-  }
-  
-  .tag {
-    background: var(--vscode-badge-background, #0e639c);
-  }
-}
-
-/* VSCodeテーマ固有の対応 */
-[data-vscode-theme-kind="vscode-dark"] .vscode-node-details-panel,
-[data-theme="dark"] .vscode-node-details-panel {
-  background: #1e1e1e;
-  border-top-color: #3e3e3e;
-}
-
-[data-vscode-theme-kind="vscode-dark"] .panel-header,
-[data-theme="dark"] .panel-header {
-  background: #1e1e1e;
-  border-bottom-color: #3e3e3e;
-}
-
-[data-vscode-theme-kind="vscode-dark"] .details-section,
-[data-theme="dark"] .details-section {
-  background: #1e1e1e;
-  border-color: #3e3e3e;
-}
-
-[data-vscode-theme-kind="vscode-dark"] .tag,
-[data-theme="dark"] .tag {
-  background: #0e639c;
-}
-
-/* 最小化状態での表示最適化 */
-.vscode-node-details-panel.hidden .panel-content {
-  display: none;
-}
-
-/* スクロールバー */
-.panel-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.panel-content::-webkit-scrollbar-track {
-  background: var(--vscode-scrollbarSlider-background, transparent);
-}
-
-.panel-content::-webkit-scrollbar-thumb {
-  background: var(--vscode-scrollbarSlider-background, rgba(121, 121, 121, 0.4));
-  border-radius: 4px;
-}
-
-.panel-content::-webkit-scrollbar-thumb:hover {
-  background: var(--vscode-scrollbarSlider-hoverBackground, rgba(100, 100, 100, 0.7));
 }
 
 /* 編集機能のスタイル */
@@ -422,8 +415,51 @@
   font-style: italic;
 }
 
-/* ダークテーマでの編集要素 */
+/* 最小化状態での表示最適化 */
+.vscode-node-details-panel.hidden .panel-content {
+  display: none;
+}
+
+/* スクロールバー */
+.panel-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: var(--vscode-scrollbarSlider-background, transparent);
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background: var(--vscode-scrollbarSlider-background, rgba(121, 121, 121, 0.4));
+  border-radius: 4px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+  background: var(--vscode-scrollbarSlider-hoverBackground, rgba(100, 100, 100, 0.7));
+}
+
+/* ダークテーマ対応 */
 @media (prefers-color-scheme: dark) {
+  .vscode-node-details-panel,
+  .node-details {
+    background: var(--vscode-panel-background, #1e1e1e);
+    border-top-color: var(--vscode-panel-border, #3e3e3e);
+  }
+  
+  .panel-header {
+    background: var(--vscode-panel-background, #1e1e1e);
+    border-bottom-color: var(--vscode-panel-border, #3e3e3e);
+  }
+  
+  .details-section {
+    background: var(--vscode-editor-background, #1e1e1e);
+    border-color: var(--vscode-panel-border, #3e3e3e);
+  }
+  
+  .tag {
+    background: var(--vscode-badge-background, #0e639c);
+  }
+
   .edit-input,
   .edit-textarea,
   .edit-select,
@@ -433,6 +469,38 @@
     border-color: var(--vscode-input-border, #555);
     color: var(--vscode-input-foreground, #cccccc);
   }
+}
+
+/* VSCodeテーマ固有の対応 */
+[data-vscode-theme-kind="vscode-dark"] .vscode-node-details-panel,
+[data-vscode-theme-kind="vscode-dark"] .node-details,
+[data-theme="dark"] .vscode-node-details-panel,
+[data-theme="dark"] .node-details {
+  background: #1e1e1e;
+  border-top-color: #3e3e3e;
+}
+
+[data-vscode-theme-kind="vscode-dark"] .panel-header,
+[data-vscode-theme-kind="vscode-dark"] .node-details .panel-header,
+[data-theme="dark"] .panel-header,
+[data-theme="dark"] .node-details .panel-header {
+  background: #1e1e1e;
+  border-bottom-color: #3e3e3e;
+}
+
+[data-vscode-theme-kind="vscode-dark"] .details-section,
+[data-vscode-theme-kind="vscode-dark"] .node-details .details-section,
+[data-theme="dark"] .details-section,
+[data-theme="dark"] .node-details .details-section {
+  background: #1e1e1e;
+  border-color: #3e3e3e;
+}
+
+[data-vscode-theme-kind="vscode-dark"] .tag,
+[data-vscode-theme-kind="vscode-dark"] .node-details .tag,
+[data-theme="dark"] .tag,
+[data-theme="dark"] .node-details .tag {
+  background: #0e639c;
 }
 
 [data-vscode-theme-kind="vscode-dark"] .edit-input,
