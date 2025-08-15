@@ -5,16 +5,33 @@
  * 統一されたエントリーポイントです。
  */
 
-// JSON Schemaから自動生成された型定義（メイン）
+// Zodスキーマから自動生成された型定義（メイン）
 export type {
   MindmapData,
   MindmapNode,
   CustomSchema,
   FieldDefinition,
+  TagDefinition,
+  Metadata,
+  NodePriority,
+  NodeStatus,
+  FieldType,
+  ZodValidationResult
+} from '../schemas/mindmap.zod';
+
+// バリデーション関数とクラスのエクスポート
+export {
+  ZodMindmapValidator,
+  isValidMindmapData,
+  isValidMindmapNode,
+  isValidFieldDefinition
+} from '../schemas/mindmap.zod';
+
+// 従来のJSONスキーマから生成された型（後方互換性のため）
+export type {
   ValidationRule,
   DisplayRule,
-  MindmapSettings,
-  TagDefinition
+  MindmapSettings
 } from './generated/mindmap';
 
 // サービス関連の型
@@ -149,35 +166,8 @@ export interface StyleSettings {
   [key: string]: string | number | undefined;
 }
 
-// 型ガード関数
-import type { MindmapData as GeneratedMindmapData, MindmapNode as GeneratedMindmapNode } from './generated/mindmap';
-
-export const isValidMindmapData = (data: unknown): data is GeneratedMindmapData => {
-  if (!data || typeof data !== 'object') return false;
-
-  const obj = data as Record<string, unknown>;
-
-  return Boolean(
-    typeof obj.version === 'string' &&
-    typeof obj.title === 'string' &&
-    obj.root &&
-    typeof obj.root === 'object' &&
-    obj.root !== null &&
-    typeof (obj.root as Record<string, unknown>).id === 'string' &&
-    typeof (obj.root as Record<string, unknown>).title === 'string'
-  );
-};
-
-export const isValidMindmapNode = (node: unknown): node is GeneratedMindmapNode => {
-  if (!node || typeof node !== 'object') return false;
-
-  const obj = node as Record<string, unknown>;
-
-  return Boolean(
-    typeof obj.id === 'string' &&
-    typeof obj.title === 'string'
-  );
-};
+// 型ガード関数はZodスキーマからエクスポート済み
+// （上記でインポート・エクスポートしているため削除）
 
 export const isParseError = (error: unknown): error is ParseError => {
   if (!error || typeof error !== 'object') return false;
