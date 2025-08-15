@@ -41,6 +41,8 @@ const mockSelection = {
   text: vi.fn().mockReturnThis(),
   filter: vi.fn().mockReturnThis(),
   each: vi.fn().mockReturnThis(),
+  size: vi.fn().mockReturnValue(1), // D3 selection size method
+  empty: vi.fn().mockReturnValue(false), // D3 selection empty method
   node: vi.fn().mockReturnValue({
     ...mockSVGElement,
     getBBox: vi.fn().mockReturnValue({
