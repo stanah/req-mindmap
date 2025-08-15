@@ -8,6 +8,8 @@ import { NodeActionButtons } from '../../../vscode/components/NodeActionButtons'
 // import type { MindmapNode } from "../../../types";
 
 const mockData = {
+  version: '1.0',
+  title: 'テストマインドマップ',
   root: {
     id: 'root',
     title: 'ルートノード',
@@ -46,7 +48,7 @@ describe('NodeActionButtons', () => {
     mockOnDeleteNode.mockClear();
   });
 
-  it('選択されたノードがない場合はプレースホルダーを表示する', () => {
+  it('選択されたノードがない場合は無効化されたボタンを表示する', () => {
     render(
       <NodeActionButtons
         selectedNodeId={null}
@@ -57,10 +59,15 @@ describe('NodeActionButtons', () => {
       />
     );
 
-    expect(screen.getByText('ノードを選択してください')).toBeInTheDocument();
+    const buttons = screen.getAllByRole('button');
+    expect(buttons).toHaveLength(4);
+    buttons.forEach(button => {
+      expect(button).toBeDisabled();
+      expect(button).toHaveAttribute('title', 'ノードを選択してください');
+    });
   });
 
-  it('データがない場合はプレースホルダーを表示する', () => {
+  it('データがない場合は無効化されたボタンを表示する', () => {
     render(
       <NodeActionButtons
         selectedNodeId="test"
@@ -71,10 +78,15 @@ describe('NodeActionButtons', () => {
       />
     );
 
-    expect(screen.getByText('ノードを選択してください')).toBeInTheDocument();
+    const buttons = screen.getAllByRole('button');
+    expect(buttons).toHaveLength(4);
+    buttons.forEach(button => {
+      expect(button).toBeDisabled();
+      expect(button).toHaveAttribute('title', 'ノードを選択してください');
+    });
   });
 
-  it('子ノードが選択されている場合、両方のボタンが表示される', () => {
+  it('子ノードが選択されている場合、適切なボタンが表示される', () => {
     render(
       <NodeActionButtons
         selectedNodeId="child1"
@@ -85,15 +97,23 @@ describe('NodeActionButtons', () => {
       />
     );
 
-    expect(screen.getByText('選択中: 子ノード1')).toBeInTheDocument();
-    expect(screen.getByText('子を追加')).toBeInTheDocument();
-    expect(screen.getByText('兄弟を追加')).toBeInTheDocument();
+    const buttons = screen.getAllByRole('button');
+    expect(buttons).toHaveLength(4);
     
-    const siblingButton = screen.getByText('兄弟を追加').closest('button');
+    // 子追加ボタン
+    const childButton = screen.getByTitle('子ノードを追加');
+    expect(childButton).not.toBeDisabled();
+    
+    // 兄弟追加ボタン
+    const siblingButton = screen.getByTitle('兄弟ノードを追加');
     expect(siblingButton).not.toBeDisabled();
+    
+    // 削除ボタン
+    const deleteButton = screen.getByTitle('ノードを削除');
+    expect(deleteButton).not.toBeDisabled();
   });
 
-  it('ルートノードが選択されている場合、兄弟追加ボタンが無効になる', () => {
+  it('ルートノードが選択されている場合、兄弟追加と削除ボタンが無効になる', () => {
     render(
       <NodeActionButtons
         selectedNodeId="root"
@@ -104,15 +124,20 @@ describe('NodeActionButtons', () => {
       />
     );
 
-    expect(screen.getByText('選択中: ルートノード')).toBeInTheDocument();
-    expect(screen.getByText('子を追加')).toBeInTheDocument();
-    expect(screen.getByText('兄弟を追加')).toBeInTheDocument();
+    const buttons = screen.getAllByRole('button');
+    expect(buttons).toHaveLength(4);
     
-    const childButton = screen.getByText('子を追加').closest('button');
-    const siblingButton = screen.getByText('兄弟を追加').closest('button');
-    
+    // 子追加ボタンは有効
+    const childButton = screen.getByTitle('子ノードを追加');
     expect(childButton).not.toBeDisabled();
+    
+    // 兄弟追加ボタンは無効
+    const siblingButton = screen.getByTitle('ルートノードには兄弟ノードを追加できません');
     expect(siblingButton).toBeDisabled();
+    
+    // 削除ボタンは無効
+    const deleteButton = screen.getByTitle('ルートノードは削除できません');
+    expect(deleteButton).toBeDisabled();
   });
 
   it('子追加ボタンをクリックするとonAddChildが呼ばれる', () => {
@@ -126,7 +151,7 @@ describe('NodeActionButtons', () => {
       />
     );
 
-    const childButton = screen.getByText('子を追加');
+    const childButton = screen.getByTitle('子ノードを追加');
     fireEvent.click(childButton);
 
     expect(mockOnAddChild).toHaveBeenCalledWith('child1');
@@ -144,7 +169,7 @@ describe('NodeActionButtons', () => {
       />
     );
 
-    const siblingButton = screen.getByText('兄弟を追加');
+    const siblingButton = screen.getByTitle('兄弟ノードを追加');
     fireEvent.click(siblingButton);
 
     expect(mockOnAddSibling).toHaveBeenCalledWith('child1');
@@ -158,6 +183,7 @@ describe('NodeActionButtons', () => {
         data={mockData}
         onAddChild={mockOnAddChild}
         onAddSibling={mockOnAddSibling}
+        onDeleteNode={mockOnDeleteNode}
         className="custom-class"
       />
     );
