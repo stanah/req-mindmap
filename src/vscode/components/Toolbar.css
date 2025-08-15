@@ -125,6 +125,13 @@
 .toolbar-button .codicon {
   font-size: 16px;
   line-height: 1;
+  color: inherit;
+  display: inline-block;
+}
+
+/* テーマ切り替えアイコンの色を明示的に設定 */
+.toolbar-button .codicon-color-mode {
+  color: var(--vscode-foreground);
 }
 
 /* レスポンシブ対応 */

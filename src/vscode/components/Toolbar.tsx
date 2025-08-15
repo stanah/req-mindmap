@@ -4,8 +4,18 @@
  */
 
 import React from 'react';
-import { NodeActionButtons } from './NodeActionButtons';
 import { VSCodeThemeToggle } from './VSCodeThemeToggle';
+import { 
+  MdExpandMore, 
+  MdExpandLess, 
+  MdCenterFocusStrong, 
+  MdZoomIn, 
+  MdZoomOut, 
+  MdFullscreen,
+  MdInfo,
+  MdAdd,
+  MdDelete 
+} from 'react-icons/md';
 import type { MindmapData } from '../../types';
 import type { MindmapCore } from '../../core';
 import './Toolbar.css';
@@ -95,14 +105,36 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     <div className="toolbar">
       {/* 左側: ノード操作 */}
       <div className="toolbar-section toolbar-left">
-        <NodeActionButtons
-          selectedNodeId={selectedNodeId}
-          data={data?.root || null}
-          onAddChild={onAddChild}
-          onAddSibling={onAddSibling}
-          onDeleteNode={onDeleteNode}
-          className="toolbar-node-actions"
-        />
+        {/* ノード操作ボタン */}
+        <button
+          className="toolbar-button"
+          onClick={() => selectedNodeId && onAddChild(selectedNodeId)}
+          disabled={!selectedNodeId}
+          title="子ノードを追加"
+          aria-label="子ノードを追加"
+        >
+          <MdAdd size={16} />
+        </button>
+        
+        <button
+          className="toolbar-button"
+          onClick={() => selectedNodeId && onAddSibling(selectedNodeId)}
+          disabled={!selectedNodeId || !data?.root}
+          title="兄弟ノードを追加"
+          aria-label="兄弟ノードを追加"
+        >
+          <MdAdd size={16} />
+        </button>
+        
+        <button
+          className="toolbar-button"
+          onClick={() => selectedNodeId && onDeleteNode(selectedNodeId)}
+          disabled={!selectedNodeId}
+          title="ノードを削除"
+          aria-label="ノードを削除"
+        >
+          <MdDelete size={16} />
+        </button>
         
         <div className="toolbar-separator" />
         
@@ -113,7 +145,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           title="全て展開 (Ctrl+E)"
           aria-label="全ノード展開"
         >
-          <span className="codicon codicon-expand-all"></span>
+          <MdExpandMore size={16} />
         </button>
         
         <button 
@@ -122,7 +154,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           title="全て折りたたみ (Ctrl+Shift+E)"
           aria-label="全ノード折りたたみ"
         >
-          <span className="codicon codicon-collapse-all"></span>
+          <MdExpandLess size={16} />
         </button>
         
         <button
@@ -132,7 +164,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           title="選択ノードにフォーカス (F)"
           aria-label="選択ノードにフォーカス"
         >
-          <span className="codicon codicon-target"></span>
+          <MdCenterFocusStrong size={16} />
         </button>
       </div>
 
@@ -144,7 +176,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           title="ズームアウト (Ctrl+-)"
           aria-label="ズームアウト"
         >
-          <span className="codicon codicon-zoom-out"></span>
+          <MdZoomOut size={16} />
         </button>
         
         <button
@@ -162,7 +194,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           title="ズームイン (Ctrl++)"
           aria-label="ズームイン"
         >
-          <span className="codicon codicon-zoom-in"></span>
+          <MdZoomIn size={16} />
         </button>
         
         <div className="toolbar-separator" />
@@ -173,7 +205,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           title="全体表示 (Ctrl+Shift+0)"
           aria-label="全体表示"
         >
-          <span className="codicon codicon-screen-full"></span>
+          <MdFullscreen size={16} />
         </button>
       </div>
 
@@ -185,7 +217,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           title="詳細パネル切り替え (Ctrl+I)"
           aria-label="詳細パネル切り替え"
         >
-          <span className="codicon codicon-info"></span>
+          <MdInfo size={16} />
         </button>
         
         <div className="toolbar-separator" />
