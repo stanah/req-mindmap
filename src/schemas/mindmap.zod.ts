@@ -3,7 +3,7 @@
  * マインドマップのデータ構造をZodで定義し、型安全性とランタイムバリデーションを提供
  */
 
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 /**
  * ノードの優先度
@@ -94,7 +94,7 @@ export const DisplayRuleSchema = z.object({
   field: z.string(),
   displayType: z.enum(['text', 'badge', 'icon', 'progress']),
   position: z.enum(['inline', 'tooltip', 'detail']),
-  style: z.record(z.any()).optional()
+  style: z.record(z.string(), z.any()).optional()
 });
 
 /**
@@ -140,7 +140,7 @@ export const MindmapNodeSchema = z.object({
   tags: z.array(z.string()).optional(),
   
   /** カスタムフィールドの値 */
-  customFields: z.record(z.any()).optional(),
+  customFields: z.record(z.string(), z.any()).optional(),
   
   /** ノードの色設定 */
   color: z.string().optional(),
@@ -149,7 +149,7 @@ export const MindmapNodeSchema = z.object({
   collapsed: z.boolean().optional(),
   
   /** ノードのメタデータ */
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
   
   /** ノードの作成日時 */
   createdAt: z.string().optional(),
@@ -161,7 +161,9 @@ export const MindmapNodeSchema = z.object({
   deadline: z.string().optional(),
   
   /** 子ノードの配列（再帰構造）*/
-  children: z.array(z.any()).optional()
+  get children() {
+    return z.array(MindmapNodeSchema).optional();
+  }
 });
 
 
@@ -203,7 +205,7 @@ export const MindmapDataSchema = z.object({
   schema: CustomSchemaSchema.optional(),
   
   /** マインドマップの設定 */
-  settings: z.record(z.any()).optional(),
+  settings: z.record(z.string(), z.any()).optional(),
   
   /** マインドマップの作成日時 */
   createdAt: z.string().optional(),
