@@ -310,7 +310,8 @@
 .edit-input,
 .edit-textarea,
 .edit-checkbox,
-.add-tag-input {
+.add-tag-input,
+.always-editable {
   background: var(--vscode-input-background, #ffffff);
   border: 1px solid var(--vscode-input-border, #ccc);
   color: var(--vscode-input-foreground, #000000);
@@ -322,9 +323,21 @@
   flex: 1;
 }
 
+/* 常時編集可能要素の特別なスタイル */
+.always-editable {
+  border-style: solid;
+  opacity: 0.95;
+}
+
+.always-editable:hover {
+  opacity: 1;
+  border-color: var(--vscode-input-border, #999);
+}
+
 .edit-input:focus,
 .edit-textarea:focus,
-.add-tag-input:focus {
+.add-tag-input:focus,
+.always-editable:focus {
   outline: none;
   border-color: var(--vscode-focusBorder, #007acc);
   box-shadow: 0 0 0 1px var(--vscode-focusBorder, #007acc);
@@ -397,7 +410,8 @@
 @media (prefers-color-scheme: dark) {
   .edit-input,
   .edit-textarea,
-  .add-tag-input {
+  .add-tag-input,
+  .always-editable {
     background: var(--vscode-input-background, #3c3c3c);
     border-color: var(--vscode-input-border, #555);
     color: var(--vscode-input-foreground, #cccccc);
@@ -407,9 +421,11 @@
 [data-vscode-theme-kind="vscode-dark"] .edit-input,
 [data-vscode-theme-kind="vscode-dark"] .edit-textarea,
 [data-vscode-theme-kind="vscode-dark"] .add-tag-input,
+[data-vscode-theme-kind="vscode-dark"] .always-editable,
 [data-theme="dark"] .edit-input,
 [data-theme="dark"] .edit-textarea,
-[data-theme="dark"] .add-tag-input {
+[data-theme="dark"] .add-tag-input,
+[data-theme="dark"] .always-editable {
   background: #3c3c3c;
   border-color: #555;
   color: #cccccc;

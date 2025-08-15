@@ -5,7 +5,7 @@
  * 編集モードでノード情報を変更可能
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import type { MindmapData, MindmapNode, CustomSchema } from '../../types/mindmap';
 
 interface NodeDetailsPanelProps {
@@ -34,15 +34,6 @@ const findNodeById = (node: MindmapNode, id: string): MindmapNode | null => {
   return null;
 };
 
-/**
- * カスタムフィールドの表示名を取得
- */
-const getFieldLabel = (fieldName: string, schema?: CustomSchema): string => {
-  if (!schema?.fields) return fieldName;
-
-  const field = schema.fields.find((f) => f.name === fieldName);
-  return field?.label || fieldName;
-};
 
 /**
  * 値をフォーマット
@@ -70,83 +61,64 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
   onToggle,
   onNodeUpdate,
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedValues, setEditedValues] = useState<Partial<MindmapNode>>({});
+  const [newTagValue, setNewTagValue] = useState('');
 
   const node = nodeId && data ? findNodeById(data.root, nodeId) : null;
 
-  // 編集モードの開始
-  const startEditing = useCallback(() => {
-    if (node) {
-      setEditedValues({
-        title: node.title,
-        description: node.description || '',
-        type: node.type || '',
-        customFields: { ...node.customFields },
-        metadata: { ...node.metadata },
-        tags: [...(node.tags || [])],
-      });
-      setIsEditing(true);
-    }
-  }, [node]);
+  // ノード切り替え時にタグ入力をリセット
+  useEffect(() => {
+    setNewTagValue('');
+  }, [nodeId]);
 
-  // 編集のキャンセル
-  const cancelEditing = useCallback(() => {
-    setIsEditing(false);
-    setEditedValues({});
-  }, []);
-
-  // 変更の保存
-  const saveChanges = useCallback(() => {
+  // フィールド値の自動保存
+  const handleFieldChange = useCallback((field: string, value: any) => {
     if (node && onNodeUpdate) {
-      // 更新日時を自動設定
       const updates = {
-        ...editedValues,
+        [field]: value,
         updatedAt: new Date().toISOString(),
       };
-      
       onNodeUpdate(node.id, updates);
-      setIsEditing(false);
-      setEditedValues({});
     }
-  }, [node, editedValues, onNodeUpdate]);
+  }, [node, onNodeUpdate]);
 
-  // 入力値の更新
-  const updateEditedValue = useCallback((field: string, value: any) => {
-    setEditedValues(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-  }, []);
-
-  // カスタムフィールドの更新
-  const updateCustomField = useCallback((fieldName: string, value: any) => {
-    setEditedValues(prev => ({
-      ...prev,
-      customFields: {
-        ...prev.customFields,
-        [fieldName]: value,
-      },
-    }));
-  }, []);
+  // カスタムフィールドの自動保存
+  const handleCustomFieldChange = useCallback((fieldName: string, value: any) => {
+    if (node && onNodeUpdate) {
+      const updates = {
+        customFields: {
+          ...node.customFields,
+          [fieldName]: value,
+        },
+        updatedAt: new Date().toISOString(),
+      };
+      onNodeUpdate(node.id, updates);
+    }
+  }, [node, onNodeUpdate]);
 
   // タグの追加
   const addTag = useCallback((tag: string) => {
-    if (tag.trim()) {
-      setEditedValues(prev => ({
-        ...prev,
-        tags: [...(prev.tags || []), tag.trim()],
-      }));
+    if (tag.trim() && node && onNodeUpdate) {
+      const newTags = [...(node.tags || []), tag.trim()];
+      const updates = {
+        tags: newTags,
+        updatedAt: new Date().toISOString(),
+      };
+      onNodeUpdate(node.id, updates);
+      setNewTagValue('');
     }
-  }, []);
+  }, [node, onNodeUpdate]);
 
   // タグの削除
   const removeTag = useCallback((index: number) => {
-    setEditedValues(prev => ({
-      ...prev,
-      tags: (prev.tags || []).filter((_, i) => i !== index),
-    }));
-  }, []);
+    if (node && onNodeUpdate) {
+      const newTags = (node.tags || []).filter((_, i) => i !== index);
+      const updates = {
+        tags: newTags,
+        updatedAt: new Date().toISOString(),
+      };
+      onNodeUpdate(node.id, updates);
+    }
+  }, [node, onNodeUpdate]);
 
   return (
     <div className={`vscode-node-details-panel ${isVisible ? 'visible' : 'hidden'}`}>
@@ -157,40 +129,12 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
             <>
               <span className="node-icon">📄</span>
               <span className="node-title">{node.title}</span>
-              {isEditing && <span className="edit-indicator">(編集中)</span>}
             </>
           ) : (
             <span>ノード詳細</span>
           )}
         </div>
         <div className="header-actions">
-          {node && !isEditing && onNodeUpdate && (
-            <button 
-              className="edit-btn" 
-              onClick={startEditing}
-              title="編集モード"
-            >
-              ✏️
-            </button>
-          )}
-          {isEditing && (
-            <>
-              <button 
-                className="save-btn" 
-                onClick={saveChanges}
-                title="保存"
-              >
-                💾
-              </button>
-              <button 
-                className="cancel-btn" 
-                onClick={cancelEditing}
-                title="キャンセル"
-              >
-                ❌
-              </button>
-            </>
-          )}
           <button 
             className="toggle-btn" 
             onClick={onToggle}
@@ -220,45 +164,36 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
                   </div>
                   <div className="details-item">
                     <label>タイトル:</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        className="edit-input"
-                        value={editedValues.title || ''}
-                        onChange={(e) => updateEditedValue('title', e.target.value)}
-                        placeholder="タイトルを入力"
-                      />
-                    ) : (
-                      <span className="value">{node.title}</span>
-                    )}
+                    <input
+                      key={`title-${node.id}`}
+                      type="text"
+                      className="edit-input always-editable"
+                      defaultValue={node.title}
+                      onBlur={(e) => handleFieldChange('title', e.target.value)}
+                      placeholder="タイトルを入力"
+                    />
                   </div>
                   <div className="details-item">
                     <label>説明:</label>
-                    {isEditing ? (
-                      <textarea
-                        className="edit-textarea"
-                        value={editedValues.description || ''}
-                        onChange={(e) => updateEditedValue('description', e.target.value)}
-                        placeholder="説明を入力"
-                        rows={3}
-                      />
-                    ) : (
-                      <span className="value description">{node.description || '未設定'}</span>
-                    )}
+                    <textarea
+                      key={`description-${node.id}`}
+                      className="edit-textarea always-editable"
+                      defaultValue={node.description || ''}
+                      onBlur={(e) => handleFieldChange('description', e.target.value)}
+                      placeholder="説明を入力"
+                      rows={3}
+                    />
                   </div>
                   <div className="details-item">
                     <label>種類:</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        className="edit-input"
-                        value={editedValues.type || ''}
-                        onChange={(e) => updateEditedValue('type', e.target.value)}
-                        placeholder="種類を入力"
-                      />
-                    ) : (
-                      <span className="value">{node.type || '未設定'}</span>
-                    )}
+                    <input
+                      key={`type-${node.id}`}
+                      type="text"
+                      className="edit-input always-editable"
+                      defaultValue={node.type || ''}
+                      onBlur={(e) => handleFieldChange('type', e.target.value)}
+                      placeholder="種類を入力"
+                    />
                   </div>
                 </div>
 
@@ -291,45 +226,40 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
                 )}
 
                 {/* カスタムフィールド */}
-                {((node.customFields && Object.keys(node.customFields).length > 0) || isEditing) && (
+                {(node.customFields && Object.keys(node.customFields).length > 0) && (
                   <div className="details-section">
                     <h4>カスタムフィールド</h4>
                     {data?.schema?.fields?.map((field) => {
-                      const currentValue = isEditing 
-                        ? editedValues.customFields?.[field.name]
-                        : node.customFields?.[field.name];
+                      const currentValue = node.customFields?.[field.name];
                       
                       return (
                         <div key={field.name} className="details-item">
                           <label>{field.label}:</label>
-                          {isEditing ? (
-                            field.type === 'boolean' ? (
-                              <input
-                                type="checkbox"
-                                className="edit-checkbox"
-                                checked={Boolean(currentValue)}
-                                onChange={(e) => updateCustomField(field.name, e.target.checked)}
-                              />
-                            ) : field.type === 'number' ? (
-                              <input
-                                type="number"
-                                className="edit-input"
-                                value={Number(currentValue) || 0}
-                                onChange={(e) => updateCustomField(field.name, Number(e.target.value))}
-                              />
-                            ) : (
-                              <input
-                                type="text"
-                                className="edit-input"
-                                value={String(currentValue || '')}
-                                onChange={(e) => updateCustomField(field.name, e.target.value)}
-                                placeholder={`${field.label}を入力`}
-                              />
-                            )
+                          {field.type === 'boolean' ? (
+                            <input
+                              key={`${field.name}-${node.id}`}
+                              type="checkbox"
+                              className="edit-checkbox always-editable"
+                              defaultChecked={Boolean(currentValue)}
+                              onChange={(e) => handleCustomFieldChange(field.name, e.target.checked)}
+                            />
+                          ) : field.type === 'number' ? (
+                            <input
+                              key={`${field.name}-${node.id}`}
+                              type="number"
+                              className="edit-input always-editable"
+                              defaultValue={Number(currentValue) || 0}
+                              onBlur={(e) => handleCustomFieldChange(field.name, Number(e.target.value))}
+                            />
                           ) : (
-                            <span className={`value field-value field-${field.name}`}>
-                              {formatValue(currentValue)}
-                            </span>
+                            <input
+                              key={`${field.name}-${node.id}`}
+                              type="text"
+                              className="edit-input always-editable"
+                              defaultValue={String(currentValue || '')}
+                              onBlur={(e) => handleCustomFieldChange(field.name, e.target.value)}
+                              placeholder={`${field.label}を入力`}
+                            />
                           )}
                         </div>
                       );
@@ -341,43 +271,33 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
                 <div className="details-section">
                   <h4>タグ</h4>
                   <div className="tags-container">
-                    {isEditing ? (
-                      <>
-                        {(editedValues.tags || []).map((tag, index) => (
-                          <span key={index} className="tag editable">
-                            {tag}
-                            <button 
-                              className="remove-tag-btn"
-                              onClick={() => removeTag(index)}
-                              title="タグを削除"
-                            >
-                              ×
-                            </button>
-                          </span>
-                        ))}
-                        <input
-                          type="text"
-                          className="add-tag-input"
-                          placeholder="タグを追加してEnter"
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                              addTag(e.currentTarget.value);
-                              e.currentTarget.value = '';
-                            }
-                          }}
-                        />
-                      </>
-                    ) : (
-                      node.tags && node.tags.length > 0 ? (
-                        node.tags.map((tag, index) => (
-                          <span key={index} className="tag">
-                            {tag}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="value">タグなし</span>
-                      )
+                    {node.tags && node.tags.length > 0 && (
+                      node.tags.map((tag, index) => (
+                        <span key={index} className="tag editable">
+                          {tag}
+                          <button 
+                            className="remove-tag-btn"
+                            onClick={() => removeTag(index)}
+                            title="タグを削除"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))
                     )}
+                    <input
+                      key={`add-tag-${node.id}`}
+                      type="text"
+                      className="add-tag-input always-editable"
+                      value={newTagValue}
+                      onChange={(e) => setNewTagValue(e.target.value)}
+                      placeholder="タグを追加してEnter"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          addTag(newTagValue);
+                        }
+                      }}
+                    />
                   </div>
                 </div>
 
