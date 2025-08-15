@@ -249,7 +249,7 @@ export class MindmapWebviewProvider {
 
                     case 'contentChanged':
                         // エディタ内容の変更を通知
-                        this.updateDocument(document, message.content);
+                        this.handleContentChanged(document, message);
                         break;
 
                     case 'exportRequest':
@@ -302,6 +302,69 @@ export class MindmapWebviewProvider {
     }
 
     /**
+     * コンテンツ変更の処理（データオブジェクトから適切な形式に変換）
+     */
+    private handleContentChanged(document: vscode.TextDocument, message: any): void {
+        try {
+            console.log('contentChanged要求を受信:', message);
+            
+            let content: string;
+            
+            if (message.content) {
+                // 直接文字列が送られた場合
+                content = message.content;
+            } else if (message.data) {
+                // データオブジェクトが送られた場合、ファイル拡張子に応じて変換
+                const fileExtension = document.uri.fsPath.toLowerCase().split('.').pop();
+                
+                if (fileExtension === 'yaml' || fileExtension === 'yml') {
+                    // YAML形式で変換
+                    try {
+                        // まず既存のYAMLをパースして構造を検証
+                        const existingContent = document.getText();
+                        if (existingContent.trim()) {
+                            yaml.load(existingContent);
+                        }
+                        
+                        content = yaml.dump(message.data, {
+                            indent: 2,
+                            lineWidth: 120,
+                            noRefs: true,
+                            sortKeys: false,
+                            quotingType: '"',
+                            skipInvalid: false, // エラーを隠さない
+                            condenseFlow: false
+                        });
+                        
+                        // 変換後のYAMLも検証
+                        yaml.load(content);
+                        console.log('YAML変換・検証完了');
+                    } catch (yamlError) {
+                        console.error('YAML変換エラー:', yamlError);
+                        vscode.window.showErrorMessage(`YAML変換に失敗しました: ${yamlError}`);
+                        return;
+                    }
+                } else {
+                    // JSON形式で変換
+                    content = JSON.stringify(message.data, null, 2);
+                }
+            } else {
+                console.warn('contentChanged要求にcontentまたはdataが含まれていません');
+                return;
+            }
+            
+            console.log('変換後のコンテンツ長:', content.length);
+            console.log('ドキュメント更新実行中...');
+            
+            this.updateDocument(document, content);
+            console.log('ドキュメント更新完了');
+            
+        } catch (error) {
+            console.error('コンテンツ変更に失敗:', error);
+        }
+    }
+
+    /**
      * ファイル保存要求の処理
      */
     private async handleSaveFile(webview: vscode.Webview, document: vscode.TextDocument, message: any): Promise<void> {
@@ -323,14 +386,24 @@ export class MindmapWebviewProvider {
                     // ファイル形式に応じて変換
                     if (fileExtension === 'yaml' || fileExtension === 'yml') {
                         // YAMLファイルの場合はYAML形式で保存
-                        content = yaml.dump(message.data, {
-                            indent: 2,
-                            lineWidth: 120,
-                            noRefs: true,
-                            sortKeys: false,
-                            quotingType: '"',
-                            skipInvalid: true
-                        });
+                        try {
+                            content = yaml.dump(message.data, {
+                                indent: 2,
+                                lineWidth: 120,
+                                noRefs: true,
+                                sortKeys: false,
+                                quotingType: '"',
+                                skipInvalid: false, // エラーを隠さない
+                                condenseFlow: false
+                            });
+                            
+                            // 変換後のYAMLを検証
+                            yaml.load(content);
+                            console.log('YAML保存時変換・検証完了');
+                        } catch (yamlError) {
+                            console.error('YAML保存時変換エラー:', yamlError);
+                            throw new Error(`YAML変換に失敗しました: ${yamlError}`);
+                        }
                     } else {
                         // JSONファイルまたはその他の場合はJSON形式で保存
                         content = JSON.stringify(message.data, null, 2);

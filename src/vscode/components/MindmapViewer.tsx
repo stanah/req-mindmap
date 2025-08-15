@@ -81,10 +81,20 @@ export const MindmapViewer: React.FC = () => {
               data: updatedData  // contentではなくdataとして送信
             });
             console.log('VSCodeにcontentChangedメッセージを送信');
+            
+            // ファイル保存を少し遅延させて競合を回避
+            setTimeout(() => {
+              console.log('ファイル保存要求送信中');
+              window.vscode.postMessage({
+                command: 'saveFile',
+                data: updatedData
+              });
+              console.log('VSCodeにsaveFileメッセージを送信');
+            }, 100);
           } else {
             console.error('window.vscodeが存在しません');
           }
-          console.log('ファイル更新完了');
+          console.log('ファイル更新・保存完了');
           
           // ファイル更新後は自動でパーサーが動くので、手動での状態更新は不要
         }
@@ -138,10 +148,20 @@ export const MindmapViewer: React.FC = () => {
               data: updatedData  // contentではなくdataとして送信
             });
             console.log('VSCodeにcontentChangedメッセージを送信');
+            
+            // ファイル保存を少し遅延させて競合を回避
+            setTimeout(() => {
+              console.log('ファイル保存要求送信中');
+              window.vscode.postMessage({
+                command: 'saveFile',
+                data: updatedData
+              });
+              console.log('VSCodeにsaveFileメッセージを送信');
+            }, 100);
           } else {
             console.error('window.vscodeが存在しません');
           }
-          console.log('ファイル更新完了');
+          console.log('ファイル更新・保存完了');
           
           // ファイル更新後は自動でパーサーが動くので、手動での状態更新は不要
         }
@@ -316,6 +336,34 @@ export const MindmapViewer: React.FC = () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [selectedNodeId, isPanelVisible]);
+
+  // VSCodeメッセージハンドラー
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      const message = event.data;
+      console.log('VSCodeメッセージを受信:', message);
+      
+      switch (message.command) {
+        case 'saveComplete':
+          if (message.success) {
+            console.log('ファイル保存成功');
+          } else {
+            console.error('ファイル保存失敗:', message.error);
+          }
+          break;
+        default:
+          console.log('未知のVSCodeメッセージ:', message);
+      }
+    };
+
+    // VSCode環境でのみメッセージリスナーを追加
+    if (window.vscode) {
+      window.addEventListener('message', handleMessage);
+      return () => {
+        window.removeEventListener('message', handleMessage);
+      };
+    }
+  }, []);
 
   return (
     <div className="mindmap-viewer">
