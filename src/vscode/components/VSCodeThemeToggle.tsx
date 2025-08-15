@@ -1,6 +1,6 @@
 /**
- * VSCode拡張専用テーマ切り替えコンポーネント
- * 無限ループを回避するシンプルな実装
+ * VSCode拡張専用マインドマップテーマ切り替えコンポーネント
+ * マインドマップ表示のダークモード/ライトモードを切り替える
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
@@ -10,109 +10,103 @@ interface VSCodeThemeToggleProps {
   className?: string;
 }
 
+type Theme = 'light' | 'dark' | 'auto';
+
 export const VSCodeThemeToggle: React.FC<VSCodeThemeToggleProps> = ({ className = '' }) => {
-  const [vscodeTheme, setVscodeTheme] = useState<'light' | 'dark'>('light');
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [theme, setTheme] = useState<Theme>('auto');
 
-  // VSCodeテーマの検出（一度だけ）
-  const detectVSCodeTheme = useCallback((): 'light' | 'dark' => {
-    // VSCode環境での検出方法
-    const bodyClasses = document.body.classList;
-    const htmlClasses = document.documentElement.classList;
+  // テーマの適用（シンプルに）
+  const applyTheme = (selectedTheme: Theme) => {
+    const root = document.documentElement;
     
-    // VSCodeのクラス名を確認
-    if (bodyClasses.contains('vscode-dark') || 
-        htmlClasses.contains('vscode-dark') ||
-        bodyClasses.contains('vs-dark')) {
-      return 'dark';
+    let effectiveTheme: 'light' | 'dark';
+    if (selectedTheme === 'auto') {
+      effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } else {
+      effectiveTheme = selectedTheme;
     }
     
-    if (bodyClasses.contains('vscode-light') || 
-        htmlClasses.contains('vscode-light') ||
-        bodyClasses.contains('vs')) {
-      return 'light';
-    }
+    root.setAttribute('data-theme', effectiveTheme);
+  };
 
-    // CSS変数での検出（フォールバック）
-    const computedStyle = getComputedStyle(document.documentElement);
-    const bgColor = computedStyle.getPropertyValue('--vscode-editor-background') || 
-                   computedStyle.getPropertyValue('background-color');
-    
-    if (bgColor) {
-      // RGB値を解析してテーマを判定
-      const rgb = bgColor.match(/\d+/g);
-      if (rgb) {
-        const brightness = (parseInt(rgb[0]) + parseInt(rgb[1]) + parseInt(rgb[2])) / 3;
-        return brightness > 128 ? 'light' : 'dark';
-      }
-    }
-
-    // デフォルトはlight
-    return 'light';
+  // 初期化（一度だけ実行）
+  useEffect(() => {
+    // localStorageから設定を読み込み（VSCode拡張専用のキー）
+    const savedTheme = localStorage.getItem('vscode-mindmap-theme') as Theme | null;
+    const initialTheme = savedTheme || 'auto';
+    setTheme(initialTheme);
   }, []);
 
-  // 初期化時のテーマ検出（一度だけ実行）
+  // テーマ変更時の処理
   useEffect(() => {
-    if (isInitialized) return;
-    
-    const timer = setTimeout(() => {
-      const detectedTheme = detectVSCodeTheme();
-      setVscodeTheme(detectedTheme);
-      setIsInitialized(true);
-      console.log(`Initial VSCode theme detected: ${detectedTheme}`);
-    }, 100);
+    applyTheme(theme);
+    localStorage.setItem('vscode-mindmap-theme', theme);
+  }, [theme]);
 
-    return () => clearTimeout(timer);
-  }, [detectVSCodeTheme, isInitialized]);
-
-  // VSCodeからのテーマ変更メッセージを処理（メッセージベースのみ）
+  // システム設定の変更を監視（一度だけ設定）
   useEffect(() => {
-    if (!window.vscode) return;
-
-    const handleMessage = (event: MessageEvent) => {
-      const message = event.data;
-      if (message.command === 'themeChanged') {
-        const newTheme = message.theme as 'light' | 'dark';
-        console.log('Received theme change from VSCode:', newTheme);
-        setVscodeTheme(newTheme);
-      }
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleSystemThemeChange = () => {
+      // 現在のテーマが'auto'の場合のみ再適用
+      setTheme(currentTheme => {
+        if (currentTheme === 'auto') {
+          // stateを更新することで、上のuseEffectが自動で再実行される
+          return 'auto';
+        }
+        return currentTheme;
+      });
     };
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    mediaQuery.addEventListener('change', handleSystemThemeChange);
+    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
   }, []);
 
-  // VSCodeテーマ選択画面を開く
   const handleThemeToggle = useCallback(() => {
-    console.log('Theme toggle clicked');
-    
-    if (window.vscode) {
-      // VSCodeのテーマ選択コマンドを実行
-      window.vscode.postMessage({
-        command: 'requestThemeChange',
-        currentTheme: vscodeTheme
-      });
-    } else {
-      // VSCode環境でない場合は手動で切り替え（デバッグ用）
-      const newTheme = vscodeTheme === 'light' ? 'dark' : 'light';
-      setVscodeTheme(newTheme);
-      console.log(`Manual theme toggle: ${newTheme}`);
+    const themes: Theme[] = ['light', 'dark', 'auto'];
+    const currentIndex = themes.indexOf(theme);
+    const nextTheme = themes[(currentIndex + 1) % themes.length];
+    setTheme(nextTheme);
+  }, [theme]);
+
+  const getThemeIcon = () => {
+    switch (theme) {
+      case 'light':
+        return '☀️';
+      case 'dark':
+        return '🌙';
+      case 'auto':
+        const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        return systemIsDark ? '🌙🔄' : '☀️🔄';
+      default:
+        return '🔄';
     }
-  }, [vscodeTheme]);
+  };
 
   const getThemeLabel = () => {
-    return vscodeTheme === 'dark' ? 'ダークモード' : 'ライトモード';
+    switch (theme) {
+      case 'light':
+        return 'ライトモード';
+      case 'dark':
+        return 'ダークモード';
+      case 'auto':
+        return 'システム設定';
+      default:
+        return 'テーマ';
+    }
   };
 
   return (
     <button
       className={`toolbar-button ${className}`}
       onClick={handleThemeToggle}
-      title={`テーマ切り替え (現在: ${getThemeLabel()})`}
-      aria-label={`テーマを切り替え (現在: ${getThemeLabel()})`}
+      title={`マインドマップテーマ切り替え (現在: ${getThemeLabel()})`}
+      aria-label={`マインドマップテーマを切り替え (現在: ${getThemeLabel()})`}
       type="button"
     >
       <IoColorPalette size={16} />
+      <span style={{ marginLeft: '4px', fontSize: '12px' }}>
+        {getThemeIcon()}
+      </span>
     </button>
   );
 };

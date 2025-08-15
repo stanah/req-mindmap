@@ -664,6 +664,13 @@
 }
 
 /* VSCodeテーマ固有の対応 */
+[data-vscode-theme-kind="vscode-light"] .vscode-node-details-panel,
+[data-theme="light"] .vscode-node-details-panel {
+  background: #ffffff !important;
+  border-top-color: #e0e0e0 !important;
+  color: #000000 !important;
+}
+
 [data-vscode-theme-kind="vscode-dark"] .vscode-node-details-panel,
 [data-vscode-theme-kind="vscode-dark"] .node-details,
 [data-theme="dark"] .vscode-node-details-panel,
@@ -672,12 +679,41 @@
   border-top-color: #3e3e3e;
 }
 
+[data-vscode-theme-kind="vscode-light"] .vscode-node-details-panel .panel-header,
+[data-theme="light"] .vscode-node-details-panel .panel-header {
+  background: #ffffff !important;
+  border-bottom-color: #e0e0e0 !important;
+  color: #000000 !important;
+}
+
 [data-vscode-theme-kind="vscode-dark"] .panel-header,
 [data-vscode-theme-kind="vscode-dark"] .node-details .panel-header,
 [data-theme="dark"] .panel-header,
 [data-theme="dark"] .node-details .panel-header {
   background: #1e1e1e;
   border-bottom-color: #3e3e3e;
+}
+
+[data-vscode-theme-kind="vscode-light"] .vscode-node-details-panel .details-section,
+[data-theme="light"] .vscode-node-details-panel .details-section {
+  background: #ffffff !important;
+  border-color: #e0e0e0 !important;
+}
+
+[data-vscode-theme-kind="vscode-light"] .vscode-node-details-panel .details-section h4,
+[data-theme="light"] .vscode-node-details-panel .details-section h4 {
+  color: #000000 !important;
+  border-bottom-color: #e0e0e0 !important;
+}
+
+[data-vscode-theme-kind="vscode-light"] .vscode-node-details-panel .details-item label,
+[data-theme="light"] .vscode-node-details-panel .details-item label {
+  color: #666666 !important;
+}
+
+[data-vscode-theme-kind="vscode-light"] .vscode-node-details-panel .details-item .value,
+[data-theme="light"] .vscode-node-details-panel .details-item .value {
+  color: #000000 !important;
 }
 
 [data-vscode-theme-kind="vscode-dark"] .details-section,
@@ -693,6 +729,21 @@
 [data-theme="dark"] .tag,
 [data-theme="dark"] .node-details .tag {
   background: #0e639c;
+}
+
+[data-vscode-theme-kind="vscode-light"] .vscode-node-details-panel .edit-input,
+[data-vscode-theme-kind="vscode-light"] .vscode-node-details-panel .edit-textarea,
+[data-vscode-theme-kind="vscode-light"] .vscode-node-details-panel .edit-select,
+[data-vscode-theme-kind="vscode-light"] .vscode-node-details-panel .add-tag-input,
+[data-vscode-theme-kind="vscode-light"] .vscode-node-details-panel .always-editable,
+[data-theme="light"] .vscode-node-details-panel .edit-input,
+[data-theme="light"] .vscode-node-details-panel .edit-textarea,
+[data-theme="light"] .vscode-node-details-panel .edit-select,
+[data-theme="light"] .vscode-node-details-panel .add-tag-input,
+[data-theme="light"] .vscode-node-details-panel .always-editable {
+  background: #ffffff !important;
+  border-color: #ccc !important;
+  color: #000000 !important;
 }
 
 [data-vscode-theme-kind="vscode-dark"] .edit-input,
