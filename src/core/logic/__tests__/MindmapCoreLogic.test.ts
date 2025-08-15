@@ -7,8 +7,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { MindmapData, MindmapNode, MindmapSettings } from '../../types';
 
-// 将来実装予定のMindmapCoreLogicクラス（まだ存在しない）
-// import { MindmapCoreLogic } from '../MindmapCoreLogic';
+// MindmapCoreLogicクラスのインポート
+import { MindmapCoreLogic } from '../MindmapCoreLogic';
 
 /**
  * TODO: MindmapCoreLogicクラスの実装
@@ -56,70 +56,54 @@ const sampleMindmapData: MindmapData = {
 };
 
 describe('MindmapCoreLogic TDD仕様定義', () => {
-  // let coreLogic: MindmapCoreLogic;
+  let coreLogic: MindmapCoreLogic;
   let eventLog: any[];
 
   beforeEach(() => {
     eventLog = [];
-    // coreLogic = new MindmapCoreLogic();
+    coreLogic = new MindmapCoreLogic();
   });
 
   afterEach(() => {
-    // coreLogic?.destroy();
+    coreLogic?.destroy();
     vi.clearAllMocks();
   });
 
   describe('基本的なデータ管理機能', () => {
     it('マインドマップデータを設定・取得できること', () => {
-      // TODO: MindmapCoreLogicクラス実装後にテストを有効化
-      expect(true).toBe(true); // プレースホルダー
-      
-      // 期待される振る舞い：
-      // coreLogic.setData(sampleMindmapData);
-      // const retrievedData = coreLogic.getData();
-      // expect(retrievedData).toEqual(sampleMindmapData);
+      coreLogic.setData(sampleMindmapData);
+      const retrievedData = coreLogic.getData();
+      expect(retrievedData).toEqual(sampleMindmapData);
     });
 
     it('データが変更されたときにイベントが発火されること', () => {
-      expect(true).toBe(true); // プレースホルダー
-      
-      // 期待される振る舞い：
-      // coreLogic.on('dataChanged', (data) => eventLog.push({ type: 'dataChanged', data }));
-      // coreLogic.setData(sampleMindmapData);
-      // expect(eventLog).toHaveLength(1);
-      // expect(eventLog[0].type).toBe('dataChanged');
+      coreLogic.on('dataChanged', (data) => eventLog.push({ type: 'dataChanged', data }));
+      coreLogic.setData(sampleMindmapData);
+      expect(eventLog).toHaveLength(1);
+      expect(eventLog[0].type).toBe('dataChanged');
     });
 
     it('無効なデータでエラーハンドリングが働くこと', () => {
-      expect(true).toBe(true); // プレースホルダー
-      
-      // 期待される振る舞い：
-      // expect(() => coreLogic.setData(null)).toThrow();
-      // expect(() => coreLogic.setData({})).toThrow();
+      expect(() => coreLogic.setData(null as any)).toThrow();
+      expect(() => coreLogic.setData({} as any)).toThrow();
     });
   });
 
   describe('ノードCRUD操作機能', () => {
     beforeEach(() => {
-      // coreLogic.setData(sampleMindmapData);
+      coreLogic.setData(sampleMindmapData);
     });
 
     it('ノードをIDで取得できること', () => {
-      expect(true).toBe(true); // プレースホルダー
-      
-      // 期待される振る舞い：
-      // const node = coreLogic.getNode('child1');
-      // expect(node).toBeDefined();
-      // expect(node.id).toBe('child1');
-      // expect(node.title).toBe('子ノード1');
+      const node = coreLogic.getNode('child1');
+      expect(node).toBeDefined();
+      expect(node!.id).toBe('child1');
+      expect(node!.title).toBe('子ノード1');
     });
 
     it('存在しないノードでnullが返されること', () => {
-      expect(true).toBe(true); // プレースホルダー
-      
-      // 期待される振る舞い：
-      // const node = coreLogic.getNode('nonexistent');
-      // expect(node).toBeNull();
+      const node = coreLogic.getNode('nonexistent');
+      expect(node).toBeNull();
     });
 
     it('新しいノードを追加できること', () => {
