@@ -34,7 +34,6 @@ export const MindmapPane: React.FC = () => {
   // イベントハンドラーの定義
   const eventHandlers: RendererEventHandlers = useMemo(() => ({
     onNodeClick: (nodeId: string, event: MouseEvent) => {
-      console.log('ノードクリック:', nodeId);
       selectNode(nodeId);
       
       // ノードが選択されたらパネルを自動で表示
@@ -66,7 +65,7 @@ export const MindmapPane: React.FC = () => {
       selectNode(null);
       setIsPanelVisible(false);
     },
-  }), [selectNode, isPanelVisible]);
+  }), [selectNode]);
 
   // レンダラーの初期化（初回のみ）
   useEffect(() => {
@@ -135,18 +134,11 @@ export const MindmapPane: React.FC = () => {
     }
   }, [cursorCorrespondingNodeId]);
 
-  // パネル表示状態変更時のレンダリング領域調整
+  // パネル表示状態変更時の処理（再描画は不要）
   useEffect(() => {
-    if (rendererRef.current) {
-      // パネル表示状態が変わったときに再描画を実行
-      setTimeout(() => {
-        if (rendererRef.current && parsedData) {
-          rendererRef.current.render(parsedData);
-          rendererRef.current.resetView();
-        }
-      }, 350); // CSSのtransition時間(0.3s)より少し長めに設定
-    }
-  }, [isPanelVisible, parsedData]);
+    // パネル表示状態が変わっても、マインドマップの再描画は不要
+    // マインドマップのサイズや位置は変わらないため
+  }, [isPanelVisible]);
 
   // キーボードショートカット
   useEffect(() => {

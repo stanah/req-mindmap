@@ -141,6 +141,7 @@ export class MindmapCoreLogic implements ICoreLogic {
   setData(data: MindmapData): void {
     this.checkNotDestroyed();
     
+    
     const validation = this.validateData(data);
     if (!validation.valid) {
       throw new Error(`Invalid mindmap data: ${validation.errors.join(', ')}`);
@@ -148,6 +149,8 @@ export class MindmapCoreLogic implements ICoreLogic {
     
     this.data = JSON.parse(JSON.stringify(data)); // ディープクローン
     this.rebuildIndex();
+    
+    
     this.selectedNodeIds.clear();
     this.collapsedNodes.clear();
     this.clearUndoRedoHistory();
@@ -463,7 +466,7 @@ export class MindmapCoreLogic implements ICoreLogic {
     }
     
     if (!this.nodeIndex.has(nodeId)) {
-      console.warn(`Node with id ${nodeId} not found - ignoring selection request`);
+      console.warn(`🚨 [CoreLogic] Node with id ${nodeId} not found - ignoring selection request`);
       return;
     }
     
