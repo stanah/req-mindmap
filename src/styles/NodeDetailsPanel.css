@@ -53,7 +53,7 @@
   border-top: 1px solid var(--vscode-panel-border, #e0e0e0);
   z-index: 1000;
   transition: all 0.3s ease;
-  max-height: 40vh;
+  max-height: min(50vh, 400px);
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -77,7 +77,7 @@
   border-radius: 8px;
   box-shadow: 0 2px 8px var(--node-details-shadow, rgba(0, 0, 0, 0.1));
   overflow: hidden;
-  max-height: 30%;
+  max-height: min(60vh, 50%);
   transition: all 0.3s ease;
   color: var(--node-details-text, var(--vscode-editor-foreground, #000000));
   z-index: 100;
@@ -227,7 +227,7 @@
   width: calc(100% - 20px);
   max-width: none;
   height: auto;
-  max-height: 30%;
+  max-height: min(60vh, 50%);
 }
 
 .node-details.bottom {
@@ -237,7 +237,7 @@
   width: calc(100% - 20px);
   left: 10px;
   right: 10px;
-  max-height: 40%;
+  max-height: min(50vh, 60%);
 }
 
 .node-details.hidden {
@@ -323,12 +323,12 @@
 /* パネル内容 */
 .panel-content {
   overflow-y: auto;
-  max-height: calc(40vh - 32px);
+  max-height: calc(50vh - 32px);
   padding: 12px 16px 16px;
 }
 
 .node-details .panel-content {
-  max-height: calc(80vh - 32px);
+  max-height: calc(min(60vh, 50%) - 32px);
 }
 
 .no-selection {
@@ -349,8 +349,8 @@
 
 .details-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
 }
 
 .details-section {
@@ -395,6 +395,9 @@
 .details-item .value {
   color: var(--vscode-editor-foreground, #000000);
   word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
   flex: 1;
   font-size: 12px;
   line-height: 1.4;

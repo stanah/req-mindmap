@@ -272,15 +272,62 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
                       <span className="value description">{node.description || '未設定'}</span>
                     )}
                   </div>
-                </div>
 
-                {/* 階層情報 */}
-                <div className="details-section">
-                  <h4>階層情報</h4>
-                  {node.children && node.children.length > 0 && (
+                  {/* タグ */}
+                  <div className="details-item">
+                    <label>タグ:</label>
+                    <div className="tags-container">
+                      {node.tags && node.tags.length > 0 && (
+                        node.tags.map((tag, index) => (
+                          <span key={index} className={onNodeUpdate ? "tag editable" : "tag"}>
+                            {tag}
+                            {onNodeUpdate && (
+                              <button 
+                                className="remove-tag-btn"
+                                onClick={() => removeTag(index)}
+                                title="タグを削除"
+                              >
+                                ×
+                              </button>
+                            )}
+                          </span>
+                        ))
+                      )}
+                      {onNodeUpdate && (
+                        <input
+                          key={`add-tag-${node.id}`}
+                          type="text"
+                          className="add-tag-input always-editable"
+                          value={newTagValue}
+                          onChange={(e) => setNewTagValue(e.target.value)}
+                          placeholder="タグを追加してEnter"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              addTag(newTagValue);
+                            }
+                          }}
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 日時情報 */}
+                  {node.createdAt && (
                     <div className="details-item">
-                      <label>子ノード数:</label>
-                      <span className="value">{node.children.length}</span>
+                      <label>作成日時:</label>
+                      <span className="value">{new Date(node.createdAt).toLocaleString('ja-JP')}</span>
+                    </div>
+                  )}
+                  {node.updatedAt && (
+                    <div className="details-item">
+                      <label>更新日時:</label>
+                      <span className="value">{new Date(node.updatedAt).toLocaleString('ja-JP')}</span>
+                    </div>
+                  )}
+                  {node.deadline && (
+                    <div className="details-item">
+                      <label>期限:</label>
+                      <span className="value deadline">{new Date(node.deadline).toLocaleString('ja-JP')}</span>
                     </div>
                   )}
                 </div>
@@ -380,69 +427,6 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
                   </>
                 )}
 
-                {/* タグ */}
-                <div className="details-section">
-                  <h4>タグ</h4>
-                  <div className="tags-container">
-                    {node.tags && node.tags.length > 0 && (
-                      node.tags.map((tag, index) => (
-                        <span key={index} className={onNodeUpdate ? "tag editable" : "tag"}>
-                          {tag}
-                          {onNodeUpdate && (
-                            <button 
-                              className="remove-tag-btn"
-                              onClick={() => removeTag(index)}
-                              title="タグを削除"
-                            >
-                              ×
-                            </button>
-                          )}
-                        </span>
-                      ))
-                    )}
-                    {onNodeUpdate && (
-                      <input
-                        key={`add-tag-${node.id}`}
-                        type="text"
-                        className="add-tag-input always-editable"
-                        value={newTagValue}
-                        onChange={(e) => setNewTagValue(e.target.value)}
-                        placeholder="タグを追加してEnter"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            addTag(newTagValue);
-                          }
-                        }}
-                      />
-                    )}
-                  </div>
-                </div>
-
-
-                {/* 日時情報 */}
-                {(node.createdAt || node.updatedAt || node.deadline) && (
-                  <div className="details-section">
-                    <h4>日時情報</h4>
-                    {node.createdAt && (
-                      <div className="details-item">
-                        <label>作成日時:</label>
-                        <span className="value">{new Date(node.createdAt).toLocaleString('ja-JP')}</span>
-                      </div>
-                    )}
-                    {node.updatedAt && (
-                      <div className="details-item">
-                        <label>更新日時:</label>
-                        <span className="value">{new Date(node.updatedAt).toLocaleString('ja-JP')}</span>
-                      </div>
-                    )}
-                    {node.deadline && (
-                      <div className="details-item">
-                        <label>期限:</label>
-                        <span className="value deadline">{new Date(node.deadline).toLocaleString('ja-JP')}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           )}
