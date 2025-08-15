@@ -8,7 +8,7 @@ export default defineConfig({
   base: '/req-mindmap/',
   build: {
     rollupOptions: {
-      input: './src/web/main.tsx'
+      input: './index.html'
     }
   },
   test: {
