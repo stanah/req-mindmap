@@ -263,7 +263,7 @@ export interface ICoreLogic {
    * @param event イベント名
    * @param data イベントデータ
    */
-  emit(event: CoreLogicEvent, data?: any): void;
+  emit(event: CoreLogicEvent, data?: unknown): void;
 
   // ==========================================
   // 検索・フィルタリング機能

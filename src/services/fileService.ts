@@ -55,7 +55,7 @@ export class BrowserFileService implements FileService {
   // ドラッグアンドドロップ機能（将来実装予定）
    
   private _dragAndDropEnabled = false;
-  private recentFiles: any[] = [];
+  private recentFiles: FileInfo[] = [];
 
 
   /**
@@ -119,7 +119,7 @@ export class BrowserFileService implements FileService {
    */
   async openFile(): Promise<{
     success: boolean;
-    data?: any;
+    data?: unknown;
     fileName?: string;
     format?: 'json' | 'yaml';
     error?: string;
@@ -134,7 +134,7 @@ export class BrowserFileService implements FileService {
       }
 
       // ファイル選択ダイアログを表示
-      const [fileHandle] = await (window as any).showOpenFilePicker({
+      const [fileHandle] = await (window as Window & { showOpenFilePicker: (options: unknown) => Promise<FileSystemFileHandle[]> }).showOpenFilePicker({
         types: [
           {
             description: 'マインドマップファイル',
@@ -201,7 +201,7 @@ export class BrowserFileService implements FileService {
 
     } catch (error) {
 // ユーザーがキャンセルした場合
-      if ((error as any)?.name === 'AbortError' || (error as any)?.message?.includes('cancelled') || (error as any)?.message?.includes('User cancelled')) {
+      if ((error as Error & { name?: string })?.name === 'AbortError' || (error as Error)?.message?.includes('cancelled') || (error as Error)?.message?.includes('User cancelled')) {
         return {
           success: false,
           error: 'ファイル選択がキャンセルされました'
@@ -209,7 +209,7 @@ export class BrowserFileService implements FileService {
       }
 
       // セキュリティエラー
-      if ((error as any)?.name === 'SecurityError' || (error as any)?.message?.includes('Security error')) {
+      if ((error as Error & { name?: string })?.name === 'SecurityError' || (error as Error)?.message?.includes('Security error')) {
         return {
           success: false,
           error: 'セキュリティエラー: ファイルへのアクセスが拒否されました'
@@ -217,7 +217,7 @@ export class BrowserFileService implements FileService {
       }
 
       // ネットワークエラー
-      if ((error as any)?.name === 'NetworkError' || (error as any)?.message?.includes('Network error') || (error as any)?.message?.includes('network')) {
+      if ((error as Error & { name?: string })?.name === 'NetworkError' || (error as Error)?.message?.includes('Network error') || (error as Error)?.message?.includes('network')) {
         return {
           success: false,
           error: 'ネットワークエラー: ファイルの読み込みに失敗しました'
@@ -343,7 +343,7 @@ export class BrowserFileService implements FileService {
     throw new Error('ブラウザ環境では直接パスでのファイル読み込みはサポートされていません。loadFileWithInfoメソッドを使用してください。');
   }
 
-  async saveFile(pathOrData: string | any, contentOrFormat?: string | 'json' | 'yaml'): Promise<{ success: boolean; error?: string } | void> {
+  async saveFile(pathOrData: string | unknown, contentOrFormat?: string | 'json' | 'yaml'): Promise<{ success: boolean; error?: string } | void> {
     try {
       // 引数のパターンを判定
       let content: string;
@@ -382,7 +382,7 @@ export class BrowserFileService implements FileService {
       const mimeType = format === 'yaml' ? 'text/yaml' : 'application/json';
       
       // File System Access API を使用
-      const fileHandle = await (window as any).showSaveFilePicker({
+      const fileHandle = await (window as Window & { showSaveFilePicker: (options: unknown) => Promise<FileSystemFileHandle> }).showSaveFilePicker({
         types: [
           {
             description: `${format.toUpperCase()}ファイル`,
@@ -403,7 +403,7 @@ export class BrowserFileService implements FileService {
       
     } catch (error) {
       // キャンセルエラー
-      if ((error as any)?.name === 'AbortError' || (error as any)?.message?.includes('cancelled')) {
+      if ((error as Error & { name?: string })?.name === 'AbortError' || (error as Error)?.message?.includes('cancelled')) {
         return {
           success: false,
           error: 'ファイル保存がキャンセルされました'
@@ -411,7 +411,7 @@ export class BrowserFileService implements FileService {
       }
       
       // サポートされていない形式のチェック
-      if ((contentOrFormat as any) === 'xml') {
+      if (contentOrFormat === 'xml') {
         return {
           success: false,
           error: 'サポートされていない形式です'
@@ -468,14 +468,14 @@ export class BrowserFileService implements FileService {
   /**
    * 簡単なYAMLパーサー（基本的な構造のみサポート）
    */
-  private parseSimpleYaml(yamlText: string): any {
+  private parseSimpleYaml(yamlText: string): Record<string, unknown> {
     try {
       // 非常に基本的なYAML → JSON変換
       // より高度なパースが必要な場合はjs-yamlライブラリなどを使用
       const lines = yamlText.split('\n');
-      const result: any = {};
+      const result: Record<string, unknown> = {};
       let currentObj = result;
-      const stack: any[] = [];
+      const stack: Record<string, unknown>[] = [];
       let hasValidContent = false;
       
       for (let i = 0; i < lines.length; i++) {
@@ -547,7 +547,7 @@ export class BrowserFileService implements FileService {
   /**
    * 簡単なJSON→YAML変換（基本的な構造のみサポート）
    */
-  private convertToSimpleYaml(obj: any, indent: number = 0): string {
+  private convertToSimpleYaml(obj: unknown, indent: number = 0): string {
     const indentStr = '  '.repeat(indent);
     let result = '';
     
@@ -575,7 +575,7 @@ export class BrowserFileService implements FileService {
     return result;
   }
   
-  private formatYamlValue(value: any): string {
+  private formatYamlValue(value: unknown): string {
     if (typeof value === 'string') {
       // 特殊文字を含む場合は引用符で囲む
       if (value.includes(':') || value.includes('#') || value.includes('\n')) {
@@ -627,7 +627,7 @@ export class BrowserFileService implements FileService {
     localStorage.setItem('mindmap-recent-files', JSON.stringify(this.recentFiles));
   }
 
-  getRecentFiles(): any[] {
+  getRecentFiles(): FileInfo[] {
     const stored = localStorage.getItem('mindmap-recent-files');
     if (stored) {
       try {

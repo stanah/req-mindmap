@@ -25,7 +25,7 @@ export class VSCodePlatformAdapter implements PlatformAdapter {
   /**
    * VSCode APIを安全に取得する（シングルトン経由）
    */
-  static getVSCodeApi(): any {
+  static getVSCodeApi(): unknown {
     return VSCodeApiSingleton.getInstance().getApi();
   }
 

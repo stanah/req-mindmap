@@ -10,13 +10,13 @@ export interface MindmapNode {
   title: string;
   description?: string;
   tags?: string[];
-  customFields?: Record<string, any>;
+  customFields?: Record<string, unknown>;
   children?: MindmapNode[];
   metadata?: {
     createdAt?: string;
     updatedAt?: string;
     version?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -31,7 +31,7 @@ export interface Mindmap {
     updatedAt?: string;
     description?: string;
     version?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   schema?: {
     fields?: Array<{
@@ -40,7 +40,7 @@ export interface Mindmap {
       label?: string;
       options?: string[];
       required?: boolean;
-      defaultValue?: any;
+      defaultValue?: unknown;
     }>;
   };
   tags?: Array<{
@@ -77,7 +77,7 @@ export interface CreateNodeParams {
   parentId: string;
   title: string;
   description?: string;
-  customFields?: Record<string, any>;
+  customFields?: Record<string, unknown>;
   tags?: string[];
 }
 
@@ -88,7 +88,7 @@ export interface UpdateNodeParams {
   nodeId: string;
   title?: string;
   description?: string;
-  customFields?: Record<string, any>;
+  customFields?: Record<string, unknown>;
   tags?: string[];
 }
 
@@ -99,7 +99,7 @@ export interface SearchParams {
   query: string;
   filters?: {
     tags?: string[];
-    customFields?: Record<string, any>;
+    customFields?: Record<string, unknown>;
     depth?: number;
   };
   limit?: number;
@@ -111,7 +111,7 @@ export interface SearchParams {
 export interface FileOperationResult {
   success: boolean;
   message: string;
-  data?: any;
+  data?: unknown;
   error?: string;
 }
 
@@ -133,12 +133,12 @@ export interface ValidationResult {
   errors: Array<{
     path: string;
     message: string;
-    value?: any;
+    value?: unknown;
   }>;
   warnings: Array<{
     path: string;
     message: string;
-    value?: any;
+    value?: unknown;
   }>;
 }
 

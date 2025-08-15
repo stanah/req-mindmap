@@ -41,7 +41,7 @@ export class VSCodeEditorAdapter implements EditorAdapter {
     }
   }
 
-  private handleEditorEvent(message: any): void {
+  private handleEditorEvent(message: { command: string; content?: string; line?: number; column?: number }): void {
     switch (message.command) {
       case 'contentChanged':
         this.currentContent = message.content;
@@ -62,7 +62,7 @@ export class VSCodeEditorAdapter implements EditorAdapter {
       const requestId = `${++this.requestId}`;
       
       // レスポンスハンドラーを登録
-      this.messageHandlers.set(requestId, (data: any) => {
+      this.messageHandlers.set(requestId, (data: { error?: string; result?: unknown }) => {
         if (data.error) {
           reject(new Error(data.error));
         } else {

@@ -45,7 +45,7 @@ export class VSCodeUIAdapter implements UIAdapter {
       const requestId = `${++this.requestId}`;
       
       // レスポンスハンドラーを登録
-      this.messageHandlers.set(requestId, (data: any) => {
+      this.messageHandlers.set(requestId, (data: { error?: string; result?: T }) => {
         if (data.error) {
           reject(new Error(data.error));
         } else {

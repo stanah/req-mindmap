@@ -648,7 +648,7 @@ export class MindmapCoreLogic implements ICoreLogic {
   }
   
   once(event: CoreLogicEvent, handler: EventHandler): void {
-    const onceHandler = (data: any) => {
+    const onceHandler = (data: unknown) => {
       handler(data);
       this.off(event, onceHandler);
     };
@@ -660,7 +660,7 @@ export class MindmapCoreLogic implements ICoreLogic {
     this.eventListeners.clear();
   }
   
-  emit(event: CoreLogicEvent, data?: any): void {
+  emit(event: CoreLogicEvent, data?: unknown): void {
     const handlers = this.eventListeners.get(event);
     if (handlers) {
       handlers.forEach(handler => {

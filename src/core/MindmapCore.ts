@@ -6,7 +6,7 @@
 
 import { MindmapCoreLogic } from './logic/MindmapCoreLogic';
 import { MindmapRenderer } from './renderer/MindmapRenderer';
-import type { ICoreLogic } from './logic/ICoreLogic';
+import type { ICoreLogic, CoreLogicEvent, EventHandler } from './logic/ICoreLogic';
 import type {
   MindmapData,
   MindmapNode,
@@ -315,22 +315,22 @@ export class MindmapCore {
   /**
    * イベントリスナーを登録
    */
-  public on(event: string, handler: any): void {
-    this.coreLogic.on(event as any, handler);
+  public on(event: string, handler: EventHandler): void {
+    this.coreLogic.on(event as CoreLogicEvent, handler);
   }
 
   /**
    * イベントリスナーを削除
    */
-  public off(event: string, handler: any): void {
-    this.coreLogic.off(event as any, handler);
+  public off(event: string, handler: EventHandler): void {
+    this.coreLogic.off(event as CoreLogicEvent, handler);
   }
 
   /**
    * 一度だけ実行されるイベントリスナーを登録
    */
-  public once(event: string, handler: any): void {
-    this.coreLogic.once(event as any, handler);
+  public once(event: string, handler: EventHandler): void {
+    this.coreLogic.once(event as CoreLogicEvent, handler);
   }
 
   // ==========================================
@@ -397,7 +397,7 @@ export class MindmapCore {
   /**
    * パフォーマンス統計の取得（従来のAPIとの互換性維持）
    */
-  public getPerformanceStats(): any {
+  public getPerformanceStats(): { currentSettings: { enableVirtualization: boolean }; memoryStats: ReturnType<ICoreLogic['getMemoryStats']> } {
     const memoryStats = this.coreLogic.getMemoryStats();
     return {
       currentSettings: {
@@ -439,7 +439,7 @@ export class MindmapCore {
   /**
    * メモリ統計の取得
    */
-  public getMemoryStats(): any {
+  public getMemoryStats(): ReturnType<ICoreLogic['getMemoryStats']> {
     return this.coreLogic.getMemoryStats();
   }
 

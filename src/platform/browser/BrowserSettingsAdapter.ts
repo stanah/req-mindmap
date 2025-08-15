@@ -6,8 +6,8 @@ import type { SettingsAdapter } from '../interfaces';
  */
 export class BrowserSettingsAdapter implements SettingsAdapter {
   private static readonly STORAGE_PREFIX = 'mindmap-tool-settings-';
-  private changeCallbacks: Array<(key: string, value: any) => void> = [];
-  private settings: Record<string, any> = {};
+  private changeCallbacks: Array<(key: string, value: unknown) => void> = [];
+  private settings: Record<string, unknown> = {};
 
   constructor() {
     this.loadSettings();
@@ -40,11 +40,11 @@ export class BrowserSettingsAdapter implements SettingsAdapter {
     }
   }
 
-  onDidChange(callback: (key: string, value: any) => void): void {
+  onDidChange(callback: (key: string, value: unknown) => void): void {
     this.changeCallbacks.push(callback);
   }
 
-  getAll(): Record<string, any> {
+  getAll(): Record<string, unknown> {
     return { ...this.settings };
   }
 
@@ -96,7 +96,7 @@ export class BrowserSettingsAdapter implements SettingsAdapter {
       if (event.key?.startsWith(BrowserSettingsAdapter.STORAGE_PREFIX)) {
         const key = event.key.substring(BrowserSettingsAdapter.STORAGE_PREFIX.length);
         
-        let newValue: any;
+        let newValue: unknown;
         if (event.newValue !== null) {
           try {
             newValue = JSON.parse(event.newValue);
@@ -123,7 +123,7 @@ export class BrowserSettingsAdapter implements SettingsAdapter {
   /**
    * 設定変更を通知
    */
-  private notifyChange(key: string, value: any): void {
+  private notifyChange(key: string, value: unknown): void {
     this.changeCallbacks.forEach(callback => {
       try {
         callback(key, value);

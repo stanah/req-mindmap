@@ -174,13 +174,13 @@ export interface SettingsAdapter {
    * 設定変更時のコールバックを設定
    * @param callback 変更時のコールバック
    */
-  onDidChange(callback: (key: string, value: any) => void): void;
+  onDidChange(callback: (key: string, value: unknown) => void): void;
 
   /**
    * すべての設定を取得
    * @returns すべての設定
    */
-  getAll(): Record<string, any>;
+  getAll(): Record<string, unknown>;
 
   /**
    * 設定をリセット

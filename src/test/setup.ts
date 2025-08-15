@@ -7,12 +7,12 @@ import '@testing-library/jest-dom';
 // Vitest用のjest-dom型定義を手動で拡張
 declare global {
   namespace Vi {
-    interface JestAssertion<T = any> {
+    interface JestAssertion<T = unknown> {
       toBeInTheDocument(): T;
-      toHaveValue(value: any): T;
+      toHaveValue(value: unknown): T;
       toBeDisabled(): T;
       toHaveBeenCalled(): T;
-      toHaveBeenCalledWith(...args: any[]): T;
+      toHaveBeenCalledWith(...args: unknown[]): T;
       toHaveBeenCalledTimes(times: number): T;
     }
   }
@@ -35,7 +35,7 @@ vi.mock('monaco-editor', () => ({
 
 // @monaco-editor/reactのモック（最小限）
 vi.mock('@monaco-editor/react', () => {
-  const MockEditor = vi.fn(({ value, onChange }) => 
+  const MockEditor = vi.fn(({ value, onChange }: { value?: string; onChange?: (value: string, event: unknown) => void }) => 
     React.createElement('div', {
       'data-testid': 'monaco-editor',
       onChange: onChange ? (e) => onChange(e.target.value || '', {}) : undefined,
@@ -101,7 +101,7 @@ const localStorageMock = {
 Object.defineProperty(global, 'localStorage', { value: localStorageMock });
 
 // localStorageMockをグローバルで利用可能にする
-(global as any).localStorageMock = localStorageMock;;
+(global as unknown as { localStorageMock: typeof localStorageMock }).localStorageMock = localStorageMock;
 Object.defineProperty(global, 'localStorage', { value: localStorageMock });
 
 // SVGのモック

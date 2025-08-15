@@ -98,7 +98,7 @@ export class BrowserEditorAdapter implements EditorAdapter {
 
     try {
       const monacoModule = await import('monaco-editor');
-      const markers: any[] = await Promise.all(errors.map(async error => ({
+      const markers: Array<{ startLineNumber: number; startColumn: number; endLineNumber: number; endColumn: number; message: string; severity: unknown }> = await Promise.all(errors.map(async error => ({
         startLineNumber: error.line,
         startColumn: error.column,
         endLineNumber: error.endLine || error.line,

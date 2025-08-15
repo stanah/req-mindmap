@@ -9,8 +9,8 @@ import type { VSCodeApi } from './VSCodeApiSingleton';
 export class VSCodeSettingsAdapter implements SettingsAdapter {
   private vscode: VSCodeApi | null = null;
   private messageHandlers = new Map<string, (data: unknown) => void>();
-  private settingsCache = new Map<string, any>();
-  private changeCallbacks = new Set<(key: string, value: any) => void>();
+  private settingsCache = new Map<string, unknown>();
+  private changeCallbacks = new Set<(key: string, value: unknown) => void>();
   private requestId = 0;
 
   constructor() {
@@ -45,7 +45,7 @@ export class VSCodeSettingsAdapter implements SettingsAdapter {
     }
   }
 
-  private handleSettingsEvent(message: any): void {
+  private handleSettingsEvent(message: unknown): void {
     switch (message.command) {
       case 'configurationChanged':
         this.settingsCache.set(message.key, message.value);
@@ -71,7 +71,7 @@ export class VSCodeSettingsAdapter implements SettingsAdapter {
       const requestId = `${++this.requestId}`;
       
       // レスポンスハンドラーを登録
-      this.messageHandlers.set(requestId, (data: any) => {
+      this.messageHandlers.set(requestId, (data: unknown) => {
         if (data.error) {
           reject(new Error(data.error));
         } else {
@@ -118,7 +118,7 @@ export class VSCodeSettingsAdapter implements SettingsAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  onDidChange(_callback: (key: string, value: any) => void): void {
+  onDidChange(_callback: (key: string, value: unknown) => void): void {
     // VSCode API を使用して設定変更イベントを監視
     // const vscode = acquireVsCodeApi();
     // vscode.postMessage({
@@ -129,7 +129,7 @@ export class VSCodeSettingsAdapter implements SettingsAdapter {
     throw new Error('VSCode拡張環境はまだ実装されていません');
   }
 
-  getAll(): Record<string, any> {
+  getAll(): Record<string, unknown> {
     // VSCode API を使用してすべての設定を取得
     // const vscode = acquireVsCodeApi();
     // return vscode.postMessage({

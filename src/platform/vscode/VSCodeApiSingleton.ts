@@ -83,7 +83,7 @@ class VSCodeApiSingleton {
   /**
    * メッセージ送信の便利メソッド
    */
-  postMessage(message: any): boolean {
+  postMessage(message: unknown): boolean {
     const api = this.getApi();
     if (api) {
       api.postMessage(message);
@@ -96,7 +96,7 @@ class VSCodeApiSingleton {
   /**
    * 状態保存の便利メソッド
    */
-  setState(state: any): boolean {
+  setState(state: unknown): boolean {
     const api = this.getApi();
     if (api) {
       api.setState(state);
@@ -108,7 +108,7 @@ class VSCodeApiSingleton {
   /**
    * 状態取得の便利メソッド
    */
-  getState(): any {
+  getState(): unknown {
     const api = this.getApi();
     return api ? api.getState() : null;
   }

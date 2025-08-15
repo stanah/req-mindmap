@@ -27,9 +27,9 @@ export class BrowserFileSystemAdapter implements FileSystemAdapter {
     // ファイル書き込み権限を確認（ブラウザサポート確認付き）
     try {
       if ('queryPermission' in handle) {
-        const permission = await (handle as any).queryPermission({ mode: 'readwrite' });
+        const permission = await (handle as FileSystemFileHandle & { queryPermission: (options: { mode: string }) => Promise<string> }).queryPermission({ mode: 'readwrite' });
         if (permission !== 'granted') {
-          const newPermission = await (handle as any).requestPermission({ mode: 'readwrite' });
+          const newPermission = await (handle as FileSystemFileHandle & { requestPermission: (options: { mode: string }) => Promise<string> }).requestPermission({ mode: 'readwrite' });
           if (newPermission !== 'granted') {
             throw new Error('ファイル書き込み権限が拒否されました');
           }
@@ -52,7 +52,7 @@ export class BrowserFileSystemAdapter implements FileSystemAdapter {
     try {
       // File System Access API を使用
       if ('showOpenFilePicker' in window) {
-        const fileHandles = await (window as any).showOpenFilePicker({
+        const fileHandles = await (window as Window & { showOpenFilePicker: (options: unknown) => Promise<FileSystemFileHandle[]> }).showOpenFilePicker({
           types: options.filters?.map(filter => ({
             description: filter.name,
             accept: {
@@ -93,7 +93,7 @@ export class BrowserFileSystemAdapter implements FileSystemAdapter {
     try {
       // File System Access API を使用
       if ('showSaveFilePicker' in window) {
-        const handle = await (window as any).showSaveFilePicker({
+        const handle = await (window as Window & { showSaveFilePicker: (options: unknown) => Promise<FileSystemFileHandle> }).showSaveFilePicker({
           suggestedName: options.defaultPath || 'mindmap.json',
           types: options.filters?.map(filter => ({
             description: filter.name,
@@ -213,7 +213,7 @@ export class BrowserFileSystemAdapter implements FileSystemAdapter {
    * ローカルストレージからファイル内容を取得（フォールバック用）
    * 将来の機能拡張のために保持
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   private _getStoredFileContent(path: string): string | null {
     try {
       return localStorage.getItem(`file_content_${path}`);

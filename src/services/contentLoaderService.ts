@@ -128,16 +128,16 @@ export class ContentLoaderService {
 
     // フォーマットに応じてコンテンツを処理
     let content: string;
-    if (options.format === 'yaml' && (sample as any).format === 'json') {
+    if (options.format === 'yaml' && (sample as { format?: string }).format === 'json') {
       // JSONをYAMLに変換（必要に応じて）
-      content = this.convertJsonToYaml(sample.content as any);
-    } else if (options.format === 'json' && (sample as any).format === 'yaml') {
+      content = this.convertJsonToYaml(sample.content);
+    } else if (options.format === 'json' && (sample as { format?: string }).format === 'yaml') {
       // YAMLをJSONに変換（必要に応じて）
       content = this.convertYamlToJson(sample.content as string);
     } else {
       content = typeof sample.content === 'string' 
         ? sample.content 
-        : JSON.stringify((sample as any).content, null, 2);
+        : JSON.stringify((sample as { content: unknown }).content, null, 2);
     }
 
     return {
@@ -270,7 +270,7 @@ export class ContentLoaderService {
   /**
    * JSONをYAMLに変換（簡易実装）
    */
-  private convertJsonToYaml(jsonContent: any): string {
+  private convertJsonToYaml(jsonContent: unknown): string {
     // 実際の実装では、yamlライブラリを使用することを推奨
     // ここでは簡易的にJSON文字列を返す
     return JSON.stringify(jsonContent, null, 2);

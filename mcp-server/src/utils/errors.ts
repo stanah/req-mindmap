@@ -9,9 +9,9 @@ import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
  */
 export class MindmapError extends Error {
   public code: string;
-  public readonly details?: Record<string, any> | undefined;
+  public readonly details?: Record<string, unknown> | undefined;
 
-  constructor(message: string, code = 'MINDMAP_ERROR', details?: Record<string, any> | undefined) {
+  constructor(message: string, code = 'MINDMAP_ERROR', details?: Record<string, unknown> | undefined) {
     super(message);
     this.name = 'MindmapError';
     this.code = code;
@@ -68,7 +68,7 @@ export class FileNotFoundError extends FileError {
  * Invalid file format errors
  */
 export class InvalidFormatError extends MindmapError {
-  constructor(message: string, filePath?: string, formatDetails?: Record<string, any>) {
+  constructor(message: string, filePath?: string, formatDetails?: Record<string, unknown>) {
     super(
       message,
       'INVALID_FORMAT',
@@ -125,7 +125,7 @@ export class NodeNotFoundError extends NodeError {
  * Validation errors
  */
 export class ValidationError extends MindmapError {
-  constructor(message: string, validationDetails?: Record<string, any>) {
+  constructor(message: string, validationDetails?: Record<string, unknown>) {
     super(
       message,
       'VALIDATION_ERROR',

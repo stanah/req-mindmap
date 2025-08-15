@@ -122,7 +122,7 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
   }, [mode]);
 
   // フィールド値の自動保存
-  const handleFieldChange = useCallback((field: string, value: any) => {
+  const handleFieldChange = useCallback((field: string, value: unknown) => {
     if (node && onNodeUpdate) {
       const updates = {
         [field]: value,
@@ -133,7 +133,7 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
   }, [node, onNodeUpdate]);
 
   // カスタムフィールドの自動保存
-  const handleCustomFieldChange = useCallback((fieldName: string, value: any) => {
+  const handleCustomFieldChange = useCallback((fieldName: string, value: unknown) => {
     if (node && onNodeUpdate) {
       const updates = {
         customFields: {
@@ -342,7 +342,7 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
                       <div className="details-section">
                         <h4>カスタムフィールド</h4>
                         {data.schema.customFields.map((field) => {
-                            const currentValue = (node.customFields as Record<string, any> | undefined)?.[field.name];
+                            const currentValue = (node.customFields as Record<string, unknown> | undefined)?.[field.name];
                             
                             return (
                               <div key={field.name} className="details-item">

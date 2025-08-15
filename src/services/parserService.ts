@@ -107,9 +107,9 @@ export class ParserServiceImpl implements ParserService {
   /**
    * YAMLデータからスキーマを抽出し、適用する
    */
-  private extractAndApplySchema(data: any): any {
+  private extractAndApplySchema(data: unknown): unknown {
     // スキーマが含まれているかチェック
-    if (data && typeof data === 'object' && data.schema) {
+    if (data && typeof data === 'object' && (data as { schema?: unknown }).schema) {
       const schema = data.schema;
       const mindmapData = { ...data };
       

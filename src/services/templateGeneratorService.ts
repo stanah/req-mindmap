@@ -10,8 +10,8 @@ export type TemplateType = 'starter' | 'standard' | 'enterprise' | 'custom';
  */
 export interface SchemaDefinition {
   templateType: string;
-  properties?: Record<string, any>;
-  definitions?: Record<string, any>;
+  properties?: Record<string, unknown>;
+  definitions?: Record<string, unknown>;
   required?: string[];
 }
 
@@ -327,7 +327,7 @@ export class TemplateGeneratorService {
 
     // スキーマのプロパティを解析して動的にノードを生成
     if (schema.properties?.core?.properties) {
-      Object.entries(schema.properties.core.properties).forEach(([key, _prop]: [string, any]) => {
+      Object.entries(schema.properties.core.properties).forEach(([key, _prop]: [string, unknown]) => {
         root.children?.push({
           id: key,
           title: this.formatPropertyName(key, locale),
