@@ -4,7 +4,7 @@
  * スキーマベースのテンプレート生成機能を提供
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useAppStore } from '../../../stores/appStore';
 import { templateGeneratorService } from '../../../services/templateGeneratorService';
 import './TemplateModal.css';
@@ -23,7 +23,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ isOpen, onClose })
   const [locale, setLocale] = useState<'ja' | 'en'>('ja');
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const templateTypeOptions = [
+  const templateTypeOptions = useMemo(() => [
     {
       value: 'starter' as const,
       label: 'スターター版',
@@ -48,7 +48,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ isOpen, onClose })
       complexity: '高',
       timeToStart: '30分'
     }
-  ];
+  ], []);
 
   /**
    * テンプレート生成ハンドラー
@@ -97,7 +97,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ isOpen, onClose })
     } finally {
       setIsGenerating(false);
     }
-  }, [selectedTemplateType, includeExamples, includeComments, locale, isGenerating, updateContent, addNotification, onClose]);
+  }, [selectedTemplateType, includeExamples, includeComments, locale, isGenerating, updateContent, addNotification, onClose, templateTypeOptions]);
 
   if (!isOpen) return null;
 

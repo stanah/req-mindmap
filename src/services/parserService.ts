@@ -643,8 +643,8 @@ export class ParserServiceImpl implements ParserService {
       } else {
         throw new Error(`サポートされていない形式: ${format}`);
       }
-    } catch (error) {
-      throw new Error(`シリアライズエラー: ${error instanceof Error ? error.message : String(error)}`);
+    } catch (err) {
+      throw new Error(`シリアライズエラー: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 

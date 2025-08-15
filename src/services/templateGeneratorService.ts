@@ -268,9 +268,8 @@ export class TemplateGeneratorService {
     includeExamples: boolean
   ): MindmapData {
     const standardTemplate = this.generateStandardTemplate(schema, locale, includeExamples);
-    // ラベルは将来の国際化用
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _labels = this.getLabels(locale);
+    // ラベルは将来の国際化用に準備
+    // const labels = this.getLabels(locale);
 
     // トレーサビリティマトリクスを追加
     if (!standardTemplate.root.customFields) {

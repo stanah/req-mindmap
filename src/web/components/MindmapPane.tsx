@@ -70,7 +70,7 @@ export const MindmapPane: React.FC = () => {
       selectNode(null);
       setIsPanelVisible(false);
     },
-  }), [selectNode]);
+  }), [selectNode, isPanelVisible]);
 
   // レンダラーの初期化（初回のみ）
   useEffect(() => {

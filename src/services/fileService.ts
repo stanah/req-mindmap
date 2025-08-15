@@ -632,7 +632,7 @@ export class BrowserFileService implements FileService {
     if (stored) {
       try {
         this.recentFiles = JSON.parse(stored);
-      } catch (error) {
+      } catch {
         this.recentFiles = [];
       }
     }

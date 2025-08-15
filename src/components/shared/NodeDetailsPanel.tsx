@@ -61,7 +61,7 @@ const formatValue = (value: unknown): string => {
 /**
  * カスタムフィールドの表示名を取得
  */
-const getFieldLabel = (fieldName: string, schema?: CustomSchema): string => {
+const _getFieldLabel = (fieldName: string, schema?: CustomSchema): string => {
   const allFields = schema?.customFields || [];
   
   if (allFields.length === 0) return fieldName;

@@ -11,7 +11,6 @@ import type {
   MindmapData,
   MindmapNode,
   MindmapSettings,
-  RendererEventHandlers,
   RenderOptions
 } from './types';
 

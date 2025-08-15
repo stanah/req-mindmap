@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import './ThemeToggle.css';
 
 interface ThemeToggleProps {
@@ -24,7 +24,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
   };
 
   // テーマの適用
-  const applyTheme = (selectedTheme: Theme) => {
+  const applyTheme = useCallback((selectedTheme: Theme) => {
     const effectiveTheme = getEffectiveTheme(selectedTheme);
     const root = document.documentElement;
     
@@ -33,7 +33,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
     } else {
       root.setAttribute('data-theme', 'light');
     }
-  };
+  }, [getEffectiveTheme]);
 
   // 初期化とシステム設定の監視
   useEffect(() => {
@@ -53,13 +53,13 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
 
     mediaQuery.addEventListener('change', handleSystemThemeChange);
     return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
-  }, []);
+  }, [applyTheme, theme]);
 
   // テーマ変更時の処理
   useEffect(() => {
     applyTheme(theme);
     localStorage.setItem('theme', theme);
-  }, [theme]);
+  }, [theme, applyTheme]);
 
   const handleThemeChange = () => {
     const themes: Theme[] = ['light', 'dark', 'auto'];

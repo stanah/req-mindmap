@@ -3,8 +3,8 @@
  * マインドマップの状態管理ロジックの期待される振る舞いを定義
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { MindmapData, MindmapNode } from '../../types';
+import { describe, it, expect, beforeEach } from 'vitest';
+import type { MindmapData } from '../../types';
 
 // TODO: 状態管理クラスの実装後に有効化
 // import { MindmapState } from '../MindmapState';
@@ -15,7 +15,7 @@ describe('MindmapState 状態管理仕様', () => {
   // let state: MindmapState;
   let eventLog: any[];
 
-  const sampleData: MindmapData = {
+  const _sampleData: MindmapData = {
     version: '1.0',
     title: 'テストマインドマップ',
     root: {

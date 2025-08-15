@@ -103,7 +103,7 @@ export const DisplayRuleSchema = z.object({
   field: z.string(),
   displayType: z.enum(['text', 'badge', 'icon', 'progress']),
   position: z.enum(['inline', 'tooltip', 'detail']),
-  style: z.record(z.string(), z.any()).optional()
+  style: z.record(z.string(), z.unknown()).optional()
 });
 
 /**
@@ -149,7 +149,7 @@ export const MindmapNodeSchema = z.object({
   tags: z.array(z.string()).optional(),
   
   /** カスタムフィールドの値 */
-  customFields: z.record(z.string(), z.any()).optional(),
+  customFields: z.record(z.string(), z.unknown()).optional(),
   
   /** ノードの色設定 */
   color: z.string().optional(),
@@ -158,7 +158,7 @@ export const MindmapNodeSchema = z.object({
   collapsed: z.boolean().optional(),
   
   /** ノードのメタデータ */
-  metadata: z.record(z.string(), z.any()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
   
   /** ノードの作成日時 */
   createdAt: z.string().refine((val) => !isNaN(Date.parse(val)), {
@@ -220,7 +220,7 @@ export const MindmapDataSchema = z.object({
   schema: CustomSchemaSchema.optional(),
   
   /** マインドマップの設定 */
-  settings: z.record(z.string(), z.any()).optional(),
+  settings: z.record(z.string(), z.unknown()).optional(),
   
   /** マインドマップの作成日時 */
   createdAt: z.string().refine((val) => !isNaN(Date.parse(val)), {
@@ -359,7 +359,7 @@ export class ZodMindmapValidator {
   /**
    * ノード単体のバリデーション
    */
-  static validateNode(data: unknown): { success: boolean; data?: MindmapNode; errors?: any[] } {
+  static validateNode(data: unknown): { success: boolean; data?: MindmapNode; errors?: Array<{ path: string; message: string; code: string }> } {
     const result = MindmapNodeSchema.safeParse(data);
     
     if (result.success) {
@@ -382,7 +382,7 @@ export class ZodMindmapValidator {
   /**
    * カスタムフィールド定義のバリデーション
    */
-  static validateFieldDefinition(data: unknown): { success: boolean; data?: FieldDefinition; errors?: any[] } {
+  static validateFieldDefinition(data: unknown): { success: boolean; data?: FieldDefinition; errors?: Array<{ path: string; message: string; code: string }> } {
     const result = FieldDefinitionSchema.safeParse(data);
     
     if (result.success) {

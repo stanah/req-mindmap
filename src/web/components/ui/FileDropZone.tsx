@@ -65,18 +65,18 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
   /**
    * ドラッグエンター処理
    */
-  const handleDragEnter = (e: DragEvent) => {
+  const handleDragEnter = useCallback((e: DragEvent) => {
     preventDefaults(e);
     if (disabled) return;
     
     setDragCounter(prev => prev + 1);
     setIsDragActive(true);
-  };
+  }, [disabled]);
 
   /**
    * ドラッグリーブ処理
    */
-  const handleDragLeave = (e: DragEvent) => {
+  const handleDragLeave = useCallback((e: DragEvent) => {
     preventDefaults(e);
     if (disabled) return;
     
@@ -85,12 +85,12 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
     if (newCounter === 0) {
       setIsDragActive(false);
     }
-  };
+  }, [disabled, dragCounter]);
 
   /**
    * ドラッグオーバー処理
    */
-  const handleDragOver = (e: DragEvent) => {
+  const handleDragOver = useCallback((e: DragEvent) => {
     preventDefaults(e);
     if (disabled) return;
     
@@ -98,7 +98,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
     if (e.dataTransfer) {
       e.dataTransfer.dropEffect = 'copy';
     }
-  };
+  }, [disabled]);
 
   /**
    * ドロップ処理
@@ -180,7 +180,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
         duration: 5000,
       });
     }
-  }, [disabled, addNotification, updateContent, onFileLoad]);
+  }, [disabled, addNotification, handleFileLoad]);
 
   /**
    * ファイル形式を自動検出
@@ -226,7 +226,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
       dropZone.removeEventListener('dragover', handleDragOver);
       dropZone.removeEventListener('drop', handleDrop);
     };
-  }, [handleDragEnter, handleDragLeave, handleDragOver, handleDrop]);
+  }, [handleDragEnter, handleDragLeave, handleDragOver, handleDrop, disabled]);
 
   return (
     <div

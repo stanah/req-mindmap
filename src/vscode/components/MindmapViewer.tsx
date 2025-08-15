@@ -323,7 +323,7 @@ export const MindmapViewer: React.FC = () => {
     onBackgroundClick: () => {
       selectNode(null);
     },
-  }), [selectNode]);
+  }), [selectNode, isPanelVisible]);
 
   // レンダラーの初期化
   useEffect(() => {

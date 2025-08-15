@@ -10,9 +10,7 @@
 import type { 
   MindmapData, 
   MindmapNode, 
-  MindmapSettings,
-  NodeEvent,
-  NodeSelection 
+  MindmapSettings
 } from '../types';
 
 import type { 

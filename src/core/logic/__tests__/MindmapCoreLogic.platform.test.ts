@@ -11,7 +11,7 @@ import type {
   UIAdapter, 
   SettingsAdapter 
 } from '../../types';
-import type { MindmapData } from '../../types';
+// import type { MindmapData } from '../../types';
 
 // TODO: MindmapCoreLogicクラスの実装後に有効化
 // import { MindmapCoreLogic } from '../MindmapCoreLogic';

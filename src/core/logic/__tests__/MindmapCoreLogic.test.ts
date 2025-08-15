@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import type { MindmapData, MindmapNode, MindmapSettings } from '../../types';
+import type { MindmapData } from '../../types';
 
 // MindmapCoreLogicクラスのインポート
 import { MindmapCoreLogic } from '../MindmapCoreLogic';
