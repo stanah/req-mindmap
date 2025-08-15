@@ -259,6 +259,162 @@
   background: var(--vscode-scrollbarSlider-hoverBackground, rgba(100, 100, 100, 0.7));
 }
 
+/* 編集機能のスタイル */
+.edit-indicator {
+  color: var(--vscode-terminal-ansiYellow, #d19a66);
+  font-weight: 500;
+  font-size: 11px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.edit-btn,
+.save-btn,
+.cancel-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  line-height: 1;
+  transition: background-color 0.2s ease;
+}
+
+.edit-btn:hover,
+.save-btn:hover,
+.cancel-btn:hover {
+  background: var(--vscode-button-hoverBackground, rgba(0, 0, 0, 0.1));
+}
+
+.edit-btn:focus,
+.save-btn:focus,
+.cancel-btn:focus {
+  outline: 1px solid var(--vscode-focusBorder, #007acc);
+  outline-offset: 1px;
+}
+
+.save-btn:hover {
+  background: var(--vscode-button-background, #007acc);
+}
+
+.cancel-btn:hover {
+  background: var(--vscode-errorBackground, #f14c4c);
+}
+
+/* 編集フォーム要素 */
+.edit-input,
+.edit-textarea,
+.edit-checkbox,
+.add-tag-input {
+  background: var(--vscode-input-background, #ffffff);
+  border: 1px solid var(--vscode-input-border, #ccc);
+  color: var(--vscode-input-foreground, #000000);
+  padding: 4px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-family: var(--vscode-font-family, inherit);
+  transition: border-color 0.2s ease;
+  flex: 1;
+}
+
+.edit-input:focus,
+.edit-textarea:focus,
+.add-tag-input:focus {
+  outline: none;
+  border-color: var(--vscode-focusBorder, #007acc);
+  box-shadow: 0 0 0 1px var(--vscode-focusBorder, #007acc);
+}
+
+.edit-textarea {
+  resize: vertical;
+  min-height: 60px;
+  line-height: 1.4;
+}
+
+.edit-checkbox {
+  width: auto;
+  height: 14px;
+  flex: none;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* 編集可能なタグ */
+.tag.editable {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--vscode-badge-background, #007acc);
+  position: relative;
+  padding-right: 20px;
+}
+
+.remove-tag-btn {
+  background: transparent;
+  border: none;
+  color: var(--vscode-badge-foreground, #ffffff);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-tag-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.add-tag-input {
+  min-width: 120px;
+  max-width: 150px;
+  height: 20px;
+  padding: 2px 4px;
+  border: 1px dashed var(--vscode-input-border, #ccc);
+  background: var(--vscode-input-background, #ffffff);
+  font-size: 10px;
+}
+
+.add-tag-input::placeholder {
+  color: var(--vscode-input-placeholderForeground, #999);
+  font-style: italic;
+}
+
+/* ダークテーマでの編集要素 */
+@media (prefers-color-scheme: dark) {
+  .edit-input,
+  .edit-textarea,
+  .add-tag-input {
+    background: var(--vscode-input-background, #3c3c3c);
+    border-color: var(--vscode-input-border, #555);
+    color: var(--vscode-input-foreground, #cccccc);
+  }
+}
+
+[data-vscode-theme-kind="vscode-dark"] .edit-input,
+[data-vscode-theme-kind="vscode-dark"] .edit-textarea,
+[data-vscode-theme-kind="vscode-dark"] .add-tag-input,
+[data-theme="dark"] .edit-input,
+[data-theme="dark"] .edit-textarea,
+[data-theme="dark"] .add-tag-input {
+  background: #3c3c3c;
+  border-color: #555;
+  color: #cccccc;
+}
+
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
   .details-grid {

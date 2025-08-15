@@ -100,7 +100,7 @@ describe('NodeDetailsPanel', () => {
     expect(screen.getByText('カスタムフィールド')).toBeInTheDocument();
     expect(screen.getByText('優先度:')).toBeInTheDocument();
     expect(screen.getByText('high')).toBeInTheDocument();
-    expect(screen.getAllByText(/状態/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('状態:').length).toBeGreaterThan(0);
     expect(screen.getByText('active')).toBeInTheDocument();
 
     // タグが表示される
@@ -197,5 +197,180 @@ describe('NodeDetailsPanel', () => {
     const link = screen.getByText('https://example.com');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  // 編集機能のテスト
+  test('編集ボタンクリック時に編集モードに切り替わる', () => {
+    const mockOnNodeUpdate = vi.fn();
+    
+    render(
+      <NodeDetailsPanel
+        nodeId="child1"
+        data={sampleData}
+        isVisible={true}
+        onToggle={() => {}}
+        onNodeUpdate={mockOnNodeUpdate}
+      />
+    );
+
+    // 編集ボタンをクリック
+    const editButton = screen.getByTitle('編集モード');
+    fireEvent.click(editButton);
+
+    // 編集中の表示確認
+    expect(screen.getByText('(編集中)')).toBeInTheDocument();
+    
+    // 保存・キャンセルボタンの表示確認
+    expect(screen.getByTitle('保存')).toBeInTheDocument();
+    expect(screen.getByTitle('キャンセル')).toBeInTheDocument();
+    
+    // 入力フィールドの表示確認
+    expect(screen.getByDisplayValue('子ノード1')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('子ノードの説明')).toBeInTheDocument();
+  });
+
+  test('編集モードでのタイトル変更と保存', () => {
+    const mockOnNodeUpdate = vi.fn();
+    
+    render(
+      <NodeDetailsPanel
+        nodeId="child1"
+        data={sampleData}
+        isVisible={true}
+        onToggle={() => {}}
+        onNodeUpdate={mockOnNodeUpdate}
+      />
+    );
+
+    // 編集モードに切り替え
+    fireEvent.click(screen.getByTitle('編集モード'));
+
+    // タイトルを変更
+    const titleInput = screen.getByDisplayValue('子ノード1');
+    fireEvent.change(titleInput, { target: { value: '新しいタイトル' } });
+
+    // 保存
+    fireEvent.click(screen.getByTitle('保存'));
+
+    // onNodeUpdateが正しい引数で呼ばれることを確認
+    expect(mockOnNodeUpdate).toHaveBeenCalledWith('child1', expect.objectContaining({
+      title: '新しいタイトル',
+      updatedAt: expect.any(String)
+    }));
+  });
+
+  test('編集モードでのキャンセル', () => {
+    const mockOnNodeUpdate = vi.fn();
+    
+    render(
+      <NodeDetailsPanel
+        nodeId="child1"
+        data={sampleData}
+        isVisible={true}
+        onToggle={() => {}}
+        onNodeUpdate={mockOnNodeUpdate}
+      />
+    );
+
+    // 編集モードに切り替え
+    fireEvent.click(screen.getByTitle('編集モード'));
+
+    // タイトルを変更
+    const titleInput = screen.getByDisplayValue('子ノード1');
+    fireEvent.change(titleInput, { target: { value: '新しいタイトル' } });
+
+    // キャンセル
+    fireEvent.click(screen.getByTitle('キャンセル'));
+
+    // 編集モードが終了していることを確認
+    expect(screen.queryByText('(編集中)')).not.toBeInTheDocument();
+    
+    // onNodeUpdateが呼ばれていないことを確認
+    expect(mockOnNodeUpdate).not.toHaveBeenCalled();
+    
+    // 元の値が表示されていることを確認（編集モードではないことを確認）
+    expect(screen.getAllByText('子ノード1').length).toBeGreaterThan(0);
+  });
+
+  test('タグの追加と削除', () => {
+    const mockOnNodeUpdate = vi.fn();
+    
+    render(
+      <NodeDetailsPanel
+        nodeId="child1"
+        data={sampleData}
+        isVisible={true}
+        onToggle={() => {}}
+        onNodeUpdate={mockOnNodeUpdate}
+      />
+    );
+
+    // 編集モードに切り替え
+    fireEvent.click(screen.getByTitle('編集モード'));
+
+    // 新しいタグを追加
+    const tagInput = screen.getByPlaceholderText('タグを追加してEnter');
+    fireEvent.change(tagInput, { target: { value: '新タグ' } });
+    fireEvent.keyPress(tagInput, { key: 'Enter' });
+
+    // タグが追加されることを確認
+    expect(screen.getByText('新タグ')).toBeInTheDocument();
+
+    // 既存タグの削除ボタンをクリック
+    const removeButtons = screen.getAllByTitle('タグを削除');
+    fireEvent.click(removeButtons[0]);
+
+    // 保存
+    fireEvent.click(screen.getByTitle('保存'));
+
+    // 更新されたタグ配列が渡されることを確認
+    expect(mockOnNodeUpdate).toHaveBeenCalledWith('child1', expect.objectContaining({
+      tags: expect.arrayContaining(['新タグ'])
+    }));
+  });
+
+  test('カスタムフィールドの編集', () => {
+    const mockOnNodeUpdate = vi.fn();
+    
+    render(
+      <NodeDetailsPanel
+        nodeId="child1"
+        data={sampleData}
+        isVisible={true}
+        onToggle={() => {}}
+        onNodeUpdate={mockOnNodeUpdate}
+      />
+    );
+
+    // 編集モードに切り替え
+    fireEvent.click(screen.getByTitle('編集モード'));
+
+    // priorityフィールドを変更
+    const priorityInput = screen.getByDisplayValue('high');
+    fireEvent.change(priorityInput, { target: { value: 'low' } });
+
+    // 保存
+    fireEvent.click(screen.getByTitle('保存'));
+
+    // カスタムフィールドが更新されることを確認
+    expect(mockOnNodeUpdate).toHaveBeenCalledWith('child1', expect.objectContaining({
+      customFields: expect.objectContaining({
+        priority: 'low'
+      })
+    }));
+  });
+
+  test('onNodeUpdateが提供されていない場合、編集ボタンが表示されない', () => {
+    render(
+      <NodeDetailsPanel
+        nodeId="child1"
+        data={sampleData}
+        isVisible={true}
+        onToggle={() => {}}
+      />
+    );
+
+    // 編集ボタンが表示されないことを確認
+    expect(screen.queryByTitle('編集モード')).not.toBeInTheDocument();
   });
 });

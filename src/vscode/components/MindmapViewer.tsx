@@ -7,6 +7,7 @@ import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { useAppStore } from '../../stores';
 import { MindmapCore } from '../../core';
 import type { RendererEventHandlers } from '../../core';
+import type { MindmapNode } from '../../types/mindmap';
 import { PlatformAdapterFactory } from '../../platform';
 import { ThemeToggle } from '../../web/components/ui/ThemeToggle';
 import { NodeDetailsPanel } from './NodeDetailsPanel';
@@ -26,6 +27,62 @@ export const MindmapViewer: React.FC = () => {
   const selectedNodeId = useAppStore(state => state.ui.selectedNodeId);
   const _cursorCorrespondingNodeId = useAppStore(state => state.ui.cursorCorrespondingNodeId);
   const selectNode = useAppStore(state => state.selectNode);
+
+  // ノード更新のハンドラー
+  const handleNodeUpdate = async (nodeId: string, updates: Partial<MindmapNode>) => {
+    if (!rendererRef.current || !parsedData) return;
+    
+    try {
+      // MindmapCoreのupdateNodeメソッドを使用してノードを更新
+      rendererRef.current.updateNode(nodeId, updates);
+      console.log('ノード更新完了:', nodeId, updates);
+      
+      // 更新されたデータを取得
+      const updatedData = rendererRef.current.getData();
+      
+      // ファイルに保存
+      try {
+        const platformAdapter = PlatformAdapterFactory.getInstance();
+        if (platformAdapter.getPlatformType() === 'vscode') {
+          // Zustand ストアのparsedDataを直接更新
+          useAppStore.setState((state) => ({
+            parse: {
+              ...state.parse,
+              parsedData: updatedData,
+              lastParsed: Date.now(),
+            },
+          }));
+          
+          // VSCode側にファイル保存を要求
+          // HTMLで初期化されたVSCode APIインスタンスを使用
+          const vscode = (window as any).vscodeApiInstance || (window as any).vscode;
+          
+          if (!vscode) {
+            console.error('VSCode APIが利用できません - HTMLで初期化されていない可能性があります');
+            return;
+          }
+          
+          const saveMessage = {
+            command: 'saveFile',
+            data: updatedData
+          };
+          console.log('VSCodeにファイル保存を要求します:', saveMessage);
+          console.log('送信するデータのタイプ:', typeof updatedData);
+          console.log('送信するデータのプロパティ:', Object.keys(updatedData || {}));
+          
+          vscode.postMessage(saveMessage);
+          console.log('メッセージ送信完了');
+        }
+      } catch (saveError) {
+        console.error('ファイル保存に失敗:', saveError);
+      }
+      
+      // 再描画
+      rendererRef.current.render(updatedData);
+    } catch (error) {
+      console.error('ノード更新に失敗:', error);
+    }
+  };
 
   // イベントハンドラーの定義
   const eventHandlers: RendererEventHandlers = useMemo(() => ({
@@ -200,6 +257,7 @@ export const MindmapViewer: React.FC = () => {
         data={parsedData}
         isVisible={isPanelVisible}
         onToggle={() => setIsPanelVisible(!isPanelVisible)}
+        onNodeUpdate={handleNodeUpdate}
       />
     </div>
   );

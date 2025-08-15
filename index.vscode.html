@@ -72,8 +72,11 @@
   
   <!-- VSCode API初期化スクリプト -->
   <script>
-    // VSCode APIの初期化
-    window.vscode = acquireVsCodeApi();
+    // VSCode APIの初期化（一度のみ）
+    if (!window.vscode && typeof acquireVsCodeApi !== 'undefined') {
+      window.vscode = acquireVsCodeApi();
+      window.vscodeApi = window.vscode; // グローバルキャッシュも設定
+    }
     
     // VSCodeテーマの検出と適用
     function applyVSCodeTheme() {

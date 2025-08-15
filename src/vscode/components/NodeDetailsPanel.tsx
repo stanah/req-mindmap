@@ -1,10 +1,11 @@
 /**
- * VSCode拡張用ノード詳細情報パネル（画面下部固定）
+ * VSCode拡張用ノード詳細情報パネル（画面下部固定・編集機能付き）
  * 
  * 選択されたノードの詳細情報を画面下部に固定表示するパネルコンポーネント
+ * 編集モードでノード情報を変更可能
  */
 
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import type { MindmapData, MindmapNode, CustomSchema } from '../../types/mindmap';
 
 interface NodeDetailsPanelProps {
@@ -12,6 +13,7 @@ interface NodeDetailsPanelProps {
   data: MindmapData | null;
   isVisible: boolean;
   onToggle: () => void;
+  onNodeUpdate?: (nodeId: string, updates: Partial<MindmapNode>) => void;
 }
 
 /**
@@ -66,8 +68,85 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
   data,
   isVisible,
   onToggle,
+  onNodeUpdate,
 }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedValues, setEditedValues] = useState<Partial<MindmapNode>>({});
+
   const node = nodeId && data ? findNodeById(data.root, nodeId) : null;
+
+  // 編集モードの開始
+  const startEditing = useCallback(() => {
+    if (node) {
+      setEditedValues({
+        title: node.title,
+        description: node.description || '',
+        type: node.type || '',
+        customFields: { ...node.customFields },
+        metadata: { ...node.metadata },
+        tags: [...(node.tags || [])],
+      });
+      setIsEditing(true);
+    }
+  }, [node]);
+
+  // 編集のキャンセル
+  const cancelEditing = useCallback(() => {
+    setIsEditing(false);
+    setEditedValues({});
+  }, []);
+
+  // 変更の保存
+  const saveChanges = useCallback(() => {
+    if (node && onNodeUpdate) {
+      // 更新日時を自動設定
+      const updates = {
+        ...editedValues,
+        updatedAt: new Date().toISOString(),
+      };
+      
+      onNodeUpdate(node.id, updates);
+      setIsEditing(false);
+      setEditedValues({});
+    }
+  }, [node, editedValues, onNodeUpdate]);
+
+  // 入力値の更新
+  const updateEditedValue = useCallback((field: string, value: any) => {
+    setEditedValues(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  }, []);
+
+  // カスタムフィールドの更新
+  const updateCustomField = useCallback((fieldName: string, value: any) => {
+    setEditedValues(prev => ({
+      ...prev,
+      customFields: {
+        ...prev.customFields,
+        [fieldName]: value,
+      },
+    }));
+  }, []);
+
+  // タグの追加
+  const addTag = useCallback((tag: string) => {
+    if (tag.trim()) {
+      setEditedValues(prev => ({
+        ...prev,
+        tags: [...(prev.tags || []), tag.trim()],
+      }));
+    }
+  }, []);
+
+  // タグの削除
+  const removeTag = useCallback((index: number) => {
+    setEditedValues(prev => ({
+      ...prev,
+      tags: (prev.tags || []).filter((_, i) => i !== index),
+    }));
+  }, []);
 
   return (
     <div className={`vscode-node-details-panel ${isVisible ? 'visible' : 'hidden'}`}>
@@ -78,18 +157,48 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
             <>
               <span className="node-icon">📄</span>
               <span className="node-title">{node.title}</span>
+              {isEditing && <span className="edit-indicator">(編集中)</span>}
             </>
           ) : (
             <span>ノード詳細</span>
           )}
         </div>
-        <button 
-          className="toggle-btn" 
-          onClick={onToggle}
-          title={isVisible ? 'パネルを閉じる' : 'パネルを開く'}
-        >
-          {isVisible ? '▼' : '▲'}
-        </button>
+        <div className="header-actions">
+          {node && !isEditing && onNodeUpdate && (
+            <button 
+              className="edit-btn" 
+              onClick={startEditing}
+              title="編集モード"
+            >
+              ✏️
+            </button>
+          )}
+          {isEditing && (
+            <>
+              <button 
+                className="save-btn" 
+                onClick={saveChanges}
+                title="保存"
+              >
+                💾
+              </button>
+              <button 
+                className="cancel-btn" 
+                onClick={cancelEditing}
+                title="キャンセル"
+              >
+                ❌
+              </button>
+            </>
+          )}
+          <button 
+            className="toggle-btn" 
+            onClick={onToggle}
+            title={isVisible ? 'パネルを閉じる' : 'パネルを開く'}
+          >
+            {isVisible ? '▼' : '▲'}
+          </button>
+        </div>
       </div>
 
       {/* パネル内容 */}
@@ -111,20 +220,46 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
                   </div>
                   <div className="details-item">
                     <label>タイトル:</label>
-                    <span className="value">{node.title}</span>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        className="edit-input"
+                        value={editedValues.title || ''}
+                        onChange={(e) => updateEditedValue('title', e.target.value)}
+                        placeholder="タイトルを入力"
+                      />
+                    ) : (
+                      <span className="value">{node.title}</span>
+                    )}
                   </div>
-                  {node.description && (
-                    <div className="details-item">
-                      <label>説明:</label>
-                      <span className="value description">{node.description}</span>
-                    </div>
-                  )}
-                  {node.type && (
-                    <div className="details-item">
-                      <label>種類:</label>
-                      <span className="value">{node.type}</span>
-                    </div>
-                  )}
+                  <div className="details-item">
+                    <label>説明:</label>
+                    {isEditing ? (
+                      <textarea
+                        className="edit-textarea"
+                        value={editedValues.description || ''}
+                        onChange={(e) => updateEditedValue('description', e.target.value)}
+                        placeholder="説明を入力"
+                        rows={3}
+                      />
+                    ) : (
+                      <span className="value description">{node.description || '未設定'}</span>
+                    )}
+                  </div>
+                  <div className="details-item">
+                    <label>種類:</label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        className="edit-input"
+                        value={editedValues.type || ''}
+                        onChange={(e) => updateEditedValue('type', e.target.value)}
+                        placeholder="種類を入力"
+                      />
+                    ) : (
+                      <span className="value">{node.type || '未設定'}</span>
+                    )}
+                  </div>
                 </div>
 
                 {/* 階層情報 */}
@@ -156,33 +291,95 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
                 )}
 
                 {/* カスタムフィールド */}
-                {node.customFields && Object.keys(node.customFields).length > 0 && (
+                {((node.customFields && Object.keys(node.customFields).length > 0) || isEditing) && (
                   <div className="details-section">
                     <h4>カスタムフィールド</h4>
-                    {Object.entries(node.customFields).map(([key, value]) => (
-                      <div key={key} className="details-item">
-                        <label>{getFieldLabel(key, data?.schema)}:</label>
-                        <span className={`value field-value field-${key}`}>
-                          {formatValue(value)}
-                        </span>
-                      </div>
-                    ))}
+                    {data?.schema?.fields?.map((field) => {
+                      const currentValue = isEditing 
+                        ? editedValues.customFields?.[field.name]
+                        : node.customFields?.[field.name];
+                      
+                      return (
+                        <div key={field.name} className="details-item">
+                          <label>{field.label}:</label>
+                          {isEditing ? (
+                            field.type === 'boolean' ? (
+                              <input
+                                type="checkbox"
+                                className="edit-checkbox"
+                                checked={Boolean(currentValue)}
+                                onChange={(e) => updateCustomField(field.name, e.target.checked)}
+                              />
+                            ) : field.type === 'number' ? (
+                              <input
+                                type="number"
+                                className="edit-input"
+                                value={Number(currentValue) || 0}
+                                onChange={(e) => updateCustomField(field.name, Number(e.target.value))}
+                              />
+                            ) : (
+                              <input
+                                type="text"
+                                className="edit-input"
+                                value={String(currentValue || '')}
+                                onChange={(e) => updateCustomField(field.name, e.target.value)}
+                                placeholder={`${field.label}を入力`}
+                              />
+                            )
+                          ) : (
+                            <span className={`value field-value field-${field.name}`}>
+                              {formatValue(currentValue)}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
 
                 {/* タグ */}
-                {node.tags && node.tags.length > 0 && (
-                  <div className="details-section">
-                    <h4>タグ</h4>
-                    <div className="tags-container">
-                      {node.tags.map((tag, index) => (
-                        <span key={index} className="tag">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                <div className="details-section">
+                  <h4>タグ</h4>
+                  <div className="tags-container">
+                    {isEditing ? (
+                      <>
+                        {(editedValues.tags || []).map((tag, index) => (
+                          <span key={index} className="tag editable">
+                            {tag}
+                            <button 
+                              className="remove-tag-btn"
+                              onClick={() => removeTag(index)}
+                              title="タグを削除"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                        <input
+                          type="text"
+                          className="add-tag-input"
+                          placeholder="タグを追加してEnter"
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              addTag(e.currentTarget.value);
+                              e.currentTarget.value = '';
+                            }
+                          }}
+                        />
+                      </>
+                    ) : (
+                      node.tags && node.tags.length > 0 ? (
+                        node.tags.map((tag, index) => (
+                          <span key={index} className="tag">
+                            {tag}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="value">タグなし</span>
+                      )
+                    )}
                   </div>
-                )}
+                </div>
 
                 {/* 関連リンク */}
                 {node.links && node.links.length > 0 && (

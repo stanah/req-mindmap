@@ -273,6 +273,11 @@ export class MindmapWebviewProvider {
                         this.handleJumpToNodeInFile(webview, document, message);
                         break;
 
+                    case 'saveFile':
+                        // ファイル保存要求の処理
+                        this.handleSaveFile(webview, document, message);
+                        break;
+
                     default:
                         console.log('未知のメッセージ:', message);
                         break;
@@ -293,6 +298,60 @@ export class MindmapWebviewProvider {
         );
         edit.replace(document.uri, fullRange, content);
         vscode.workspace.applyEdit(edit);
+    }
+
+    /**
+     * ファイル保存要求の処理
+     */
+    private async handleSaveFile(webview: vscode.Webview, document: vscode.TextDocument, message: any): Promise<void> {
+        try {
+            console.log('saveFile要求を受信:', message);
+            
+            // Webviewから更新されたデータを取得
+            if (message.data) {
+                console.log('受信したデータタイプ:', typeof message.data);
+                console.log('受信したデータ内容:', message.data);
+                
+                // データがある場合は、そのデータでドキュメントを更新
+                const content = typeof message.data === 'string' 
+                    ? message.data 
+                    : JSON.stringify(message.data, null, 2);
+                
+                console.log('変換後のコンテンツ長:', content.length);
+                console.log('変換後のコンテンツ（最初の200文字）:', content.substring(0, 200));
+                
+                this.updateDocument(document, content);
+                console.log('ドキュメント更新完了');
+            } else {
+                console.warn('saveFile要求にデータが含まれていません');
+            }
+            
+            // ドキュメントを保存
+            console.log('ドキュメント保存を実行中...');
+            await document.save();
+            console.log('ドキュメント保存完了');
+            
+            // 保存完了をWebviewに通知
+            webview.postMessage({
+                command: 'saveComplete',
+                success: true
+            });
+            
+            console.log('ファイル保存完了:', document.uri.fsPath);
+            
+        } catch (error) {
+            console.error('ファイル保存に失敗:', error);
+            
+            // エラーをWebviewに通知
+            webview.postMessage({
+                command: 'saveComplete',
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error'
+            });
+            
+            // ユーザーにエラーを表示
+            vscode.window.showErrorMessage(`ファイル保存に失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
     }
 
     /**
