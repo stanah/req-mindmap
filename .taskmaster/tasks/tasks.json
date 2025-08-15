@@ -584,8 +584,8 @@
             "id": 10,
             "title": "VSCode拡張用ツールバーUIの実装",
             "description": "ズーム、レイアウト切り替え、ノード操作ボタンなどのツールバーUIを実装する",
-            "details": "",
-            "status": "pending",
+            "details": "<info added on 2025-08-15T15:30:01.754Z>\nVSCode拡張用ツールバーUIの実装が完了しました。\n\n実装内容：\n1. Toolbarコンポーネントを新規作成（/src/vscode/components/Toolbar.tsx）\n   - ズーム操作（ズームイン/アウト/リセット/全体表示）\n   - レイアウト切り替え（全展開/全折りたたみ/選択ノードフォーカス）\n   - 詳細パネル切り替え\n   - テーマ切り替え\n   - ノード操作ボタン（既存のNodeActionButtonsを統合）\n\n2. ツールバー専用CSSスタイル（/src/vscode/components/Toolbar.css）\n   - VSCodeテーマ対応\n   - レスポンシブデザイン\n   - アクセシビリティ対応\n   - ツールチップ表示\n\n3. MindmapCoreクラスに必要なメソッドを追加：\n   - fitToView()：ビューを全体に合わせる\n   - expandAll()：全てのノードを展開\n   - collapseAll()：全てのノードを折りたたみ\n\n4. キーボードショートカットを拡張：\n   - Ctrl+Shift+0：全体表示\n   - Ctrl+E：全て展開\n   - Ctrl+Shift+E：全て折りたたみ\n   - F：選択ノードにフォーカス\n\n5. MindmapViewerコンポーネントにToolbarを統合\n   - 旧ツールバーを新しいToolbarコンポーネントに置き換え\n   - ズームレベル状態管理を追加\n   - プロパティ連携を実装\n\nツールバーは3つのセクションに分かれています：\n- 左側：ノード操作とレイアウト操作\n- 中央：ズーム操作\n- 右側：表示切り替えとテーマ切り替え\n\n次はビルドテストと動作確認を行います。\n</info added on 2025-08-15T15:30:01.754Z>",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 10
           }
@@ -1525,7 +1525,7 @@
     ],
     "metadata": {
       "created": "2025-08-03T03:13:21.292Z",
-      "updated": "2025-08-15T10:46:12.589Z",
+      "updated": "2025-08-15T15:31:59.142Z",
       "description": "Tasks for master context"
     }
   }
