@@ -4,7 +4,8 @@
  */
 
 /* CSS変数定義（Web版のテーマ対応） */
-:root {
+:root,
+[data-theme="light"] {
   --node-details-bg: #ffffff;
   --node-details-border: #e0e0e0;
   --node-details-text: #000000;
@@ -82,6 +83,16 @@
   z-index: 100;
 }
 
+/* Web版でのライトテーマ強制適用 */
+[data-theme="light"] .node-details,
+.node-details.light-theme,
+.node-details[data-theme="light"] {
+  background: #ffffff !important;
+  border-color: #e0e0e0 !important;
+  color: #000000 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
 /* Web版でのダークテーマ強制適用 */
 [data-theme="dark"] .node-details,
 .node-details.dark-theme,
@@ -92,12 +103,53 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
+[data-theme="light"] .node-details .panel-header,
+.node-details.light-theme .panel-header,
+.node-details[data-theme="light"] .panel-header {
+  background: #ffffff !important;
+  border-bottom-color: #e0e0e0 !important;
+  color: #000000 !important;
+}
+
+[data-theme="light"] .node-details .node-title,
+.node-details.light-theme .node-title,
+.node-details[data-theme="light"] .node-title {
+  color: #000000 !important;
+}
+
+[data-theme="light"] .node-details .details-section h4,
+.node-details.light-theme .details-section h4,
+.node-details[data-theme="light"] .details-section h4 {
+  color: #000000 !important;
+  border-bottom-color: #e0e0e0 !important;
+}
+
 [data-theme="dark"] .node-details .panel-header,
 .node-details.dark-theme .panel-header,
 .node-details[data-theme="dark"] .panel-header {
   background: #1e1e1e !important;
   border-bottom-color: #3e3e3e !important;
   color: #cccccc !important;
+}
+
+[data-theme="dark"] .node-details .node-title,
+.node-details.dark-theme .node-title,
+.node-details[data-theme="dark"] .node-title {
+  color: #cccccc !important;
+}
+
+[data-theme="dark"] .node-details .details-section h4,
+.node-details.dark-theme .details-section h4,
+.node-details[data-theme="dark"] .details-section h4 {
+  color: #cccccc !important;
+  border-bottom-color: #3e3e3e !important;
+}
+
+[data-theme="light"] .node-details .details-section,
+.node-details.light-theme .details-section,
+.node-details[data-theme="light"] .details-section {
+  background: #ffffff !important;
+  border-color: #e0e0e0 !important;
 }
 
 [data-theme="dark"] .node-details .details-section,
@@ -107,16 +159,48 @@
   border-color: #3e3e3e !important;
 }
 
+[data-theme="light"] .node-details .details-item label,
+.node-details.light-theme .details-item label,
+.node-details[data-theme="light"] .details-item label {
+  color: #666666 !important;
+}
+
 [data-theme="dark"] .node-details .details-item label,
 .node-details.dark-theme .details-item label,
 .node-details[data-theme="dark"] .details-item label {
   color: #999999 !important;
 }
 
+[data-theme="light"] .node-details .details-item .value,
+.node-details.light-theme .details-item .value,
+.node-details[data-theme="light"] .details-item .value {
+  color: #000000 !important;
+}
+
 [data-theme="dark"] .node-details .details-item .value,
 .node-details.dark-theme .details-item .value,
 .node-details[data-theme="dark"] .details-item .value {
   color: #cccccc !important;
+}
+
+[data-theme="light"] .node-details .edit-input,
+[data-theme="light"] .node-details .edit-textarea,
+[data-theme="light"] .node-details .edit-select,
+[data-theme="light"] .node-details .add-tag-input,
+[data-theme="light"] .node-details .always-editable,
+.node-details.light-theme .edit-input,
+.node-details.light-theme .edit-textarea,
+.node-details.light-theme .edit-select,
+.node-details.light-theme .add-tag-input,
+.node-details.light-theme .always-editable,
+.node-details[data-theme="light"] .edit-input,
+.node-details[data-theme="light"] .edit-textarea,
+.node-details[data-theme="light"] .edit-select,
+.node-details[data-theme="light"] .add-tag-input,
+.node-details[data-theme="light"] .always-editable {
+  background: #ffffff !important;
+  border-color: #ccc !important;
+  color: #000000 !important;
 }
 
 [data-theme="dark"] .node-details .edit-input,
@@ -197,7 +281,7 @@
 
 .node-title {
   font-weight: 600;
-  color: var(--vscode-editor-foreground, #000000);
+  color: var(--node-details-text, var(--vscode-editor-foreground, #000000));
 }
 
 .toggle-btn,
@@ -280,10 +364,10 @@
   margin: 0 0 8px 0;
   font-size: 12px;
   font-weight: 600;
-  color: var(--vscode-editor-foreground, #000000);
+  color: var(--node-details-text, var(--vscode-editor-foreground, #000000));
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--vscode-panel-border, #e0e0e0);
+  border-bottom: 1px solid var(--node-details-border, var(--vscode-panel-border, #e0e0e0));
   padding-bottom: 4px;
 }
 

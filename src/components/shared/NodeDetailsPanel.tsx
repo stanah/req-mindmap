@@ -62,10 +62,7 @@ const formatValue = (value: unknown): string => {
  * カスタムフィールドの表示名を取得
  */
 const getFieldLabel = (fieldName: string, schema?: CustomSchema): string => {
-  const allFields = [
-    ...(schema?.baseFields || []),
-    ...(schema?.customFields || [])
-  ];
+  const allFields = schema?.customFields || [];
   
   if (allFields.length === 0) return fieldName;
 
@@ -275,21 +272,6 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
                       <span className="value description">{node.description || '未設定'}</span>
                     )}
                   </div>
-                  <div className="details-item">
-                    <label>種類:</label>
-                    {onNodeUpdate ? (
-                      <input
-                        key={`type-${node.id}`}
-                        type="text"
-                        className="edit-input always-editable"
-                        defaultValue={node.type || ''}
-                        onBlur={(e) => handleFieldChange('type', e.target.value)}
-                        placeholder="種類を入力"
-                      />
-                    ) : (
-                      <span className="value">{node.type || '未設定'}</span>
-                    )}
-                  </div>
                 </div>
 
                 {/* 階層情報 */}
@@ -301,112 +283,12 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
                       <span className="value">{node.children.length}</span>
                     </div>
                   )}
-                  <div className="details-item">
-                    <label>状態:</label>
-                    <span className="value">{node.collapsed ? '折りたたみ' : '展開'}</span>
-                  </div>
                 </div>
 
-                {/* メタデータ */}
-                {node.metadata && Object.keys(node.metadata).length > 0 && (
-                  <div className="details-section">
-                    <h4>メタデータ</h4>
-                    {Object.entries(node.metadata).map(([key, value]) => (
-                      <div key={key} className="details-item">
-                        <label>{key}:</label>
-                        <span className="value">{formatValue(value)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
 
                 {/* スキーマ定義フィールド */}
                 {data?.schema && (
                   <>
-                    {/* 基本フィールド（ノード直下） */}
-                    {data.schema.baseFields && data.schema.baseFields.length > 0 && (
-                      <div className="details-section">
-                        <h4>基本プロパティ</h4>
-                        {data.schema.baseFields.map((field) => {
-                            const currentValue = (node as Record<string, any>)[field.name];
-                            
-                            return (
-                              <div key={field.name} className="details-item">
-                                <label>{field.label}:</label>
-                                {onNodeUpdate ? (
-                                  field.type === 'boolean' ? (
-                                    <input
-                                      key={`node-${field.name}-${node.id}`}
-                                      type="checkbox"
-                                      className="edit-checkbox always-editable"
-                                      defaultChecked={Boolean(currentValue)}
-                                      onChange={(e) => handleFieldChange(field.name, e.target.checked)}
-                                    />
-                                  ) : field.type === 'select' ? (
-                                    <select
-                                      key={`node-${field.name}-${node.id}`}
-                                      className="edit-select always-editable"
-                                      defaultValue={String(currentValue || '')}
-                                      onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                                    >
-                                      <option value="">選択してください</option>
-                                      {field.options?.map((option) => (
-                                        <option key={option} value={option}>
-                                          {option}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  ) : field.type === 'multiselect' ? (
-                                    <select
-                                      key={`node-${field.name}-${node.id}`}
-                                      className="edit-select always-editable"
-                                      multiple
-                                      defaultValue={Array.isArray(currentValue) ? currentValue : []}
-                                      onChange={(e) => {
-                                        const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-                                        handleFieldChange(field.name, selectedOptions);
-                                      }}
-                                    >
-                                      {field.options?.map((option) => (
-                                        <option key={option} value={option}>
-                                          {option}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  ) : field.type === 'number' ? (
-                                    <input
-                                      key={`node-${field.name}-${node.id}`}
-                                      type="number"
-                                      className="edit-input always-editable"
-                                      defaultValue={Number(currentValue) || 0}
-                                      onBlur={(e) => handleFieldChange(field.name, Number(e.target.value))}
-                                    />
-                                  ) : field.type === 'date' ? (
-                                    <input
-                                      key={`node-${field.name}-${node.id}`}
-                                      type="date"
-                                      className="edit-input always-editable"
-                                      defaultValue={String(currentValue || '')}
-                                      onBlur={(e) => handleFieldChange(field.name, e.target.value)}
-                                    />
-                                  ) : (
-                                    <input
-                                      key={`node-${field.name}-${node.id}`}
-                                      type="text"
-                                      className="edit-input always-editable"
-                                      defaultValue={String(currentValue || '')}
-                                      onBlur={(e) => handleFieldChange(field.name, e.target.value)}
-                                      placeholder={`${field.label}を入力`}
-                                    />
-                                  )
-                                ) : (
-                                  <span className="value">{formatValue(currentValue)}</span>
-                                )}
-                              </div>
-                            );
-                          })}
-                      </div>
-                    )}
 
                     {/* カスタムフィールド */}
                     {data.schema.customFields && data.schema.customFields.length > 0 && (
@@ -536,25 +418,6 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
                   </div>
                 </div>
 
-                {/* 関連リンク */}
-                {node.links && node.links.length > 0 && (
-                  <div className="details-section">
-                    <h4>関連リンク</h4>
-                    {node.links.map((link, index) => (
-                      <div key={index} className="details-item">
-                        <label>{link.title || 'リンク'}:</label>
-                        <a
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="link-url"
-                        >
-                          {link.url}
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                )}
 
                 {/* 日時情報 */}
                 {(node.createdAt || node.updatedAt || node.deadline) && (

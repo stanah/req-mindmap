@@ -31,7 +31,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
     if (effectiveTheme === 'dark') {
       root.setAttribute('data-theme', 'dark');
     } else {
-      root.removeAttribute('data-theme');
+      root.setAttribute('data-theme', 'light');
     }
   };
 
