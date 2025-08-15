@@ -3,17 +3,22 @@
  * エディタ機能を除外し、マインドマップ表示のみに特化
  */
 
-import React, { useRef, useEffect, useMemo } from 'react';
+import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { useAppStore } from '../../stores';
 import { MindmapCore } from '../../core';
 import type { RendererEventHandlers } from '../../core';
 import { PlatformAdapterFactory } from '../../platform';
 import { ThemeToggle } from '../../web/components/ui/ThemeToggle';
+import { NodeDetailsPanel } from './NodeDetailsPanel';
 import './MindmapViewer.css';
+import './NodeDetailsPanel.css';
 
 export const MindmapViewer: React.FC = () => {
   const svgRef = useRef<SVGSVGElement>(null);
   const rendererRef = useRef<MindmapCore | null>(null);
+  
+  // ノード詳細パネルの表示状態
+  const [isPanelVisible, setIsPanelVisible] = useState(false);
   
   // Zustandストアからの状態取得
   const parsedData = useAppStore(state => state.parse.parsedData);
@@ -27,6 +32,11 @@ export const MindmapViewer: React.FC = () => {
     onNodeClick: async (nodeId: string, event: MouseEvent) => {
       console.log('ノードクリック:', nodeId);
       selectNode(nodeId);
+      
+      // ノードが選択されたらパネルを自動で表示
+      if (nodeId && !isPanelVisible) {
+        setIsPanelVisible(true);
+      }
       
       // マインドマップファイル内の該当ノード定義箇所にジャンプ
       try {
@@ -62,7 +72,7 @@ export const MindmapViewer: React.FC = () => {
     onBackgroundClick: () => {
       selectNode(null);
     },
-  }), [selectNode]);
+  }), [selectNode, isPanelVisible]);
 
   // レンダラーの初期化
   useEffect(() => {
@@ -144,13 +154,18 @@ export const MindmapViewer: React.FC = () => {
         event.preventDefault();
         rendererRef.current.toggleNode(selectedNodeId);
       }
+      // Ctrl/Cmd + I: ノード詳細パネルの切り替え
+      else if ((event.ctrlKey || event.metaKey) && event.key === 'i') {
+        event.preventDefault();
+        setIsPanelVisible(!isPanelVisible);
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedNodeId]);
+  }, [selectedNodeId, isPanelVisible]);
 
   return (
     <div className="mindmap-viewer">
@@ -178,6 +193,14 @@ export const MindmapViewer: React.FC = () => {
           </div>
         </div>
       )}
+      
+      {/* ノード詳細パネル */}
+      <NodeDetailsPanel
+        nodeId={selectedNodeId}
+        data={parsedData}
+        isVisible={isPanelVisible}
+        onToggle={() => setIsPanelVisible(!isPanelVisible)}
+      />
     </div>
   );
 };
