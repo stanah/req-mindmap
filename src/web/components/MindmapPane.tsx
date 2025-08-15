@@ -1,8 +1,10 @@
 import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { useAppStore } from '../../stores';
-import { useMindmapSync } from '../../hooks';
+// import { useMindmapSync } from '../../hooks'; // 存在しないためコメントアウト
+import { useMindmapNodeUpdate } from '../../hooks/useMindmapNodeUpdate';
 import { MindmapCore } from '../../core';
 import type { RendererEventHandlers } from '../../core';
+import type { MindmapNode } from '../../types';
 import { NodeDetailsPanel } from '../../components/shared/NodeDetailsPanel';
 import './MindmapPane.css';
 import '../../styles/NodeDetailsPanel.css';
@@ -20,8 +22,11 @@ export const MindmapPane: React.FC = () => {
   const selectNode = useAppStore(state => state.selectNode);
   const countNodes = useAppStore(state => state.countNodes);
   
-  // マインドマップ同期フックの使用
-  const { updateMindmapSettings: syncUpdateSettings } = useMindmapSync();
+  // マインドマップ設定更新（直接ストア操作）
+  const updateMindmapSettings = useAppStore(state => state.updateMindmapSettings);
+  
+  // ノード更新フックの使用
+  const { updateNode } = useMindmapNodeUpdate({ rendererRef });
 
   // パフォーマンス関連の状態
   const [performanceMode, setPerformanceMode] = useState<'auto' | 'performance' | 'quality'>('auto');
@@ -215,7 +220,7 @@ export const MindmapPane: React.FC = () => {
   };
 
   const handleLayoutChange = (layout: 'tree' | 'radial') => {
-    syncUpdateSettings({ layout });
+    updateMindmapSettings({ layout });
   };
 
   // パフォーマンスモードの変更
@@ -371,6 +376,7 @@ export const MindmapPane: React.FC = () => {
           isVisible={isPanelVisible}
           onToggle={() => setIsPanelVisible(!isPanelVisible)}
           onClose={() => setIsPanelVisible(false)}
+          onNodeUpdate={updateNode}
           mode="web"
           position="bottom"
         />
