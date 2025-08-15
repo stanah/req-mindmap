@@ -23,6 +23,7 @@ export class MindmapCore {
   private coreLogic: ICoreLogic;
   private renderer: MindmapRenderer;
   private isDestroyed: boolean = false;
+  private isInitialRender: boolean = true;
 
   constructor(options: RenderOptions) {
     // コアロジックの初期化
@@ -89,7 +90,9 @@ export class MindmapCore {
         }
       });
       
-      this.renderer.render(data, collapsedNodes);
+      // 初回描画時はビューをリセット、以降は保持
+      this.renderer.render(data, collapsedNodes, { preserveView: !this.isInitialRender });
+      this.isInitialRender = false;
     }
   }
 
@@ -115,6 +118,7 @@ export class MindmapCore {
    */
   public render(data: MindmapData): void {
     this.checkNotDestroyed();
+    this.isInitialRender = true; // 新しいデータなので初回描画扱い
     this.coreLogic.setData(data);
     // setDataによってdataChangedイベントが発火され、自動的に描画される
   }

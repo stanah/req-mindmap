@@ -101,7 +101,7 @@ export class MindmapRenderer {
    * データの描画
    * 外部からマインドマップデータを受け取って描画
    */
-  public render(data: MindmapData, collapsedNodes?: Set<string>): void {
+  public render(data: MindmapData, collapsedNodes?: Set<string>, options?: { preserveView?: boolean }): void {
     if (!data || !data.root) {
       console.warn('描画データが無効です');
       return;
@@ -126,8 +126,10 @@ export class MindmapRenderer {
     // 描画の実行
     this.draw();
 
-    // 初期ビューの設定
-    this.resetView();
+    // 初期ビューの設定（preserveViewオプションで制御）
+    if (!options?.preserveView) {
+      this.resetView();
+    }
   }
 
   /**
