@@ -78,6 +78,7 @@ export interface RendererEventHandlers {
   onNodeClick?: (nodeId: string, event: MouseEvent) => void;
   onNodeHover?: (nodeId: string, event: MouseEvent) => void;
   onNodeLeave?: (nodeId: string, event: MouseEvent) => void;
+  onNodeToggle?: (nodeId: string, event: MouseEvent) => void;
   onBackgroundClick?: (event: MouseEvent) => void;
 }
 

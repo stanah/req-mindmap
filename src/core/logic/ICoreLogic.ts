@@ -185,11 +185,33 @@ export interface ICoreLogic {
   toggleNodeCollapse(nodeId: string): void;
   
   /**
+   * ノードを展開
+   * @param nodeId ノードID
+   */
+  expandNode(nodeId: string): void;
+  
+  /**
+   * ノードを折りたたみ
+   * @param nodeId ノードID
+   */
+  collapseNode(nodeId: string): void;
+  
+  /**
    * ノードが折りたたまれているかを確認
    * @param nodeId ノードID
    * @returns 折りたたみ状態
    */
   isNodeCollapsed(nodeId: string): boolean;
+  
+  /**
+   * すべてのノードを展開
+   */
+  expandAll(): void;
+  
+  /**
+   * すべてのノードを折りたたみ
+   */
+  collapseAll(): void;
 
   // ==========================================
   // Undo/Redo機能

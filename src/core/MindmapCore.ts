@@ -6,7 +6,7 @@
 
 import { MindmapCoreLogic } from './logic/MindmapCoreLogic';
 import { MindmapRenderer } from './renderer/MindmapRenderer';
-import type { ICoreLogic, CoreLogicEvent, EventHandler } from './logic/ICoreLogic';
+import type { ICoreLogic, CoreLogicEvent, EventHandler, FilterCondition } from './logic/ICoreLogic';
 import type {
   MindmapData,
   MindmapNode,
@@ -49,7 +49,7 @@ export class MindmapCore {
     // 設定変更時の再描画
     this.coreLogic.on('settingsChanged', (settings) => {
       // レンダラーの設定を更新（データがなくても安全）
-      this.renderer.updateSettings(settings);
+      this.renderer.updateSettings(settings as Partial<MindmapSettings>);
       // データがある場合のみ再描画
       if (this.coreLogic.getData()) {
         this.renderCurrentData();
@@ -58,7 +58,7 @@ export class MindmapCore {
     
     // ノード選択の同期
     this.coreLogic.on('nodeSelected', (nodeId) => {
-      this.renderer.selectNode(nodeId);
+      this.renderer.selectNode(nodeId as string | null);
     });
     
     this.coreLogic.on('nodeDeselected', () => {
@@ -197,6 +197,22 @@ export class MindmapCore {
   }
 
   /**
+   * ノードを展開
+   */
+  public expandNode(nodeId: string): void {
+    this.checkNotDestroyed();
+    this.coreLogic.expandNode(nodeId);
+  }
+
+  /**
+   * ノードを折りたたみ
+   */
+  public collapseNode(nodeId: string): void {
+    this.checkNotDestroyed();
+    this.coreLogic.collapseNode(nodeId);
+  }
+
+  /**
    * ノードが折りたたまれているかを確認
    */
   public isNodeCollapsed(nodeId: string): boolean {
@@ -251,7 +267,7 @@ export class MindmapCore {
   /**
    * ノードをフィルタリング
    */
-  public filterNodes(condition: (node: MindmapNode) => boolean): MindmapNode[] {
+  public filterNodes(condition: FilterCondition): MindmapNode[] {
     return this.coreLogic.filterNodes(condition);
   }
 

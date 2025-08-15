@@ -539,10 +539,42 @@ export class MindmapCoreLogic implements ICoreLogic {
     }
   }
   
+  /**
+   * ノードを展開
+   */
+  expandNode(nodeId: string): void {
+    this.checkNotDestroyed();
+    
+    if (!this.nodeIndex.has(nodeId)) {
+      throw new Error(`Node with id ${nodeId} not found`);
+    }
+    
+    if (this.collapsedNodes.has(nodeId)) {
+      this.collapsedNodes.delete(nodeId);
+      this.emit('nodeExpanded', nodeId);
+    }
+  }
+  
+  /**
+   * ノードを折りたたみ
+   */
+  collapseNode(nodeId: string): void {
+    this.checkNotDestroyed();
+    
+    if (!this.nodeIndex.has(nodeId)) {
+      throw new Error(`Node with id ${nodeId} not found`);
+    }
+    
+    if (!this.collapsedNodes.has(nodeId)) {
+      this.collapsedNodes.add(nodeId);
+      this.emit('nodeCollapsed', nodeId);
+    }
+  }
+  
   isNodeCollapsed(nodeId: string): boolean {
     return this.collapsedNodes.has(nodeId);
   }
-
+  
   /**
    * 全てのノードを展開
    */
@@ -554,7 +586,7 @@ export class MindmapCoreLogic implements ICoreLogic {
     }
     
     this.collapsedNodes.clear();
-    this.emit('dataChanged');
+    this.emit('dataChanged', this.data);
   }
 
   /**
@@ -569,7 +601,7 @@ export class MindmapCoreLogic implements ICoreLogic {
     
     // 子ノードを持つ全てのノードを折りたたみ
     this.collapseNodeRecursive(this.data.root);
-    this.emit('dataChanged');
+    this.emit('dataChanged', this.data);
   }
 
   private collapseNodeRecursive(node: MindmapNode): void {
