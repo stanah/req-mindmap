@@ -150,13 +150,6 @@ function VSCodeApp() {
           });
         }
         
-        addNotification({
-          type: 'success',
-          message: 'VSCode拡張でマインドマップビューアが準備完了',
-          duration: 3000,
-          autoHide: true
-        });
-        
       } catch (error) {
         console.error('VSCodeアプリの初期化に失敗:', error);
         addNotification({
