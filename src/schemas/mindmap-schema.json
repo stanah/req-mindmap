@@ -193,13 +193,6 @@
           },
           "description": "カスタムフィールド定義（ユーザが追加可能）"
         },
-        "fields": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/FieldDefinition"
-          },
-          "description": "フィールド定義（下位互換性のため）"
-        },
         "displayRules": {
           "type": "array",
           "items": {

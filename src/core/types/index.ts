@@ -3,12 +3,8 @@
  * プラットフォーム非依存のコア型定義を集約
  */
 
-// バリデーション関連
-export interface ValidationRule {
-  type: 'required' | 'minLength' | 'maxLength' | 'pattern' | 'min' | 'max' | 'range' | 'length';
-  value?: string | number | RegExp;
-  message?: string;
-}
+// バリデーション関連（メインの型定義を使用）
+export type { ValidationRule } from '../../types';
 
 export interface ValidationResult {
   valid: boolean;
@@ -33,17 +29,8 @@ export interface SchemaError {
   code?: string;
 }
 
-// スキーマとフィールド定義
-export interface FieldDefinition {
-  name: string;
-  type: 'string' | 'number' | 'boolean' | 'date' | 'select' | 'multiselect';
-  label: string;
-  required?: boolean;
-  options?: string[];
-  validation?: ValidationRule[];
-  defaultValue?: string | number | boolean | string[];
-  description?: string;
-}
+// フィールド定義（メインの型定義を使用）
+export type { FieldDefinition } from '../../types';
 
 export interface StyleSettings {
   backgroundColor?: string;
@@ -63,78 +50,14 @@ export interface DisplayRule {
   position?: 'inline' | 'tooltip' | 'sidebar';
 }
 
-export interface CustomSchema {
-  version?: string;
-  fields: FieldDefinition[];
-  displayRules: DisplayRule[];
-  description?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+// カスタムスキーマ（メインの型定義を使用）
+export type { CustomSchema } from '../../types';
 
-// マインドマップデータ構造
-export interface MindmapNode {
-  id: string;
-  title: string;
-  description?: string;
-  children?: MindmapNode[];
-  metadata?: Record<string, unknown>;
-  position?: {
-    x: number;
-    y: number;
-  };
-  collapsed?: boolean;
-  customFields?: Record<string, unknown>;
-  type?: string;
-  color?: string;
-  icon?: string;
-  priority?: 'critical' | 'high' | 'medium' | 'low';
-  status?: 'draft' | 'pending' | 'in-progress' | 'review' | 'done' | 'cancelled' | 'deferred';
-  createdAt?: string;
-  updatedAt?: string;
-  assignee?: string;
-  deadline?: string;
-  tags?: string[];
-  links?: Array<{
-    url: string;
-    title: string;
-    type?: 'reference' | 'documentation' | 'issue' | 'other';
-  }>;
-}
+// マインドマップデータ構造（メインの型定義を使用）
+export type { MindmapNode, MindmapData } from '../../types';
 
-export interface MindmapData {
-  version: string;
-  title: string;
-  root: MindmapNode;
-  schema?: CustomSchema;
-  settings?: MindmapSettings;
-  description?: string;
-  author?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  metadata?: Record<string, unknown>;
-}
-
-// 描画設定（プラットフォーム非依存）
-export interface MindmapSettings {
-  theme?: 'light' | 'dark' | 'auto';
-  layout?: 'tree' | 'radial' | 'force';
-  zoom?: number;
-  center?: {
-    x: number;
-    y: number;
-  };
-  nodeSize?: 'small' | 'medium' | 'large';
-  nodeWidth?: number;
-  maxNodeWidth?: number;
-  nodeSpacing?: number;
-  levelSpacing?: number;
-  verticalSpacing?: number;
-  enableAnimation?: boolean;
-  enableAnimations?: boolean;
-  autoLayout?: boolean;
-  showMinimap?: boolean;
-}
+// 描画設定（メインの型定義を使用）
+export type { MindmapSettings } from '../../types';
 
 // イベント関連
 export interface NodeSelection {
@@ -160,7 +83,7 @@ export interface RendererEventHandlers {
 
 export interface RenderOptions {
   container: SVGSVGElement;
-  settings: MindmapSettings;
+  settings: import('../../types').MindmapSettings;
   eventHandlers?: RendererEventHandlers;
 }
 
@@ -168,11 +91,11 @@ export interface RenderOptions {
 export interface ParseOptions {
   strictMode?: boolean;
   validateSchema?: boolean;
-  customSchema?: CustomSchema;
+  customSchema?: import('../../types').CustomSchema;
 }
 
 export interface ParseResult {
-  data: MindmapData | null;
+  data: import('../../types').MindmapData | null;
   errors: ParseError[];
   warnings: ParseError[];
   valid: boolean;

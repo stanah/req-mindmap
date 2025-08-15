@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
-import type { MindmapData, MindmapNode, CustomSchema } from '../../types/mindmap';
+import type { MindmapData, MindmapNode, CustomSchema } from '../../types';
 
 interface NodeDetailsPanelProps {
   nodeId: string | null;
@@ -471,48 +471,6 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
                       </div>
                     )}
 
-                    {/* 下位互換性：legacy fieldsサポート */}
-                    {!data.schema.baseFields && !data.schema.customFields && data.schema.fields && (
-                      <>
-                        {/* ノード直下のフィールド */}
-                        {data.schema.fields.filter(field => field.location === 'node').length > 0 && (
-                          <div className="details-section">
-                            <h4>ノードプロパティ</h4>
-                            {data.schema.fields
-                              .filter(field => field.location === 'node')
-                              .map((field) => {
-                                const currentValue = (node as any)[field.name];
-                                
-                                return (
-                                  <div key={field.name} className="details-item">
-                                    <label>{field.label}:</label>
-                                    {renderFieldInput(field, currentValue, node.id, handleFieldChange, 'node')}
-                                  </div>
-                                );
-                              })}
-                          </div>
-                        )}
-
-                        {/* カスタムフィールド */}
-                        {data.schema.fields.filter(field => field.location === 'customFields').length > 0 && (
-                          <div className="details-section">
-                            <h4>カスタムフィールド</h4>
-                            {data.schema.fields
-                              .filter(field => field.location === 'customFields')
-                              .map((field) => {
-                                const currentValue = node.customFields?.[field.name];
-                                
-                                return (
-                                  <div key={field.name} className="details-item">
-                                    <label>{field.label}:</label>
-                                    {renderFieldInput(field, currentValue, node.id, handleCustomFieldChange, 'custom')}
-                                  </div>
-                                );
-                              })}
-                          </div>
-                        )}
-                      </>
-                    )}
                   </>
                 )}
 

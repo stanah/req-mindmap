@@ -72,21 +72,27 @@ export class SchemaValidator {
       });
     }
 
-    if (!schema.fields || !Array.isArray(schema.fields)) {
+    // baseFields とcustomFields の検証
+    const allFields = [
+      ...(schema.baseFields || []),
+      ...(schema.customFields || [])
+    ];
+    
+    if (allFields.length === 0) {
       errors.push({
         path: 'fields',
-        message: 'フィールド定義が必要です',
-        value: schema.fields
+        message: 'フィールド定義が必要です（baseFields または customFields）',
+        value: allFields
       });
     } else {
-      schema.fields.forEach((field, index) => {
+      allFields.forEach((field, index) => {
         this.validateFieldDefinition(field, `fields[${index}]`, errors);
       });
     }
 
     if (schema.displayRules && Array.isArray(schema.displayRules)) {
       schema.displayRules.forEach((rule, index) => {
-        this.validateDisplayRule(rule, `displayRules[${index}]`, schema.fields || [], errors);
+        this.validateDisplayRule(rule, `displayRules[${index}]`, allFields, errors);
       });
     }
 
@@ -121,8 +127,14 @@ export class SchemaValidator {
       return { valid: true, errors: [] };
     }
 
+    // baseFields と customFields を統合
+    const allFields = [
+      ...(this.customSchema.baseFields || []),
+      ...(this.customSchema.customFields || [])
+    ];
+
     // 必須フィールドのチェック
-    (this.customSchema.fields || []).forEach(fieldDef => {
+    allFields.forEach(fieldDef => {
       if (fieldDef.required && !fields.hasOwnProperty(fieldDef.name)) {
         errors.push({
           path: `${nodeId}.${fieldDef.name}`,
@@ -134,7 +146,7 @@ export class SchemaValidator {
 
     // フィールド値の検証
     Object.entries(fields).forEach(([fieldName, value]) => {
-      const fieldDef = (this.customSchema!.fields || []).find(f => f.name === fieldName);
+      const fieldDef = allFields.find(f => f.name === fieldName);
       if (fieldDef) {
         this.validateFieldValue(value, fieldDef, `${nodeId}.${fieldName}`, errors);
       }

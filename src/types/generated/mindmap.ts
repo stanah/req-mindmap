@@ -65,10 +65,6 @@ baseFields?: FieldDefinition[]
  */
 customFields?: FieldDefinition[]
 /**
- * フィールド定義（下位互換性のため）
- */
-fields?: FieldDefinition[]
-/**
  * 表示ルールの配列
  */
 displayRules?: DisplayRule[]

@@ -13,7 +13,7 @@ import type {
   MindmapSettings,
   AppSettings,
   ValidationResult
-} from './mindmap';
+} from './index';
 
 /**
  * ファイル状態
@@ -287,7 +287,7 @@ export interface AppActions {
 
   // パフォーマンス関連
   /** ノード数をカウント */
-  countNodes: (node: import('./mindmap').MindmapNode) => number;
+  countNodes: (node: import('./index').MindmapNode) => number;
   /** パフォーマンス統計を取得 */
   getPerformanceStats: () => {
     parseMetrics: Record<string, unknown> | null;

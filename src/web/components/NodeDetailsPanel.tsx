@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import type { MindmapData, MindmapNode, CustomSchema } from '../../types/mindmap';
+import type { MindmapData, MindmapNode, CustomSchema } from '../../types';
 
 interface NodeDetailsPanelProps {
   nodeId: string;
@@ -35,9 +35,14 @@ const findNodeById = (node: MindmapNode, id: string): MindmapNode | null => {
  * カスタムフィールドの表示名を取得
  */
 const getFieldLabel = (fieldName: string, schema?: CustomSchema): string => {
-  if (!schema?.fields) return fieldName;
+  const allFields = [
+    ...(schema?.baseFields || []),
+    ...(schema?.customFields || [])
+  ];
+  
+  if (allFields.length === 0) return fieldName;
 
-  const field = schema.fields.find((f) => f.name === fieldName);
+  const field = allFields.find((f) => f.name === fieldName);
   return field?.label || fieldName;
 };
 

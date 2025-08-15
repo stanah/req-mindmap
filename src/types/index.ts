@@ -113,11 +113,14 @@ export interface EditorSettings {
   minimap: boolean;
 }
 
+// MindmapSettingsをインポートして使用
+import type { MindmapSettings as GeneratedMindmapSettings } from './generated/mindmap';
+
 export interface AppSettings {
   /** エディタ設定 */
   editor: EditorSettings;
   /** マインドマップ設定 */
-  mindmap: MindmapSettings;
+  mindmap: GeneratedMindmapSettings;
   /** 言語設定 */
   language: 'ja' | 'en';
   /** デバッグモード */
@@ -147,7 +150,9 @@ export interface StyleSettings {
 }
 
 // 型ガード関数
-export const isValidMindmapData = (data: unknown): data is MindmapData => {
+import type { MindmapData as GeneratedMindmapData, MindmapNode as GeneratedMindmapNode } from './generated/mindmap';
+
+export const isValidMindmapData = (data: unknown): data is GeneratedMindmapData => {
   if (!data || typeof data !== 'object') return false;
 
   const obj = data as Record<string, unknown>;
@@ -163,7 +168,7 @@ export const isValidMindmapData = (data: unknown): data is MindmapData => {
   );
 };
 
-export const isValidMindmapNode = (node: unknown): node is MindmapNode => {
+export const isValidMindmapNode = (node: unknown): node is GeneratedMindmapNode => {
   if (!node || typeof node !== 'object') return false;
 
   const obj = node as Record<string, unknown>;

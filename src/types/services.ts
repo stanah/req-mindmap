@@ -5,7 +5,7 @@
  * インターフェースと型を定義します。
  */
 
-import type { MindmapData, ParseError, ValidationResult, FileError } from './mindmap';
+import type { MindmapData, ParseError, ValidationResult, FileError } from './index';
 
 /**
  * ファイルサービスインターフェース
@@ -112,7 +112,7 @@ export interface ParserService {
    * @param data マインドマップデータ
    * @returns 生成されたカスタムスキーマ
    */
-  generateSchema(data: MindmapData): Promise<import('./mindmap').CustomSchema>;
+  generateSchema(data: MindmapData): Promise<import('./index').CustomSchema>;
 
   /**
    * ファイル形式を自動判定

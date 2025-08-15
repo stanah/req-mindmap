@@ -439,7 +439,7 @@ export class ParserServiceImpl implements ParserService {
     return {
       version: '1.0',
       description: `${data.title}から自動生成されたスキーマ`,
-      fields: fieldDefinitions,
+      customFields: fieldDefinitions,
       displayRules,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -454,15 +454,34 @@ export class ParserServiceImpl implements ParserService {
     newSchema: CustomSchema
   ): Promise<{ migratedSchema: CustomSchema; migrationLog: string[] }> {
     const migrationLog: string[] = [];
-    const migratedFields = [...(oldSchema.fields || [])];
+    
+    // 旧フィールドを統合
+    const oldAllFields = [
+      ...(oldSchema.baseFields || []),
+      ...(oldSchema.customFields || [])
+    ];
+    
+    // 新フィールドを統合 
+    const newAllFields = [
+      ...(newSchema.baseFields || []),
+      ...(newSchema.customFields || [])
+    ];
+    
+    const migratedBaseFields = [...(oldSchema.baseFields || [])];
+    const migratedCustomFields = [...(oldSchema.customFields || [])];
     const migratedDisplayRules = [...(oldSchema.displayRules || [])];
 
     // 新しいフィールドを追加
-    for (const newField of newSchema.fields || []) {
-      const existingField = migratedFields.find(f => f.name === newField.name);
+    for (const newField of newAllFields) {
+      const existingField = oldAllFields.find(f => f.name === newField.name);
       
       if (!existingField) {
-        migratedFields.push(newField);
+        // location に基づいて適切な配列に追加
+        if (newField.location === 'node') {
+          migratedBaseFields.push(newField);
+        } else {
+          migratedCustomFields.push(newField);
+        }
         migrationLog.push(`新しいフィールドを追加: ${newField.name} (${newField.type})`);
       } else if (existingField.type !== newField.type) {
         // 型が変更された場合の処理
@@ -489,7 +508,8 @@ export class ParserServiceImpl implements ParserService {
     const migratedSchema: CustomSchema = {
       ...oldSchema,
       version: newSchema.version || oldSchema.version,
-      fields: migratedFields,
+      baseFields: migratedBaseFields,
+      customFields: migratedCustomFields,
       displayRules: migratedDisplayRules,
       updatedAt: new Date().toISOString()
     };
@@ -507,22 +527,32 @@ export class ParserServiceImpl implements ParserService {
     addedRules: string[];
     removedRules: string[];
   } {
-    const oldFieldNames = new Set((oldSchema.fields || []).map(f => f.name));
-    const newFieldNames = new Set((newSchema.fields || []).map(f => f.name));
+    // 統合フィールドリスト
+    const oldAllFields = [
+      ...(oldSchema.baseFields || []),
+      ...(oldSchema.customFields || [])
+    ];
+    const newAllFields = [
+      ...(newSchema.baseFields || []),
+      ...(newSchema.customFields || [])
+    ];
+    
+    const oldFieldNames = new Set(oldAllFields.map(f => f.name));
+    const newFieldNames = new Set(newAllFields.map(f => f.name));
     const oldRuleFields = new Set((oldSchema.displayRules || []).map(r => r.field));
     const newRuleFields = new Set((newSchema.displayRules || []).map(r => r.field));
 
-    const addedFields = (newSchema.fields || [])
+    const addedFields = newAllFields
       .filter(f => !oldFieldNames.has(f.name))
       .map(f => f.name);
 
-    const removedFields = (oldSchema.fields || [])
+    const removedFields = oldAllFields
       .filter(f => !newFieldNames.has(f.name))
       .map(f => f.name);
 
-    const modifiedFields = (newSchema.fields || [])
+    const modifiedFields = newAllFields
       .filter(newField => {
-        const oldField = (oldSchema.fields || []).find(f => f.name === newField.name);
+        const oldField = oldAllFields.find(f => f.name === newField.name);
         return oldField && !this.areFieldsEqual(oldField, newField);
       })
       .map(f => f.name);
