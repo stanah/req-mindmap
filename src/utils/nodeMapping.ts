@@ -48,7 +48,11 @@ export async function createNodeMapping(content: string, format: 'json' | 'yaml'
   };
 
   try {
-    if (format === 'json') {
+    // コンテンツの実際のフォーマットを自動判定
+    const detectedFormat = detectFormat(content);
+    const actualFormat = detectedFormat || format;
+    
+    if (actualFormat === 'json') {
       return createJsonNodeMapping(content);
     } else {
       return await createYamlNodeMapping(content);
@@ -57,6 +61,32 @@ export async function createNodeMapping(content: string, format: 'json' | 'yaml'
     console.error('ノードマッピング作成エラー:', error);
     return result;
   }
+}
+
+/**
+ * コンテンツのフォーマットを自動判定
+ */
+function detectFormat(content: string): 'json' | 'yaml' | null {
+  const trimmed = content.trim();
+  
+  // JSONの場合は{}または[]で始まる
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    try {
+      JSON.parse(trimmed);
+      return 'json';
+    } catch {
+      // JSONパースに失敗した場合はYAMLとして扱う
+      return 'yaml';
+    }
+  }
+  
+  // YAMLの特徴を確認（version:、title:などのキー）
+  if (trimmed.includes('version:') || trimmed.includes('title:') || trimmed.includes('root:')) {
+    return 'yaml';
+  }
+  
+  // 判定できない場合はnullを返す
+  return null;
 }
 
 /**
