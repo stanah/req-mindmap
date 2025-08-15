@@ -276,7 +276,7 @@ export class MindmapCoreLogic implements ICoreLogic {
     const oldData: Partial<MindmapNode> = {};
     Object.keys(changes).forEach(key => {
       const nodeKey = key as keyof MindmapNode;
-      oldData[nodeKey] = currentNode[nodeKey] as any;
+      oldData[nodeKey] = currentNode[nodeKey];
     });
     
     const command = new UpdateNodeCommand(this, nodeId, changes, oldData);

@@ -240,14 +240,14 @@ export class MindmapCore {
   /**
    * ノードを検索
    */
-  public searchNodes(query: string, options?: any): MindmapNode[] {
+  public searchNodes(query: string, options?: { caseSensitive?: boolean; regex?: boolean }): MindmapNode[] {
     return this.coreLogic.searchNodes(query, options);
   }
 
   /**
    * ノードをフィルタリング
    */
-  public filterNodes(condition: any): MindmapNode[] {
+  public filterNodes(condition: (node: MindmapNode) => boolean): MindmapNode[] {
     return this.coreLogic.filterNodes(condition);
   }
 

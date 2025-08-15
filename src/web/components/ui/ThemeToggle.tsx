@@ -16,12 +16,12 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
   };
 
   // 実際に適用するテーマの決定
-  const getEffectiveTheme = (selectedTheme: Theme): 'light' | 'dark' => {
+  const getEffectiveTheme = useCallback((selectedTheme: Theme): 'light' | 'dark' => {
     if (selectedTheme === 'auto') {
       return getSystemTheme();
     }
     return selectedTheme;
-  };
+  }, []);
 
   // テーマの適用
   const applyTheme = useCallback((selectedTheme: Theme) => {

@@ -41,7 +41,7 @@ export function useLocalStorage<T>(
       // 更新関数の場合は引数の数で判定
       let valueToStore: T;
       if (typeof value === 'function') {
-        const func = value as any;
+        const func = value as (val: T) => T;
         // 引数が1つある場合は更新関数として扱う
         if (func.length === 1) {
           valueToStore = func(storedValue);
@@ -55,7 +55,7 @@ export function useLocalStorage<T>(
               __functionString: value.toString(),
               __originalFunction: value
             };
-            valueToStore = functionData as any;
+            valueToStore = functionData as T;
           } else {
             valueToStore = value as T;
           }
@@ -73,9 +73,9 @@ export function useLocalStorage<T>(
       
       // 関数の場合は特別な処理でlocalStorageに保存
       let storageValue = valueToStore;
-      if (typeof valueToStore === 'object' && valueToStore !== null && (valueToStore as any).__isFunction) {
+      if (typeof valueToStore === 'object' && valueToStore !== null && (valueToStore as { __isFunction?: boolean }).__isFunction) {
         // 関数の場合は__originalFunctionは除いてシリアライズ
-        const { __originalFunction, ...serializableData } = valueToStore as any;
+        const { __originalFunction, ...serializableData } = valueToStore as { __originalFunction: unknown, [key: string]: unknown };
         storageValue = serializableData;
       }
       

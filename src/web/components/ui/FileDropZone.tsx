@@ -30,7 +30,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
   /**
    * ファイル読み込み処理
    */
-  const handleFileLoad = (result: FileLoadResult) => {
+  const handleFileLoad = useCallback((result: FileLoadResult) => {
     if (result.success) {
       // ファイル内容をストアに設定
       updateContent(result.content);
@@ -52,7 +52,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
         duration: 5000,
       });
     }
-  };
+  }, [updateContent, addNotification, onFileLoad]);
 
   /**
    * ドラッグイベントのデフォルト動作を防止

@@ -49,8 +49,16 @@ declare global {
       getState: () => unknown;
     };
 
-    vscodeApiInstance?: any;
-    vscode?: any;
+    vscodeApiInstance?: {
+      postMessage: (message: unknown) => void;
+      setState: (state: unknown) => void;
+      getState: () => unknown;
+    };
+    vscode?: {
+      postMessage: (message: unknown) => void;
+      setState: (state: unknown) => void;
+      getState: () => unknown;
+    };
   }
 }
 

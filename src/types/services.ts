@@ -24,7 +24,7 @@ export interface FileService {
    * @param pathOrData ファイルパスまたはデータ
    * @param contentOrFormat ファイル内容またはフォーマット
    */
-  saveFile(pathOrData: string | any, contentOrFormat?: string | 'json' | 'yaml'): Promise<void | { success: boolean; error?: string }>;
+  saveFile(pathOrData: string | MindmapData, contentOrFormat?: string | 'json' | 'yaml'): Promise<void | { success: boolean; error?: string }>;
 
   /**
    * ファイルの変更を監視する

@@ -47,7 +47,7 @@ export class MindmapParser {
       }
 
       // フォーマット判定と解析
-      let data: any;
+      let data: unknown;
       if (this.isJSON(content)) {
         data = this.parseJSON(content);
       } else {
@@ -96,7 +96,7 @@ export class MindmapParser {
   /**
    * JSON文字列の解析
    */
-  public parseJSON(content: string): any {
+  public parseJSON(content: string): unknown {
     try {
       return JSON.parse(content);
     } catch (error) {
@@ -110,14 +110,15 @@ export class MindmapParser {
   /**
    * YAML文字列の解析
    */
-  public parseYAML(content: string): any {
+  public parseYAML(content: string): unknown {
     try {
       return yaml.load(content);
-    } catch (error: any) {
-      if (error.mark) {
-        throw new Error(`YAML構文エラー (行 ${error.mark.line + 1}): ${error.message}`);
+    } catch (error: unknown) {
+      const yamlError = error as { mark?: { line: number }; message?: string };
+      if (yamlError.mark) {
+        throw new Error(`YAML構文エラー (行 ${yamlError.mark.line + 1}): ${yamlError.message}`);
       }
-      throw new Error(`YAML解析エラー: ${error.message || '不明なエラー'}`);
+      throw new Error(`YAML解析エラー: ${yamlError.message || '不明なエラー'}`);
     }
   }
 

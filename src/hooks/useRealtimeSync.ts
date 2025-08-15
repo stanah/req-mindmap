@@ -16,15 +16,15 @@ interface SyncStats {
 
 export function useRealtimeSync() {
   // ストアの状態
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   const _fileContent = useAppStore(state => state.file?.fileContent || '');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   const _parsedData = useAppStore(state => state.parse?.parsedData);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   const _parseErrors = useAppStore(state => state.parse?.parseErrors || []);
   const editorSettings = useAppStore(state => state.ui?.editorSettings || {});
-  const autoSync = (editorSettings as any).autoSync ?? true;
-  const syncDelay = (editorSettings as any).syncDelay ?? 300;
+  const autoSync = (editorSettings as { autoSync?: boolean }).autoSync ?? true;
+  const syncDelay = (editorSettings as { syncDelay?: number }).syncDelay ?? 300;
   
   // ストアのアクション
   const updateContent = useAppStore(state => state.updateContent);
@@ -108,7 +108,7 @@ export function useRealtimeSync() {
         setIsSyncing(false);
       }
     }, syncDelayRef.current);
-  }, [autoSync, isPaused, updateContent, parseContent, addNotification, syncDelay]);
+  }, [autoSync, isPaused, updateContent, parseContent, addNotification]);
 
   // 即座同期
   const syncContentImmediate = useCallback((content: string) => {

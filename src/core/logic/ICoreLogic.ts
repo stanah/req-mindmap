@@ -33,7 +33,7 @@ export type CoreLogicEvent =
 /**
  * イベントハンドラー関数型
  */
-export type EventHandler<T = any> = (data: T) => void;
+export type EventHandler<T = unknown> = (data: T) => void;
 
 /**
  * 検索オプション
@@ -52,7 +52,7 @@ export interface FilterCondition {
   priority?: string | string[];
   status?: string | string[];
   tags?: string | string[];
-  customFields?: Record<string, any>;
+  customFields?: Record<string, unknown>;
 }
 
 /**
