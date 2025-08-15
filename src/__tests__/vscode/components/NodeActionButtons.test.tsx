@@ -5,7 +5,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { NodeActionButtons } from '../../../vscode/components/NodeActionButtons';
-import type { MindmapNode } from "../../../types";
+// import type { MindmapNode } from "../../../types";
 
 const mockData = {
   root: {
@@ -47,7 +47,7 @@ describe('NodeActionButtons', () => {
   });
 
   it('選択されたノードがない場合はプレースホルダーを表示する', () => {
-    const { container } = render(
+    render(
       <NodeActionButtons
         selectedNodeId={null}
         data={mockData}
@@ -61,7 +61,7 @@ describe('NodeActionButtons', () => {
   });
 
   it('データがない場合はプレースホルダーを表示する', () => {
-    const { container } = render(
+    render(
       <NodeActionButtons
         selectedNodeId="test"
         data={null}

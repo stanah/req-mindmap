@@ -4,7 +4,7 @@ import { useAppStore } from '../../stores';
 import { useMindmapNodeUpdate } from '../../hooks/useMindmapNodeUpdate';
 import { MindmapCore } from '../../core';
 import type { RendererEventHandlers } from '../../core';
-import type { MindmapNode } from '../../types';
+// import type { MindmapNode } from '../../types';
 import { NodeDetailsPanel } from '../../components/shared/NodeDetailsPanel';
 import './MindmapPane.css';
 import '../../styles/NodeDetailsPanel.css';

@@ -35,9 +35,9 @@ describe('リアルタイム同期機能の基本テスト', () => {
   describe('同期機能のインフラ確認', () => {
     it('デバウンス機能のタイマーが動作する', () => {
       // デバウンス関数をテスト
-      let callCount = 0;
+      let _callCount = 0;
       const debouncedFunction = vi.fn(() => {
-        callCount++;
+        _callCount++;
       });
 
       // setTimeout を使ったデバウンス実装をシミュレート

@@ -26,7 +26,6 @@ const mockZoomBehavior = {
 };
 
 // mockTransform変数を定義
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let _mockTransform = { x: 0, y: 0, k: 1 };
 
 // D3のズーム機能をモック
@@ -87,7 +86,6 @@ vi.mock('d3-selection', () => ({
 
 describe('マインドマップ操作のE2Eテスト', () => {
   // 将来のテスト用に保持（現在は未使用）
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _complexMindmapData: MindmapData = {
     version: '1.0',
     title: 'マインドマップ操作テスト',

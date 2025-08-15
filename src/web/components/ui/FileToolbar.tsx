@@ -121,7 +121,6 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({ className = '' }) => {
    * テンプレートから新規作成
    */
   // 将来のテンプレート機能用に保留
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _handleNewFromTemplate = (_templateType: 'basic' | 'advanced' | 'project') => {
     // 将来実装予定
     console.warn('Template creation feature is not yet implemented');

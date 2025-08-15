@@ -30,7 +30,7 @@ export default tseslint.config([
       'no-prototype-builtins': 'warn',
       'react-hooks/exhaustive-deps': 'warn',
       '@typescript-eslint/no-namespace': ['error', { 
-        allowDeclarationMerging: true,
+        allowDeclarations: true,
         allowDefinitionFiles: true
       }],
     },

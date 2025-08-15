@@ -19,8 +19,8 @@ import './MindmapViewer.css';
 import './NodeActionButtons.css';
 import '../../styles/NodeDetailsPanel.css';
 
-// VSCode APIの型定義
-interface VSCodeApi {
+// VSCode APIの型定義（将来使用予定）
+interface _VSCodeApi {
   postMessage: (message: any) => void;
 }
 
@@ -71,7 +71,7 @@ export const MindmapViewer: React.FC = () => {
       try {
         const platformAdapter = PlatformAdapterFactory.getInstance();
         if (platformAdapter.getPlatformType() === 'vscode') {
-          const editorAdapter = platformAdapter.editor;
+          const _editorAdapter = platformAdapter.editor;
           
           // VSCodeにデータオブジェクトを送信（VSCode側で適切な形式に変換）
           console.log('VSCode API確認:', { hasVscode: !!window.vscode, windowKeys: Object.keys(window) });
@@ -140,7 +140,7 @@ export const MindmapViewer: React.FC = () => {
       try {
         const platformAdapter = PlatformAdapterFactory.getInstance();
         if (platformAdapter.getPlatformType() === 'vscode') {
-          const editorAdapter = platformAdapter.editor;
+          const _editorAdapter = platformAdapter.editor;
           
           // VSCodeにデータオブジェクトを送信（VSCode側で適切な形式に変換）
           console.log('VSCode API確認:', { hasVscode: !!window.vscode, windowKeys: Object.keys(window) });
@@ -292,7 +292,7 @@ export const MindmapViewer: React.FC = () => {
         try {
           const platformAdapter = PlatformAdapterFactory.getInstance();
           if (platformAdapter.getPlatformType() === 'vscode') {
-            const editorAdapter = platformAdapter.editor;
+            const _editorAdapter = platformAdapter.editor;
             await (editorAdapter as any).jumpToNodeInCurrentFile(nodeId);
             console.log(`ノードジャンプ実行: ${nodeId}`);
           }
