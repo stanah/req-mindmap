@@ -8,9 +8,11 @@ import { useAppStore } from '../../stores';
 import { useMindmapNodeUpdate } from '../../hooks/useMindmapNodeUpdate';
 import { MindmapCore } from '../../core';
 import type { RendererEventHandlers } from '../../core';
+import type { MindmapData } from '../../types';
 
 import { ThemeToggle } from '../../web/components/ui/ThemeToggle';
 import { PlatformAdapterFactory } from '../../platform';
+import { VSCodeEditorAdapter } from '../../platform/vscode/VSCodeEditorAdapter';
 import { NodeDetailsPanel } from '../../components/shared/NodeDetailsPanel';
 import { NodeActionButtons } from './NodeActionButtons';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
@@ -21,7 +23,7 @@ import '../../styles/NodeDetailsPanel.css';
 
 // VSCode APIの型定義（将来使用予定）
 interface _VSCodeApi {
-  postMessage: (message: any) => void;
+  postMessage: (message: unknown) => void;
 }
 
 export const MindmapViewer: React.FC = () => {
@@ -58,8 +60,8 @@ export const MindmapViewer: React.FC = () => {
       console.log('新しいノードを作成:', newNode);
       
       // データ構造を更新（不変更新） - data.rootを使用
-      const dataAsAny = parsedData as any;
-      const rootNode = dataAsAny.root;
+      const mindmapData = parsedData as MindmapData;
+      const rootNode = mindmapData.root;
       console.log('ルートノード取得:', { hasRootNode: !!rootNode });
       
       const updatedRootNode = addChildNode(rootNode, parentNodeId, newNode);
@@ -131,8 +133,8 @@ export const MindmapViewer: React.FC = () => {
       const newNode = createNewNode('新しい兄弟ノード', 'ここに説明を入力してください');
       
       // データ構造を更新（不変更新） - data.rootを使用
-      const dataAsAny = parsedData as any;
-      const rootNode = dataAsAny.root;
+      const mindmapData = parsedData as MindmapData;
+      const rootNode = mindmapData.root;
       const updatedRootNode = addSiblingNode(rootNode, siblingNodeId, newNode);
       const updatedData = { ...parsedData, root: updatedRootNode };
       
@@ -203,8 +205,8 @@ export const MindmapViewer: React.FC = () => {
       console.log('ノード削除開始:', { nodeId: nodeToDelete, parsedData: !!parsedData });
       
       // データ構造を更新（不変更新） - data.rootを使用
-      const dataAsAny = parsedData as any;
-      const rootNode = dataAsAny.root;
+      const mindmapData = parsedData as MindmapData;
+      const rootNode = mindmapData.root;
       const updatedRootNode = removeNode(rootNode, nodeToDelete);
       const updatedData = { ...parsedData, root: updatedRootNode };
       
@@ -293,7 +295,8 @@ export const MindmapViewer: React.FC = () => {
           const platformAdapter = PlatformAdapterFactory.getInstance();
           if (platformAdapter.getPlatformType() === 'vscode') {
             const _editorAdapter = platformAdapter.editor;
-            await (editorAdapter as any).jumpToNodeInCurrentFile(nodeId);
+            // TypeScript のため一時的に any を使用 - VSCodeEditorAdapter の jumpToNodeInCurrentFile メソッドを呼び出す
+            await (editorAdapter as VSCodeEditorAdapter).jumpToNodeInCurrentFile(nodeId);
             console.log(`ノードジャンプ実行: ${nodeId}`);
           }
         } catch (error) {
@@ -505,7 +508,7 @@ export const MindmapViewer: React.FC = () => {
       {/* 削除確認ダイアログ */}
       <DeleteConfirmDialog
         isOpen={isDeleteDialogOpen}
-        node={nodeToDelete && parsedData ? findNodeById((parsedData as any).root, nodeToDelete) : null}
+        node={nodeToDelete && parsedData ? findNodeById((parsedData as MindmapData).root, nodeToDelete) : null}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />

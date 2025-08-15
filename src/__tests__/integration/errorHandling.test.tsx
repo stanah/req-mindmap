@@ -27,17 +27,17 @@ describe('エラーハンドリングの基本テスト', () => {
 
     it('エラーバウンダリのテスト用のエラー処理を確認', () => {
       // React Error Boundaryの基本的な動作をテスト
-      class ErrorBoundary extends React.Component<any, { hasError: boolean }> {
-        constructor(props: any) {
+      class ErrorBoundary extends React.Component<React.PropsWithChildren, { hasError: boolean }> {
+        constructor(props: React.PropsWithChildren) {
           super(props);
           this.state = { hasError: false };
         }
 
-        static getDerivedStateFromError(error: any) {
+        static getDerivedStateFromError(_error: Error) {
           return { hasError: true };
         }
 
-        componentDidCatch(error: any, errorInfo: any) {
+        componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
           // エラーをログに記録
           console.error('Error caught by boundary:', error, errorInfo);
         }

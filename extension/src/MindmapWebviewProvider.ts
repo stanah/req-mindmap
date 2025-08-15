@@ -304,7 +304,7 @@ export class MindmapWebviewProvider {
     /**
      * コンテンツ変更の処理（データオブジェクトから適切な形式に変換）
      */
-    private handleContentChanged(document: vscode.TextDocument, message: any): void {
+    private handleContentChanged(document: vscode.TextDocument, message: { content?: string; data?: Record<string, unknown>; [key: string]: unknown }): void {
         try {
             console.log('contentChanged要求を受信:', message);
             
@@ -367,7 +367,7 @@ export class MindmapWebviewProvider {
     /**
      * ファイル保存要求の処理
      */
-    private async handleSaveFile(webview: vscode.Webview, document: vscode.TextDocument, message: any): Promise<void> {
+    private async handleSaveFile(webview: vscode.Webview, document: vscode.TextDocument, message: { data?: string | Record<string, unknown>; [key: string]: unknown }): Promise<void> {
         try {
             console.log('saveFile要求を受信:', message);
             
@@ -450,7 +450,7 @@ export class MindmapWebviewProvider {
     /**
      * エクスポート要求を処理
      */
-    private async handleExportRequest(format: string, data: any): Promise<void> {
+    private async handleExportRequest(format: string, data: unknown): Promise<void> {
         try {
             const saveUri = await vscode.window.showSaveDialog({
                 filters: {
@@ -475,7 +475,7 @@ export class MindmapWebviewProvider {
     /**
      * マインドマップファイル内のノードジャンプ要求を処理
      */
-    private async handleJumpToNodeInFile(webview: vscode.Webview, document: vscode.TextDocument, message: any): Promise<void> {
+    private async handleJumpToNodeInFile(webview: vscode.Webview, document: vscode.TextDocument, message: { nodeId?: string; line?: number; [key: string]: unknown }): Promise<void> {
         try {
             const { nodeId, requestId } = message;
             const content = document.getText();

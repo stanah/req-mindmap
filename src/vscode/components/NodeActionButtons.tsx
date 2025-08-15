@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import type { MindmapNode } from '../../types';
+import type { MindmapNode, MindmapData } from '../../types';
 import { findNodeById, findParentNode } from '../../utils/nodeHelpers';
 import './NodeActionButtons.css';
 
@@ -41,8 +41,8 @@ export const NodeActionButtons: React.FC<NodeActionButtonsProps> = ({
   }
 
   // YAMLの構造を確認 - ルートノードはdata.rootにある
-  const dataAsAny = data as any;
-  const rootNode = dataAsAny.root as MindmapNode;
+  const mindmapData = data as MindmapData;
+  const rootNode = mindmapData.root;
   
   if (!rootNode) {
     return null;

@@ -57,7 +57,7 @@ vi.mock('../../App', () => ({
 }));
 
 // localStorageMockを取得
-const localStorageMock = (global as any).localStorageMock;
+const localStorageMock = (global as { localStorageMock?: Storage }).localStorageMock;
 
 describe('ファイル操作ワークフローのE2Eテスト', () => {
   const _testMindmapData: MindmapData = {

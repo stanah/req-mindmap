@@ -19,7 +19,7 @@ export const EditorPane: React.FC = () => {
   const { debouncedUpdateContent } = useEditorSync();
   
   // Monaco Editorのインスタンス参照
-  const editorRef = useRef<any | null>(null);
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
   // エラーマーカーの更新
   const updateErrorMarkers = useCallback(async () => {
@@ -52,7 +52,7 @@ export const EditorPane: React.FC = () => {
 
     // パースエラーがある場合、マーカーを設定
     if (parseErrors.length > 0) {
-      const markers: any[] = parseErrors.map(error => ({
+      const markers: monaco.editor.IMarkerData[] = parseErrors.map(error => ({
         severity: error.severity === 'error' 
           ? monaco.MarkerSeverity.Error 
           : monaco.MarkerSeverity.Warning,
@@ -155,7 +155,7 @@ export const EditorPane: React.FC = () => {
     updateErrorMarkers();
 
     // ホバープロバイダーの登録（動的monaco import対応）
-    let hoverProvider: any = null;
+    let hoverProvider: monaco.IDisposable | null = null;
     import('monaco-editor').then((monacoModule) => {
       hoverProvider = monacoModule.languages.registerHoverProvider(
         [editorSettings.language],

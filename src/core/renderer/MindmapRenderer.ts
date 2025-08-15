@@ -163,7 +163,7 @@ export class MindmapRenderer {
 
     if (nodeId) {
       this.container.selectAll('.mindmap-node')
-        .filter((d: any) => d.data.id === nodeId)
+        .filter((d: D3Node) => d.data.id === nodeId)
         .classed('selected', true);
     }
   }
@@ -361,9 +361,9 @@ export class MindmapRenderer {
     if (this.settings.enableAnimation) {
       linkUpdate.transition()
         .duration(300)
-        .attr('d', linkPath as any);
+        .attr('d', linkPath as string);
     } else {
-      linkUpdate.attr('d', linkPath as any);
+      linkUpdate.attr('d', linkPath as string);
     }
 
     linkSelection.exit().remove();
@@ -462,8 +462,8 @@ export class MindmapRenderer {
         this.renderMultilineText(textElement, d.data.title, d.width - this.NODE_PADDING * 2, d.height - this.NODE_PADDING * 2);
       });
 
-    this.drawPriorityBadges(nodeUpdate as any);
-    this.drawStatusBadges(nodeUpdate as any);
+    this.drawPriorityBadges(nodeUpdate);
+    this.drawStatusBadges(nodeUpdate);
 
     nodeSelection.exit().remove();
   }

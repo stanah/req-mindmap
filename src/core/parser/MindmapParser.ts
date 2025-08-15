@@ -11,7 +11,8 @@ import type {
   ParseOptions,
   ValidationResult,
   CustomSchema,
-  MindmapNode
+  MindmapNode,
+  SchemaError
 } from '../types';
 
 /**
@@ -133,9 +134,9 @@ export class MindmapParser {
   /**
    * データの基本的なバリデーション
    */
-  public validateData(data: any, options: ParseOptions = {}): ValidationResult {
-    const errors: any[] = [];
-    const warnings: any[] = [];
+  public validateData(data: unknown, options: ParseOptions = {}): ValidationResult {
+    const errors: SchemaError[] = [];
+    const warnings: SchemaError[] = [];
 
     // null/undefined チェック
     if (!data) {
@@ -207,7 +208,7 @@ export class MindmapParser {
   /**
    * マインドマップデータ構造の基本チェック
    */
-  private isValidMindmapData(data: any): boolean {
+  private isValidMindmapData(data: unknown): boolean {
     return (
       typeof data === 'object' &&
       data !== null &&
@@ -220,9 +221,9 @@ export class MindmapParser {
   /**
    * ノードの検証
    */
-  private validateNode(node: any, path: string): ValidationResult {
-    const errors: any[] = [];
-    const warnings: any[] = [];
+  private validateNode(node: unknown, path: string): ValidationResult {
+    const errors: SchemaError[] = [];
+    const warnings: SchemaError[] = [];
 
     if (!node || typeof node !== 'object') {
       errors.push({
@@ -252,7 +253,7 @@ export class MindmapParser {
 
     // 子ノードの検証（再帰的）
     if (node.children && Array.isArray(node.children)) {
-      node.children.forEach((child: any, index: number) => {
+      node.children.forEach((child: unknown, index: number) => {
         const childPath = `${path}.children[${index}]`;
         const childValidation = this.validateNode(child, childPath);
         errors.push(...childValidation.errors);
@@ -269,8 +270,8 @@ export class MindmapParser {
    * カスタムスキーマでのバリデーション
    */
   private validateWithCustomSchema(data: MindmapData): ValidationResult {
-    const errors: any[] = [];
-    const warnings: any[] = [];
+    const errors: SchemaError[] = [];
+    const warnings: SchemaError[] = [];
 
     if (!this.customSchema) {
       return { valid: true, errors, warnings };

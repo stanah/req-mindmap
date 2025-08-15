@@ -12,6 +12,7 @@ import type {
   RendererEventHandlers,
   RenderOptions
 } from '../types';
+import type { D3Node } from './MindmapRenderer';
 
 /**
  * D3.js用の拡張ノードデータ
@@ -302,9 +303,9 @@ export class MindmapCore {
     if (this.settings.enableAnimation) {
       linkUpdate.transition()
         .duration(300)
-        .attr('d', linkPath as any);
+        .attr('d', linkPath as string);
     } else {
-      linkUpdate.attr('d', linkPath as any);
+      linkUpdate.attr('d', linkPath as string);
     }
 
     // 不要なリンクの削除
@@ -412,10 +413,10 @@ export class MindmapCore {
       });
 
     // 優先度バッジの描画
-    this.drawPriorityBadges(nodeUpdate as any);
+    this.drawPriorityBadges(nodeUpdate);
 
     // ステータスバッジの描画
-    this.drawStatusBadges(nodeUpdate as any);
+    this.drawStatusBadges(nodeUpdate);
 
     // 不要なノードの削除
     nodeSelection.exit().remove();
@@ -927,7 +928,7 @@ export class MindmapCore {
 
     if (nodeId) {
       this.container.selectAll('.mindmap-node')
-        .filter((d: any) => d.data.id === nodeId)
+        .filter((d: D3Node) => d.data.id === nodeId)
         .classed('selected', true);
     }
   }
@@ -1077,7 +1078,7 @@ export class MindmapCore {
   /**
    * パフォーマンス統計の取得（今後実装）
    */
-  public getPerformanceStats(): any {
+  public getPerformanceStats(): Record<string, unknown> {
     return {
       currentSettings: {
         enableVirtualization: true

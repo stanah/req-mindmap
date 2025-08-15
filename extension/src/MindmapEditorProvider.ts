@@ -89,7 +89,7 @@ export class MindmapEditorProvider implements vscode.CustomTextEditorProvider {
      * Webviewからのメッセージを処理
      */
     private async handleWebviewMessage(
-        message: any,
+        message: { command: string; content?: string; message?: string; [key: string]: unknown },
         document: vscode.TextDocument,
         webviewPanel: vscode.WebviewPanel
     ): Promise<void> {
@@ -188,7 +188,7 @@ export class MindmapEditorProvider implements vscode.CustomTextEditorProvider {
     /**
      * エクスポート要求を処理
      */
-    private async handleExportRequest(message: any): Promise<void> {
+    private async handleExportRequest(message: { format?: string; [key: string]: unknown }): Promise<void> {
         try {
             // エクスポート機能の実装
             console.log('エクスポート要求を処理:', message);
@@ -202,7 +202,7 @@ export class MindmapEditorProvider implements vscode.CustomTextEditorProvider {
     /**
      * 現在の設定を取得
      */
-    private getConfiguration(): any {
+    private getConfiguration(): Record<string, unknown> {
         const config = vscode.workspace.getConfiguration('mindmapTool');
         
         return {

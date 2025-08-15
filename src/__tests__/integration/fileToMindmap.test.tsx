@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../web/App';
-import type { MindmapData } from '../../types';
+import type { MindmapData, MindmapNode } from '../../types';
 import { useAppStore } from '../../stores';
 
 // モックの設定
@@ -51,13 +51,13 @@ vi.mock('@monaco-editor/react', () => ({
 
 // MindmapCoreのモック
 vi.mock('../../core/renderer/MindmapCore', () => ({
-  MindmapCore: vi.fn().mockImplementation((options: any) => {
+  MindmapCore: vi.fn().mockImplementation((options: { container: SVGSVGElement }) => {
     const svgElement = options.container;
     const mockRenderer = {
-      render: vi.fn((data: any) => {
+      render: vi.fn((data: MindmapData) => {
         // マインドマップのノードをSVGに追加
         if (data && data.root) {
-          const addNode = (node: any, parent?: SVGElement) => {
+          const addNode = (node: MindmapNode, _parent?: SVGElement) => {
             const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             textElement.textContent = node.title;
             textElement.setAttribute('data-testid', `mindmap-node-${node.id}`);
@@ -237,7 +237,7 @@ describe('ファイル読み込みからマインドマップ表示までの統�
   beforeEach(() => {
     vi.clearAllMocks();
     mockFileHandle.getFile.mockClear();
-    ((global as any).showOpenFilePicker).mockClear();
+    ((global as { showOpenFilePicker?: () => void }).showOpenFilePicker as jest.Mock)?.mockClear?.();
   });
 
   afterEach(() => {
