@@ -41,3 +41,5 @@ extension/out/
 extension/webview/
 extension/pnpm-lock.yaml
 *.vsix
+
+.serena/cache
