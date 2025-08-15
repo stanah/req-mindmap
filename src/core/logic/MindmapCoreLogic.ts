@@ -463,7 +463,8 @@ export class MindmapCoreLogic implements ICoreLogic {
     }
     
     if (!this.nodeIndex.has(nodeId)) {
-      throw new Error(`Node with id ${nodeId} not found`);
+      console.warn(`Node with id ${nodeId} not found - ignoring selection request`);
+      return;
     }
     
     if (addToSelection) {

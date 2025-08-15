@@ -37,12 +37,6 @@
   flex: 1;
   position: relative;
   overflow: hidden;
-  transition: margin-bottom 0.3s ease;
-}
-
-/* ノード詳細パネルが表示されている時の調整 */
-.mindmap-viewer:has(.vscode-node-details-panel.visible) .mindmap-container {
-  margin-bottom: 40vh;
 }
 
 .mindmap-svg {

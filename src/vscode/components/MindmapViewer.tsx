@@ -113,7 +113,7 @@ export const MindmapViewer: React.FC = () => {
         rendererRef.current.resetView();
       }
     }, 100);
-  }, [parsedData]);
+  }, [parsedData, isPanelVisible]);
 
   // 設定の更新
   useEffect(() => {
