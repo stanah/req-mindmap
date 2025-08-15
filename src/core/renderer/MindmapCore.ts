@@ -93,7 +93,13 @@ export class MindmapCore {
   /**
    * データの描画
    */
-  public render(data: MindmapData): void {
+  public render(data: MindmapData, options: { resetView?: boolean } = { resetView: true }): void {
+    console.log('🎯 MindmapCore.render() called:', {
+      dataTitle: data?.title,
+      resetView: options.resetView,
+      stackTrace: new Error().stack?.split('\n').slice(1, 4).join('\n')
+    });
+    
     if (!data || !data.root) {
       console.warn('描画データが無効です');
       return;
@@ -116,8 +122,13 @@ export class MindmapCore {
     // 描画の実行
     this.draw();
 
-    // 初期ビューの設定
-    this.resetView();
+    // 初期ビューの設定（オプションで制御）
+    if (options.resetView) {
+      console.log('🔄 resetView() will be called from render()');
+      this.resetView();
+    } else {
+      console.log('⏸️ resetView() skipped in render()');
+    }
   }
 
   /**
@@ -906,6 +917,11 @@ export class MindmapCore {
    * ノードの選択
    */
   public selectNode(nodeId: string | null): void {
+    console.log('👆 selectNode() called:', {
+      nodeId,
+      stackTrace: new Error().stack?.split('\n').slice(1, 4).join('\n')
+    });
+    
     this.container.selectAll('.mindmap-node')
       .classed('selected', false);
 
@@ -962,6 +978,11 @@ export class MindmapCore {
    * ビューのリセット
    */
   public resetView(): void {
+    console.log('🔄 resetView() called:', {
+      hasRoot: !!this.root,
+      stackTrace: new Error().stack?.split('\n').slice(1, 4).join('\n')
+    });
+    
     if (!this.root) return;
 
     const bounds = this.container.node()?.getBBox();
@@ -978,6 +999,8 @@ export class MindmapCore {
 
     const x = svgRect.width / 2 - (bounds.x + bounds.width / 2) * scale;
     const y = svgRect.height / 2 - (bounds.y + bounds.height / 2) * scale;
+
+    console.log('🔍 resetView() zoom transform:', { x, y, scale, bounds, svgRect });
 
     this.svg.transition()
       .duration(500)

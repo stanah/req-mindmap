@@ -498,6 +498,8 @@ export const useAppStore = create<AppStore>()(
         // ===== マインドマップ操作 =====
 
         selectNode: (nodeId: string | null) => {
+          console.log('🎯 [Store] selectNode called:', { nodeId });
+          
           set((state) => ({
             ui: {
               ...state.ui,
@@ -509,6 +511,7 @@ export const useAppStore = create<AppStore>()(
               } : null,
             },
           }));
+          console.log('✅ [Store] selectNode state updated');
 
           // セッション状態を保存
           settingsService.saveSessionState({
@@ -528,6 +531,8 @@ export const useAppStore = create<AppStore>()(
               );
             }
           }
+          
+          console.log('🏁 [Store] selectNode completed');
         },
 
         toggleNodeCollapse: (nodeId: string) => {

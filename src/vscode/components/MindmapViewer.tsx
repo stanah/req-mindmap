@@ -180,7 +180,7 @@ export const MindmapViewer: React.FC = () => {
         rendererRef.current.resetView();
       }
     }, 100);
-  }, [parsedData, isPanelVisible]);
+  }, [parsedData]);
 
   // 設定の更新
   useEffect(() => {
