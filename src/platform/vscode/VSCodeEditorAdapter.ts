@@ -88,58 +88,28 @@ export class VSCodeEditorAdapter implements EditorAdapter {
   }
 
   getValue(): string {
-    // VSCode API を使用してエディタの内容を取得
-    // const vscode = acquireVsCodeApi();
-    // return vscode.postMessage({
-    //   command: 'getValue'
-    // });
-    
-    throw new Error('VSCode拡張環境はまだ実装されていません');
+    // 現在のコンテンツを返す（VSCode拡張からのメッセージで更新される）
+    return this.currentContent;
   }
 
   setValue(_value: string): void {
-    // VSCode API を使用してエディタの内容を設定
-    // const vscode = acquireVsCodeApi();
-    // vscode.postMessage({
-    //   command: 'setValue',
-    //   value: value
-    // });
-    
-    throw new Error('VSCode拡張環境はまだ実装されていません');
+    // VSCode拡張では読み取り専用のため、設定は無効
+    console.warn('VSCode拡張モードでは setValue は無効です');
   }
 
   setLanguage(_language: 'json' | 'yaml'): void {
-    // VSCode API を使用して言語モードを設定
-    // const vscode = acquireVsCodeApi();
-    // vscode.postMessage({
-    //   command: 'setLanguage',
-    //   language: language
-    // });
-    
-    throw new Error('VSCode拡張環境はまだ実装されていません');
+    // VSCode拡張では言語モードは自動判定されるため無効
+    console.warn('VSCode拡張モードでは setLanguage は無効です');
   }
 
   setTheme(_theme: string): void {
-    // VSCode API を使用してテーマを設定
-    // const vscode = acquireVsCodeApi();
-    // vscode.postMessage({
-    //   command: 'setTheme',
-    //   theme: theme
-    // });
-    
-    throw new Error('VSCode拡張環境はまだ実装されていません');
+    // VSCode拡張ではテーマはVSCode本体で管理されるため無効
+    console.warn('VSCode拡張モードでは setTheme は無効です');
   }
 
   setCursor(_line: number, _column?: number): void {
-    // VSCode API を使用してカーソル位置を設定
-    // const vscode = acquireVsCodeApi();
-    // vscode.postMessage({
-    //   command: 'setCursor',
-    //   line: line,
-    //   column: column
-    // });
-    
-    throw new Error('VSCode拡張環境はまだ実装されていません');
+    // VSCode拡張では外部からカーソル制御は無効
+    console.warn('VSCode拡張モードでは setCursor は無効です');
   }
 
   /**
@@ -157,49 +127,36 @@ export class VSCodeEditorAdapter implements EditorAdapter {
   }
 
   highlight(_startLine: number, _startColumn: number, _endLine: number, _endColumn: number): void {
-    // VSCode API を使用して範囲をハイライト
-    // const vscode = acquireVsCodeApi();
-    // vscode.postMessage({
-    //   command: 'highlight',
-    //   startLine: startLine,
-    //   startColumn: startColumn,
-    //   endLine: endLine,
-    //   endColumn: endColumn
-    // });
-    
-    throw new Error('VSCode拡張環境はまだ実装されていません');
+    // VSCode拡張では外部からハイライト制御は無効
+    console.warn('VSCode拡張モードでは highlight は無効です');
   }
 
   setErrorMarkers(_errors: EditorError[]): void {
-    // VSCode API を使用してエラーマーカーを設定
-    // const vscode = acquireVsCodeApi();
-    // vscode.postMessage({
-    //   command: 'setErrorMarkers',
-    //   errors: errors
-    // });
-    
-    throw new Error('VSCode拡張環境はまだ実装されていません');
+    // VSCode拡張ではエラーマーカーはVSCode本体で管理されるため無効
+    console.warn('VSCode拡張モードでは setErrorMarkers は無効です');
   }
 
-  onDidChangeContent(_callback: (content: string) => void): void {
-    // VSCode API を使用して内容変更イベントを監視
-    // const vscode = acquireVsCodeApi();
-    // vscode.postMessage({
-    //   command: 'onDidChangeContent',
-    //   callback: callback
-    // });
+  onDidChangeContent(callback: (content: string) => void): void {
+    // イベントリスナーをコールバック集合に追加
+    this.contentChangeCallbacks.add(callback);
     
-    throw new Error('VSCode拡張環境はまだ実装されていません');
+    // VSCode拡張からの内容変更通知を受信する準備ができたことを通知
+    if (this.vscode) {
+      this.vscode.postMessage({
+        command: 'subscribeToContentChanges'
+      });
+    }
   }
 
-  onDidChangeCursorPosition(_callback: (line: number, column: number) => void): void {
-    // VSCode API を使用してカーソル位置変更イベントを監視
-    // const vscode = acquireVsCodeApi();
-    // vscode.postMessage({
-    //   command: 'onDidChangeCursorPosition',
-    //   callback: callback
-    // });
+  onDidChangeCursorPosition(callback: (line: number, column: number) => void): void {
+    // イベントリスナーをコールバック集合に追加
+    this.cursorChangeCallbacks.add(callback);
     
-    throw new Error('VSCode拡張環境はまだ実装されていません');
+    // VSCode拡張からのカーソル変更通知を受信する準備ができたことを通知
+    if (this.vscode) {
+      this.vscode.postMessage({
+        command: 'subscribeToCursorChanges'
+      });
+    }
   }
 }
