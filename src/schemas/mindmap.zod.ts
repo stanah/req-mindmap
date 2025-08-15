@@ -71,6 +71,15 @@ export const FieldDefinitionSchema = z.object({
   
   /** バリデーションルール */
   validation: z.array(ValidationRuleSchema).optional()
+}).refine((data) => {
+  // select/multiselectタイプの場合はoptionsが必須
+  if (data.type === 'select' || data.type === 'multiselect') {
+    return data.options && data.options.length > 0;
+  }
+  return true;
+}, {
+  message: "select/multiselectタイプの場合、optionsは必須です",
+  path: ["options"]
 });
 
 /**
@@ -152,13 +161,19 @@ export const MindmapNodeSchema = z.object({
   metadata: z.record(z.string(), z.any()).optional(),
   
   /** ノードの作成日時 */
-  createdAt: z.string().optional(),
+  createdAt: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: "有効な日時文字列である必要があります"
+  }).optional(),
   
   /** ノードの更新日時 */
-  updatedAt: z.string().optional(),
+  updatedAt: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: "有効な日時文字列である必要があります"
+  }).optional(),
   
   /** ノードの期限 */
-  deadline: z.string().optional(),
+  deadline: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: "有効な日時文字列である必要があります"
+  }).optional(),
   
   /** 子ノードの配列（再帰構造）*/
   get children() {
@@ -208,10 +223,14 @@ export const MindmapDataSchema = z.object({
   settings: z.record(z.string(), z.any()).optional(),
   
   /** マインドマップの作成日時 */
-  createdAt: z.string().optional(),
+  createdAt: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: "有効な日時文字列である必要があります"
+  }).optional(),
   
   /** マインドマップの更新日時 */
-  updatedAt: z.string().optional(),
+  updatedAt: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: "有効な日時文字列である必要があります"
+  }).optional(),
   
   /** 利用可能なタグの定義 */
   tags: z.array(TagDefinitionSchema).optional(),
