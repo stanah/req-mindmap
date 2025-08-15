@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as yaml from 'js-yaml';
 
 /**
  * 正規表現用文字列エスケープ
@@ -312,10 +313,29 @@ export class MindmapWebviewProvider {
                 console.log('受信したデータタイプ:', typeof message.data);
                 console.log('受信したデータ内容:', message.data);
                 
-                // データがある場合は、そのデータでドキュメントを更新
-                const content = typeof message.data === 'string' 
-                    ? message.data 
-                    : JSON.stringify(message.data, null, 2);
+                // ファイルの拡張子を取得して元の形式を維持
+                const fileExtension = document.uri.fsPath.toLowerCase().split('.').pop();
+                let content: string;
+                
+                if (typeof message.data === 'string') {
+                    content = message.data;
+                } else {
+                    // ファイル形式に応じて変換
+                    if (fileExtension === 'yaml' || fileExtension === 'yml') {
+                        // YAMLファイルの場合はYAML形式で保存
+                        content = yaml.dump(message.data, {
+                            indent: 2,
+                            lineWidth: 120,
+                            noRefs: true,
+                            sortKeys: false,
+                            quotingType: '"',
+                            skipInvalid: true
+                        });
+                    } else {
+                        // JSONファイルまたはその他の場合はJSON形式で保存
+                        content = JSON.stringify(message.data, null, 2);
+                    }
+                }
                 
                 console.log('変換後のコンテンツ長:', content.length);
                 console.log('変換後のコンテンツ（最初の200文字）:', content.substring(0, 200));
