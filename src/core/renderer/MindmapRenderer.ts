@@ -86,6 +86,12 @@ export class MindmapRenderer {
       }
     });
 
+    // 右クリック（コンテキストメニュー）のデフォルト動作を無効化
+    this.svg.on('contextmenu', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
     // 描画グループの作成
     this.container.append('g').attr('class', 'mindmap-links');
     this.container.append('g').attr('class', 'mindmap-nodes');
@@ -378,6 +384,11 @@ export class MindmapRenderer {
         if (this.eventHandlers.onNodeClick) {
           this.eventHandlers.onNodeClick(d.data.id, event);
         }
+      })
+      .on('contextmenu', (event, d) => {
+        // 右クリックのデフォルト動作（コンテキストメニュー）を無効化
+        event.preventDefault();
+        event.stopPropagation();
       })
       .on('mouseenter', (event, d) => {
         if (this.eventHandlers.onNodeHover) {
