@@ -1,0 +1,276 @@
+/**
+ * VSCode拡張用ノード詳細パネルのスタイル（画面下部固定）
+ */
+
+.vscode-node-details-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--vscode-panel-background, #f8f8f8);
+  border-top: 1px solid var(--vscode-panel-border, #e0e0e0);
+  z-index: 1000;
+  transition: all 0.3s ease;
+  max-height: 40vh;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.vscode-node-details-panel.hidden {
+  transform: translateY(100%);
+}
+
+.vscode-node-details-panel.visible {
+  transform: translateY(0);
+}
+
+/* パネルヘッダー */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--vscode-panel-background, #f8f8f8);
+  border-bottom: 1px solid var(--vscode-panel-border, #e0e0e0);
+  min-height: 32px;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--vscode-panel-title-foreground, #333333);
+}
+
+.node-icon {
+  font-size: 14px;
+}
+
+.node-title {
+  font-weight: 600;
+  color: var(--vscode-editor-foreground, #000000);
+}
+
+.toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--vscode-button-foreground, #666666);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  line-height: 1;
+  transition: background-color 0.2s ease;
+}
+
+.toggle-btn:hover {
+  background: var(--vscode-button-hoverBackground, rgba(0, 0, 0, 0.1));
+}
+
+.toggle-btn:focus {
+  outline: 1px solid var(--vscode-focusBorder, #007acc);
+  outline-offset: 1px;
+}
+
+/* パネル内容 */
+.panel-content {
+  overflow-y: auto;
+  max-height: calc(40vh - 32px);
+  padding: 12px 16px 16px;
+}
+
+.no-selection {
+  text-align: center;
+  padding: 20px;
+  color: var(--vscode-descriptionForeground, #666666);
+}
+
+.no-selection p {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* 詳細内容 */
+.node-details-content {
+  font-size: 12px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.details-section {
+  background: var(--vscode-editor-background, #ffffff);
+  border: 1px solid var(--vscode-panel-border, #e0e0e0);
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.details-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--vscode-editor-foreground, #000000);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--vscode-panel-border, #e0e0e0);
+  padding-bottom: 4px;
+}
+
+.details-item {
+  display: flex;
+  margin-bottom: 6px;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.details-item:last-child {
+  margin-bottom: 0;
+}
+
+.details-item label {
+  font-weight: 500;
+  color: var(--vscode-descriptionForeground, #666666);
+  min-width: 80px;
+  flex-shrink: 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.details-item .value {
+  color: var(--vscode-editor-foreground, #000000);
+  word-break: break-word;
+  flex: 1;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.details-item .value.description {
+  font-style: italic;
+  color: var(--vscode-descriptionForeground, #666666);
+}
+
+.details-item .value.deadline {
+  color: var(--vscode-errorForeground, #d73a49);
+  font-weight: 500;
+}
+
+/* タグ */
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.tag {
+  background: var(--vscode-badge-background, #007acc);
+  color: var(--vscode-badge-foreground, #ffffff);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* リンク */
+.link-url {
+  color: var(--vscode-textLink-foreground, #007acc);
+  text-decoration: none;
+  font-size: 11px;
+  word-break: break-all;
+}
+
+.link-url:hover {
+  text-decoration: underline;
+  color: var(--vscode-textLink-activeForeground, #005a9e);
+}
+
+/* ダークテーマ対応 */
+@media (prefers-color-scheme: dark) {
+  .vscode-node-details-panel {
+    background: var(--vscode-panel-background, #1e1e1e);
+    border-top-color: var(--vscode-panel-border, #3e3e3e);
+  }
+  
+  .panel-header {
+    background: var(--vscode-panel-background, #1e1e1e);
+    border-bottom-color: var(--vscode-panel-border, #3e3e3e);
+  }
+  
+  .details-section {
+    background: var(--vscode-editor-background, #1e1e1e);
+    border-color: var(--vscode-panel-border, #3e3e3e);
+  }
+  
+  .tag {
+    background: var(--vscode-badge-background, #0e639c);
+  }
+}
+
+/* VSCodeテーマ固有の対応 */
+[data-vscode-theme-kind="vscode-dark"] .vscode-node-details-panel,
+[data-theme="dark"] .vscode-node-details-panel {
+  background: #1e1e1e;
+  border-top-color: #3e3e3e;
+}
+
+[data-vscode-theme-kind="vscode-dark"] .panel-header,
+[data-theme="dark"] .panel-header {
+  background: #1e1e1e;
+  border-bottom-color: #3e3e3e;
+}
+
+[data-vscode-theme-kind="vscode-dark"] .details-section,
+[data-theme="dark"] .details-section {
+  background: #1e1e1e;
+  border-color: #3e3e3e;
+}
+
+[data-vscode-theme-kind="vscode-dark"] .tag,
+[data-theme="dark"] .tag {
+  background: #0e639c;
+}
+
+/* 最小化状態での表示最適化 */
+.vscode-node-details-panel.hidden .panel-content {
+  display: none;
+}
+
+/* スクロールバー */
+.panel-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: var(--vscode-scrollbarSlider-background, transparent);
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background: var(--vscode-scrollbarSlider-background, rgba(121, 121, 121, 0.4));
+  border-radius: 4px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+  background: var(--vscode-scrollbarSlider-hoverBackground, rgba(100, 100, 100, 0.7));
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .details-item {
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .details-item label {
+    min-width: auto;
+  }
+}
