@@ -130,9 +130,14 @@ export class MindmapRenderer {
   public updateSettings(newSettings: Partial<MindmapSettings>): void {
     this.settings = { ...this.settings, ...newSettings };
     
-    if (this.root) {
-      this.applyLayout();
-      this.draw();
+    // データが存在し、かつコンテナが有効な場合のみレイアウトと描画を実行
+    if (this.root && this.container && !this.isDestroyed) {
+      try {
+        this.applyLayout();
+        this.draw();
+      } catch (error) {
+        console.warn('設定更新中の描画でエラーが発生しました:', error);
+      }
     }
   }
 

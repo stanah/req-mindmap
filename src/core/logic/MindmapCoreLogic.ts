@@ -786,17 +786,18 @@ export class MindmapCoreLogic implements ICoreLogic {
   updateSettings(newSettings: Partial<MindmapSettings>): void {
     this.checkNotDestroyed();
     
-    if (!this.data) {
-      throw new Error('No data loaded');
-    }
-    
     // 設定の検証
     this.validateSettings(newSettings);
     
-    const currentSettings = this.data.settings || {};
-    this.data.settings = { ...currentSettings, ...newSettings };
-    
-    this.emit('settingsChanged', this.data.settings);
+    if (this.data) {
+      // データがある場合はデータ内の設定を更新
+      const currentSettings = this.data.settings || {};
+      this.data.settings = { ...currentSettings, ...newSettings };
+      this.emit('settingsChanged', this.data.settings);
+    } else {
+      // データがない場合は新しい設定をそのまま通知
+      this.emit('settingsChanged', newSettings);
+    }
     this.emit('dataChanged', this.data);
   }
   

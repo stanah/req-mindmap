@@ -48,8 +48,12 @@ export class MindmapCore {
     
     // 設定変更時の再描画
     this.coreLogic.on('settingsChanged', (settings) => {
+      // レンダラーの設定を更新（データがなくても安全）
       this.renderer.updateSettings(settings);
-      this.renderCurrentData();
+      // データがある場合のみ再描画
+      if (this.coreLogic.getData()) {
+        this.renderCurrentData();
+      }
     });
     
     // ノード選択の同期
