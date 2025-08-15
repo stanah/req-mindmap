@@ -120,6 +120,87 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
     }
   }, [node, onNodeUpdate]);
 
+  // フィールド入力要素を生成する関数
+  const renderFieldInput = useCallback((field: any, currentValue: any, nodeId: string, changeHandler: (name: string, value: any) => void, prefix: string) => {
+    if (field.type === 'boolean') {
+      return (
+        <input
+          key={`${prefix}-${field.name}-${nodeId}`}
+          type="checkbox"
+          className="edit-checkbox always-editable"
+          defaultChecked={Boolean(currentValue)}
+          onChange={(e) => changeHandler(field.name, e.target.checked)}
+        />
+      );
+    } else if (field.type === 'select') {
+      return (
+        <select
+          key={`${prefix}-${field.name}-${nodeId}`}
+          className="edit-select always-editable"
+          defaultValue={String(currentValue || '')}
+          onChange={(e) => changeHandler(field.name, e.target.value)}
+        >
+          <option value="">選択してください</option>
+          {field.options?.map((option: string) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      );
+    } else if (field.type === 'multiselect') {
+      return (
+        <select
+          key={`${prefix}-${field.name}-${nodeId}`}
+          className="edit-select always-editable"
+          multiple
+          defaultValue={Array.isArray(currentValue) ? currentValue : []}
+          onChange={(e) => {
+            const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+            changeHandler(field.name, selectedOptions);
+          }}
+        >
+          {field.options?.map((option: string) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      );
+    } else if (field.type === 'number') {
+      return (
+        <input
+          key={`${prefix}-${field.name}-${nodeId}`}
+          type="number"
+          className="edit-input always-editable"
+          defaultValue={Number(currentValue) || 0}
+          onBlur={(e) => changeHandler(field.name, Number(e.target.value))}
+        />
+      );
+    } else if (field.type === 'date') {
+      return (
+        <input
+          key={`${prefix}-${field.name}-${nodeId}`}
+          type="date"
+          className="edit-input always-editable"
+          defaultValue={String(currentValue || '')}
+          onBlur={(e) => changeHandler(field.name, e.target.value)}
+        />
+      );
+    } else {
+      return (
+        <input
+          key={`${prefix}-${field.name}-${nodeId}`}
+          type="text"
+          className="edit-input always-editable"
+          defaultValue={String(currentValue || '')}
+          onBlur={(e) => changeHandler(field.name, e.target.value)}
+          placeholder={`${field.label}を入力`}
+        />
+      );
+    }
+  }, []);
+
   return (
     <div className={`vscode-node-details-panel ${isVisible ? 'visible' : 'hidden'}`}>
       {/* パネルヘッダー */}
@@ -225,46 +306,214 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
                   </div>
                 )}
 
-                {/* カスタムフィールド */}
-                {(node.customFields && Object.keys(node.customFields).length > 0) && (
-                  <div className="details-section">
-                    <h4>カスタムフィールド</h4>
-                    {data?.schema?.fields?.map((field) => {
-                      const currentValue = node.customFields?.[field.name];
-                      
-                      return (
-                        <div key={field.name} className="details-item">
-                          <label>{field.label}:</label>
-                          {field.type === 'boolean' ? (
-                            <input
-                              key={`${field.name}-${node.id}`}
-                              type="checkbox"
-                              className="edit-checkbox always-editable"
-                              defaultChecked={Boolean(currentValue)}
-                              onChange={(e) => handleCustomFieldChange(field.name, e.target.checked)}
-                            />
-                          ) : field.type === 'number' ? (
-                            <input
-                              key={`${field.name}-${node.id}`}
-                              type="number"
-                              className="edit-input always-editable"
-                              defaultValue={Number(currentValue) || 0}
-                              onBlur={(e) => handleCustomFieldChange(field.name, Number(e.target.value))}
-                            />
-                          ) : (
-                            <input
-                              key={`${field.name}-${node.id}`}
-                              type="text"
-                              className="edit-input always-editable"
-                              defaultValue={String(currentValue || '')}
-                              onBlur={(e) => handleCustomFieldChange(field.name, e.target.value)}
-                              placeholder={`${field.label}を入力`}
-                            />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                {/* スキーマ定義フィールド */}
+                {data?.schema && (
+                  <>
+                    {/* 基本フィールド（ノード直下） */}
+                    {data.schema.baseFields && data.schema.baseFields.length > 0 && (
+                      <div className="details-section">
+                        <h4>基本プロパティ</h4>
+                        {data.schema.baseFields.map((field) => {
+                            const currentValue = (node as any)[field.name];
+                            
+                            return (
+                              <div key={field.name} className="details-item">
+                                <label>{field.label}:</label>
+                                {field.type === 'boolean' ? (
+                                  <input
+                                    key={`node-${field.name}-${node.id}`}
+                                    type="checkbox"
+                                    className="edit-checkbox always-editable"
+                                    defaultChecked={Boolean(currentValue)}
+                                    onChange={(e) => handleFieldChange(field.name, e.target.checked)}
+                                  />
+                                ) : field.type === 'select' ? (
+                                  <select
+                                    key={`node-${field.name}-${node.id}`}
+                                    className="edit-select always-editable"
+                                    defaultValue={String(currentValue || '')}
+                                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                                  >
+                                    <option value="">選択してください</option>
+                                    {field.options?.map((option) => (
+                                      <option key={option} value={option}>
+                                        {option}
+                                      </option>
+                                    ))}
+                                  </select>
+                                ) : field.type === 'multiselect' ? (
+                                  <select
+                                    key={`node-${field.name}-${node.id}`}
+                                    className="edit-select always-editable"
+                                    multiple
+                                    defaultValue={Array.isArray(currentValue) ? currentValue : []}
+                                    onChange={(e) => {
+                                      const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+                                      handleFieldChange(field.name, selectedOptions);
+                                    }}
+                                  >
+                                    {field.options?.map((option) => (
+                                      <option key={option} value={option}>
+                                        {option}
+                                      </option>
+                                    ))}
+                                  </select>
+                                ) : field.type === 'number' ? (
+                                  <input
+                                    key={`node-${field.name}-${node.id}`}
+                                    type="number"
+                                    className="edit-input always-editable"
+                                    defaultValue={Number(currentValue) || 0}
+                                    onBlur={(e) => handleFieldChange(field.name, Number(e.target.value))}
+                                  />
+                                ) : field.type === 'date' ? (
+                                  <input
+                                    key={`node-${field.name}-${node.id}`}
+                                    type="date"
+                                    className="edit-input always-editable"
+                                    defaultValue={String(currentValue || '')}
+                                    onBlur={(e) => handleFieldChange(field.name, e.target.value)}
+                                  />
+                                ) : (
+                                  <input
+                                    key={`node-${field.name}-${node.id}`}
+                                    type="text"
+                                    className="edit-input always-editable"
+                                    defaultValue={String(currentValue || '')}
+                                    onBlur={(e) => handleFieldChange(field.name, e.target.value)}
+                                    placeholder={`${field.label}を入力`}
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+
+                    {/* カスタムフィールド */}
+                    {data.schema.customFields && data.schema.customFields.length > 0 && (
+                      <div className="details-section">
+                        <h4>カスタムフィールド</h4>
+                        {data.schema.customFields.map((field) => {
+                            const currentValue = node.customFields?.[field.name];
+                            
+                            return (
+                              <div key={field.name} className="details-item">
+                                <label>{field.label}:</label>
+                                {field.type === 'boolean' ? (
+                                  <input
+                                    key={`custom-${field.name}-${node.id}`}
+                                    type="checkbox"
+                                    className="edit-checkbox always-editable"
+                                    defaultChecked={Boolean(currentValue)}
+                                    onChange={(e) => handleCustomFieldChange(field.name, e.target.checked)}
+                                  />
+                                ) : field.type === 'select' ? (
+                                  <select
+                                    key={`custom-${field.name}-${node.id}`}
+                                    className="edit-select always-editable"
+                                    defaultValue={String(currentValue || '')}
+                                    onChange={(e) => handleCustomFieldChange(field.name, e.target.value)}
+                                  >
+                                    <option value="">選択してください</option>
+                                    {field.options?.map((option) => (
+                                      <option key={option} value={option}>
+                                        {option}
+                                      </option>
+                                    ))}
+                                  </select>
+                                ) : field.type === 'multiselect' ? (
+                                  <select
+                                    key={`custom-${field.name}-${node.id}`}
+                                    className="edit-select always-editable"
+                                    multiple
+                                    defaultValue={Array.isArray(currentValue) ? currentValue : []}
+                                    onChange={(e) => {
+                                      const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+                                      handleCustomFieldChange(field.name, selectedOptions);
+                                    }}
+                                  >
+                                    {field.options?.map((option) => (
+                                      <option key={option} value={option}>
+                                        {option}
+                                      </option>
+                                    ))}
+                                  </select>
+                                ) : field.type === 'number' ? (
+                                  <input
+                                    key={`custom-${field.name}-${node.id}`}
+                                    type="number"
+                                    className="edit-input always-editable"
+                                    defaultValue={Number(currentValue) || 0}
+                                    onBlur={(e) => handleCustomFieldChange(field.name, Number(e.target.value))}
+                                  />
+                                ) : field.type === 'date' ? (
+                                  <input
+                                    key={`custom-${field.name}-${node.id}`}
+                                    type="date"
+                                    className="edit-input always-editable"
+                                    defaultValue={String(currentValue || '')}
+                                    onBlur={(e) => handleCustomFieldChange(field.name, e.target.value)}
+                                  />
+                                ) : (
+                                  <input
+                                    key={`custom-${field.name}-${node.id}`}
+                                    type="text"
+                                    className="edit-input always-editable"
+                                    defaultValue={String(currentValue || '')}
+                                    onBlur={(e) => handleCustomFieldChange(field.name, e.target.value)}
+                                    placeholder={`${field.label}を入力`}
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+
+                    {/* 下位互換性：legacy fieldsサポート */}
+                    {!data.schema.baseFields && !data.schema.customFields && data.schema.fields && (
+                      <>
+                        {/* ノード直下のフィールド */}
+                        {data.schema.fields.filter(field => field.location === 'node').length > 0 && (
+                          <div className="details-section">
+                            <h4>ノードプロパティ</h4>
+                            {data.schema.fields
+                              .filter(field => field.location === 'node')
+                              .map((field) => {
+                                const currentValue = (node as any)[field.name];
+                                
+                                return (
+                                  <div key={field.name} className="details-item">
+                                    <label>{field.label}:</label>
+                                    {renderFieldInput(field, currentValue, node.id, handleFieldChange, 'node')}
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        )}
+
+                        {/* カスタムフィールド */}
+                        {data.schema.fields.filter(field => field.location === 'customFields').length > 0 && (
+                          <div className="details-section">
+                            <h4>カスタムフィールド</h4>
+                            {data.schema.fields
+                              .filter(field => field.location === 'customFields')
+                              .map((field) => {
+                                const currentValue = node.customFields?.[field.name];
+                                
+                                return (
+                                  <div key={field.name} className="details-item">
+                                    <label>{field.label}:</label>
+                                    {renderFieldInput(field, currentValue, node.id, handleCustomFieldChange, 'custom')}
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </>
                 )}
 
                 {/* タグ */}

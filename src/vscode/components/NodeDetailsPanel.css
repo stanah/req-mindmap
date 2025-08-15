@@ -310,6 +310,7 @@
 .edit-input,
 .edit-textarea,
 .edit-checkbox,
+.edit-select,
 .add-tag-input,
 .always-editable {
   background: var(--vscode-input-background, #ffffff);
@@ -336,6 +337,7 @@
 
 .edit-input:focus,
 .edit-textarea:focus,
+.edit-select:focus,
 .add-tag-input:focus,
 .always-editable:focus {
   outline: none;
@@ -355,6 +357,20 @@
   flex: none;
   margin: 0;
   cursor: pointer;
+}
+
+.edit-select {
+  cursor: pointer;
+  appearance: menulist;
+  -webkit-appearance: menulist;
+  -moz-appearance: menulist;
+}
+
+.edit-select[multiple] {
+  min-height: 60px;
+  appearance: listbox;
+  -webkit-appearance: listbox;
+  -moz-appearance: listbox;
 }
 
 /* 編集可能なタグ */
@@ -410,6 +426,7 @@
 @media (prefers-color-scheme: dark) {
   .edit-input,
   .edit-textarea,
+  .edit-select,
   .add-tag-input,
   .always-editable {
     background: var(--vscode-input-background, #3c3c3c);
@@ -420,10 +437,12 @@
 
 [data-vscode-theme-kind="vscode-dark"] .edit-input,
 [data-vscode-theme-kind="vscode-dark"] .edit-textarea,
+[data-vscode-theme-kind="vscode-dark"] .edit-select,
 [data-vscode-theme-kind="vscode-dark"] .add-tag-input,
 [data-vscode-theme-kind="vscode-dark"] .always-editable,
 [data-theme="dark"] .edit-input,
 [data-theme="dark"] .edit-textarea,
+[data-theme="dark"] .edit-select,
 [data-theme="dark"] .add-tag-input,
 [data-theme="dark"] .always-editable {
   background: #3c3c3c;
