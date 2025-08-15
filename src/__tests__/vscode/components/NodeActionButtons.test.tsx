@@ -7,74 +7,81 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { NodeActionButtons } from '../../../vscode/components/NodeActionButtons';
 import type { MindmapNode } from "../../../types";
 
-const mockNode: MindmapNode = {
-  id: 'root',
-  title: 'ルートノード',
-  description: 'テスト用のルートノード',
-  status: 'draft',
-  priority: 'medium',
-  tags: [],
-  customFields: {},
-  createdAt: '2024-01-01T00:00:00Z',
-  updatedAt: '2024-01-01T00:00:00Z',
-  children: [
-    {
-      id: 'child1',
-      title: '子ノード1',
-      description: 'テスト用の子ノード',
-      status: 'draft',
-      priority: 'medium',
-      tags: [],
-      customFields: {},
-      createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z',
-      children: []
-    }
-  ]
+const mockData = {
+  root: {
+    id: 'root',
+    title: 'ルートノード',
+    description: 'テスト用のルートノード',
+    status: 'draft',
+    priority: 'medium',
+    tags: [],
+    customFields: {},
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+    children: [
+      {
+        id: 'child1',
+        title: '子ノード1',
+        description: 'テスト用の子ノード',
+        status: 'draft',
+        priority: 'medium',
+        tags: [],
+        customFields: {},
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        children: []
+      }
+    ]
+  }
 };
 
 describe('NodeActionButtons', () => {
   const mockOnAddChild = vi.fn();
   const mockOnAddSibling = vi.fn();
+  const mockOnDeleteNode = vi.fn();
 
   beforeEach(() => {
     mockOnAddChild.mockClear();
     mockOnAddSibling.mockClear();
+    mockOnDeleteNode.mockClear();
   });
 
-  it('選択されたノードがない場合は何も表示しない', () => {
+  it('選択されたノードがない場合はプレースホルダーを表示する', () => {
     const { container } = render(
       <NodeActionButtons
         selectedNodeId={null}
-        data={mockNode}
+        data={mockData}
         onAddChild={mockOnAddChild}
         onAddSibling={mockOnAddSibling}
+        onDeleteNode={mockOnDeleteNode}
       />
     );
 
-    expect(container.firstChild).toBeNull();
+    expect(screen.getByText('ノードを選択してください')).toBeInTheDocument();
   });
 
-  it('データがない場合は何も表示しない', () => {
+  it('データがない場合はプレースホルダーを表示する', () => {
     const { container } = render(
       <NodeActionButtons
         selectedNodeId="test"
         data={null}
         onAddChild={mockOnAddChild}
         onAddSibling={mockOnAddSibling}
+        onDeleteNode={mockOnDeleteNode}
       />
     );
 
-    expect(container.firstChild).toBeNull();
+    expect(screen.getByText('ノードを選択してください')).toBeInTheDocument();
   });
 
   it('子ノードが選択されている場合、両方のボタンが表示される', () => {
     render(
       <NodeActionButtons
         selectedNodeId="child1"
-        data={mockNode}
+        data={mockData}
         onAddChild={mockOnAddChild}
         onAddSibling={mockOnAddSibling}
+        onDeleteNode={mockOnDeleteNode}
       />
     );
 
@@ -90,9 +97,10 @@ describe('NodeActionButtons', () => {
     render(
       <NodeActionButtons
         selectedNodeId="root"
-        data={mockNode}
+        data={mockData}
         onAddChild={mockOnAddChild}
         onAddSibling={mockOnAddSibling}
+        onDeleteNode={mockOnDeleteNode}
       />
     );
 
@@ -111,9 +119,10 @@ describe('NodeActionButtons', () => {
     render(
       <NodeActionButtons
         selectedNodeId="child1"
-        data={mockNode}
+        data={mockData}
         onAddChild={mockOnAddChild}
         onAddSibling={mockOnAddSibling}
+        onDeleteNode={mockOnDeleteNode}
       />
     );
 
@@ -128,9 +137,10 @@ describe('NodeActionButtons', () => {
     render(
       <NodeActionButtons
         selectedNodeId="child1"
-        data={mockNode}
+        data={mockData}
         onAddChild={mockOnAddChild}
         onAddSibling={mockOnAddSibling}
+        onDeleteNode={mockOnDeleteNode}
       />
     );
 
@@ -145,7 +155,7 @@ describe('NodeActionButtons', () => {
     const { container } = render(
       <NodeActionButtons
         selectedNodeId="child1"
-        data={mockNode}
+        data={mockData}
         onAddChild={mockOnAddChild}
         onAddSibling={mockOnAddSibling}
         className="custom-class"
@@ -160,9 +170,10 @@ describe('NodeActionButtons', () => {
     const { container } = render(
       <NodeActionButtons
         selectedNodeId="nonexistent"
-        data={mockNode}
+        data={mockData}
         onAddChild={mockOnAddChild}
         onAddSibling={mockOnAddSibling}
+        onDeleteNode={mockOnDeleteNode}
       />
     );
 
