@@ -279,6 +279,11 @@ export class MindmapWebviewProvider {
                         this.handleSaveFile(webview, document, message);
                         break;
 
+                    case 'requestThemeChange':
+                        // テーマ変更要求の処理
+                        this.handleThemeChangeRequest(webview, message);
+                        break;
+
                     default:
                         console.log('未知のメッセージ:', message);
                         break;
@@ -569,6 +574,28 @@ export class MindmapWebviewProvider {
                     error: errorMessage
                 });
             }
+        }
+    }
+
+    /**
+     * テーマ変更要求を処理
+     */
+    private handleThemeChangeRequest(webview: vscode.Webview, message: { theme?: string }): void {
+        try {
+            console.log(`テーマ変更要求を受信`);
+
+            // VSCodeのテーマ選択コマンドを実行
+            vscode.commands.executeCommand('workbench.action.selectTheme');
+            
+            // 追加の情報をユーザーに表示
+            vscode.window.showInformationMessage(
+                'テーマ変更: 選択画面が開きました。お好みのテーマを選択してください。',
+                'OK'
+            );
+
+        } catch (error) {
+            console.error('テーマ変更コマンドの実行に失敗:', error);
+            vscode.window.showErrorMessage(`テーマ変更画面を開けませんでした: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 }

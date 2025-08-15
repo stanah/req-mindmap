@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { NodeActionButtons } from './NodeActionButtons';
-import { ThemeToggle } from '../../web/components/ui/ThemeToggle';
+import { VSCodeThemeToggle } from './VSCodeThemeToggle';
 import type { MindmapData } from '../../types';
 import type { MindmapCore } from '../../core';
 import './Toolbar.css';
@@ -190,7 +190,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         
         <div className="toolbar-separator" />
         
-        <ThemeToggle className="toolbar-theme-toggle" />
+        <VSCodeThemeToggle className="toolbar-theme-toggle" />
       </div>
     </div>
   );
