@@ -97,6 +97,8 @@ export class MindmapRenderer {
     this.container.append('g').attr('class', 'mindmap-nodes');
   }
 
+  private collapsedNodesSet: Set<string> = new Set();
+
   /**
    * データの描画
    * 外部からマインドマップデータを受け取って描画
@@ -106,6 +108,9 @@ export class MindmapRenderer {
       console.warn('描画データが無効です');
       return;
     }
+
+    // 折りたたみ状態を保存
+    this.collapsedNodesSet = collapsedNodes || new Set();
 
     // カスタムスキーマの設定
     this.customSchema = data.schema || null;
@@ -413,6 +418,15 @@ export class MindmapRenderer {
           this.eventHandlers.onNodeClick(d.data.id, event);
         }
       })
+      .on('dblclick', (event, d) => {
+        event.stopPropagation();
+        // 子ノードを持つノードのみ展開・折りたたみ可能
+        if (d.data.children && d.data.children.length > 0) {
+          if (this.eventHandlers.onNodeToggle) {
+            this.eventHandlers.onNodeToggle(d.data.id, event);
+          }
+        }
+      })
       .on('contextmenu', (event, d) => {
         // 右クリックのデフォルト動作（コンテキストメニュー）を無効化
         event.preventDefault();
@@ -492,6 +506,7 @@ export class MindmapRenderer {
 
     this.drawPriorityBadges(nodeUpdate);
     this.drawStatusBadges(nodeUpdate);
+    this.drawExpandCollapseButtons(nodeUpdate);
 
     nodeSelection.exit().remove();
   }
@@ -663,6 +678,48 @@ export class MindmapRenderer {
         .attr('fill', badgeInfo.color)
         .text(badgeInfo.text);
     });
+  }
+
+  /**
+   * 展開・折りたたみボタンの描画
+   */
+  private drawExpandCollapseButtons(nodeUpdate: d3.Selection<SVGGElement, D3Node, SVGGElement, unknown>): void {
+    // 既存のボタンを削除
+    nodeUpdate.selectAll('.expand-collapse-button').remove();
+    
+    // 子ノードを持つノードのみにボタンを追加
+    const nodesWithChildren = nodeUpdate.filter((d: D3Node) => 
+      d.data.children && d.data.children.length > 0
+    );
+    
+    const buttonGroup = nodesWithChildren
+      .append('g')
+      .attr('class', 'expand-collapse-button')
+      .attr('cursor', 'pointer')
+      .on('click', (event, d) => {
+        event.stopPropagation();
+        if (this.eventHandlers.onNodeToggle) {
+          this.eventHandlers.onNodeToggle(d.data.id, event);
+        }
+      });
+    
+    // 展開・折りたたみアイコン（> または v）
+    buttonGroup
+      .append('text')
+      .attr('class', 'button-icon')
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'central')
+      .attr('font-size', '9px')
+      .attr('font-weight', 'bold')
+      .attr('fill', '#666666')
+      .attr('x', (d: D3Node) => d.width / 2 - 10)
+      .attr('y', 0)
+      .text((d: D3Node) => {
+        // 折りたたまれているかチェック
+        const isCollapsed = this.collapsedNodesSet.has(d.data.id) || d.data.collapsed || false;
+        return isCollapsed ?  '▼' : '▶';
+        // return isCollapsed ? '▶' : '▼';
+      });
   }
 
   // =============================================
