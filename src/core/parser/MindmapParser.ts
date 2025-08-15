@@ -76,7 +76,7 @@ export class MindmapParser {
       }
 
       return {
-        data: errors.length === 0 ? data : null,
+        data: errors.length === 0 ? data as MindmapData : null,
         errors,
         warnings,
         valid: errors.length === 0
@@ -157,32 +157,34 @@ export class MindmapParser {
       });
     }
 
+    const typedData = data as Record<string, unknown>;
+    
     // 必須フィールドの検証
-    if (!data.version) {
+    if (!typedData.version) {
       errors.push({
         path: 'version',
         message: 'バージョン情報が必要です',
-        value: data.version
+        value: typedData.version
       });
     }
 
-    if (!data.title) {
+    if (!typedData.title) {
       errors.push({
         path: 'title',
         message: 'タイトルが必要です',
-        value: data.title
+        value: typedData.title
       });
     }
 
-    if (!data.root) {
+    if (!typedData.root) {
       errors.push({
         path: 'root',
         message: 'ルートノードが必要です',
-        value: data.root
+        value: typedData.root
       });
     } else {
       // ルートノードの検証
-      const rootValidation = this.validateNode(data.root, 'root');
+      const rootValidation = this.validateNode(typedData.root as MindmapNode, 'root');
       errors.push(...rootValidation.errors);
       if (rootValidation.warnings) {
         warnings.push(...rootValidation.warnings);
@@ -191,7 +193,7 @@ export class MindmapParser {
 
     // カスタムスキーマバリデーション
     if (options.validateSchema && this.customSchema) {
-      const schemaValidation = this.validateWithCustomSchema(data);
+      const schemaValidation = this.validateWithCustomSchema(typedData as MindmapData);
       errors.push(...schemaValidation.errors);
       if (schemaValidation.warnings) {
         warnings.push(...schemaValidation.warnings);
@@ -209,12 +211,13 @@ export class MindmapParser {
    * マインドマップデータ構造の基本チェック
    */
   private isValidMindmapData(data: unknown): boolean {
+    const typedData = data as Record<string, unknown>;
     return (
       typeof data === 'object' &&
       data !== null &&
-      typeof data.version === 'string' &&
-      typeof data.title === 'string' &&
-      typeof data.root === 'object'
+      typeof typedData.version === 'string' &&
+      typeof typedData.title === 'string' &&
+      typeof typedData.root === 'object'
     );
   }
 
@@ -234,26 +237,28 @@ export class MindmapParser {
       return { valid: false, errors, warnings };
     }
 
+    const typedNode = node as Record<string, unknown>;
+
     // 必須フィールド
-    if (!node.id) {
+    if (!typedNode.id) {
       errors.push({
         path: `${path}.id`,
         message: 'ノードIDが必要です',
-        value: node.id
+        value: typedNode.id
       });
     }
 
-    if (!node.title) {
+    if (!typedNode.title) {
       errors.push({
         path: `${path}.title`,
         message: 'ノードタイトルが必要です',
-        value: node.title
+        value: typedNode.title
       });
     }
 
     // 子ノードの検証（再帰的）
-    if (node.children && Array.isArray(node.children)) {
-      node.children.forEach((child: unknown, index: number) => {
+    if (typedNode.children && Array.isArray(typedNode.children)) {
+      typedNode.children.forEach((child: unknown, index: number) => {
         const childPath = `${path}.children[${index}]`;
         const childValidation = this.validateNode(child, childPath);
         errors.push(...childValidation.errors);

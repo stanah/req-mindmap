@@ -274,10 +274,12 @@ export class MindmapCoreLogic implements ICoreLogic {
     
     // 変更前のデータを保存（Undo用）
     const oldData: Partial<MindmapNode> = {};
-    Object.keys(changes).forEach(key => {
-      const nodeKey = key as keyof MindmapNode;
-      oldData[nodeKey] = currentNode[nodeKey];
-    });
+    for (const key in changes) {
+      const nodeKey: keyof typeof currentNode = key as keyof typeof currentNode;
+      if (nodeKey in currentNode) {
+        (oldData as Record<string, unknown>)[nodeKey] = (currentNode as Record<string, unknown>)[nodeKey];
+      }
+    }
     
     const command = new UpdateNodeCommand(this, nodeId, changes, oldData);
     this.executeCommand(command);

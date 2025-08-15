@@ -169,7 +169,7 @@ export class MindmapRenderer {
       .classed('selected', false);
 
     if (nodeId) {
-      this.container.selectAll('.mindmap-node')
+      this.container.selectAll<SVGGElement, D3Node>('.mindmap-node')
         .filter((d: D3Node) => d.data.id === nodeId)
         .classed('selected', true);
     }
@@ -394,9 +394,9 @@ export class MindmapRenderer {
     if (this.settings.enableAnimation) {
       linkUpdate.transition()
         .duration(300)
-        .attr('d', linkPath as string);
+        .attr('d', (d: d3.HierarchyLink<MindmapNode>) => linkPath(d) as string);
     } else {
-      linkUpdate.attr('d', linkPath as string);
+      linkUpdate.attr('d', (d: d3.HierarchyLink<MindmapNode>) => linkPath(d) as string);
     }
 
     linkSelection.exit().remove();
@@ -495,7 +495,7 @@ export class MindmapRenderer {
         const requiredHeight = actualLines * 16.8 + this.NODE_PADDING * 2;
         if (requiredHeight > d.height) {
           d.height = requiredHeight;
-          nodeUpdate.filter((nd: D3Node) => nd === d)
+          nodeUpdate.filter((nd: D3Node, _i: number, _nodes: ArrayLike<Element>) => nd === d)
             .select('.mindmap-node-rect')
             .attr('height', d.height)
             .attr('y', -d.height / 2);

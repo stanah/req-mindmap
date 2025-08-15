@@ -14,14 +14,8 @@ import type {
 } from '../types';
 import type { D3Node } from './MindmapRenderer';
 
-/**
- * D3.js用の拡張ノードデータ
- */
-export interface D3Node extends d3.HierarchyPointNode<MindmapNode> {
-  width: number;
-  height: number;
-  _children?: D3Node[];
-}
+// D3Nodeを再エクスポート
+export type { D3Node };
 
 /**
  * マインドマップコア描画クラス
@@ -303,9 +297,9 @@ export class MindmapCore {
     if (this.settings.enableAnimation) {
       linkUpdate.transition()
         .duration(300)
-        .attr('d', linkPath as string);
+        .attr('d', (d: d3.HierarchyLink<MindmapNode>) => linkPath(d) as string);
     } else {
-      linkUpdate.attr('d', linkPath as string);
+      linkUpdate.attr('d', (d: d3.HierarchyLink<MindmapNode>) => linkPath(d) as string);
     }
 
     // 不要なリンクの削除
@@ -403,7 +397,7 @@ export class MindmapCore {
         if (requiredHeight > d.height) {
           d.height = requiredHeight;
           // 背景矩形の高さのみ更新（幅は変更しない）
-          nodeUpdate.filter((nd: D3Node) => nd === d)
+          nodeUpdate.filter((nd: D3Node, _i: number, _nodes: ArrayLike<Element>) => nd === d)
             .select('.mindmap-node-rect')
             .attr('height', d.height)
             .attr('y', -d.height / 2);
@@ -929,7 +923,7 @@ export class MindmapCore {
 
     if (nodeId) {
       // 指定されたノードを選択状態にする
-      const selectedNode = this.container.selectAll('.mindmap-node')
+      const selectedNode = this.container.selectAll<SVGGElement, D3Node>('.mindmap-node')
         .filter((d: D3Node) => d.data.id === nodeId)
         .classed('selected', true);
       
