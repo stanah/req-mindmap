@@ -42,7 +42,7 @@ export const MindmapPane: React.FC = () => {
       selectNode(nodeId);
       
       // ノードが選択されたらパネルを自動で表示
-      if (nodeId && !isPanelVisible) {
+      if (nodeId) {
         setIsPanelVisible(true);
       }
       
@@ -70,7 +70,7 @@ export const MindmapPane: React.FC = () => {
       selectNode(null);
       setIsPanelVisible(false);
     },
-  }), [selectNode, isPanelVisible]);
+  }), [selectNode]);
 
   // レンダラーの初期化（初回のみ）
   useEffect(() => {

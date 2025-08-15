@@ -287,7 +287,7 @@ export const MindmapViewer: React.FC = () => {
       selectNode(nodeId);
       
       // ノードが選択されたらパネルを自動で表示
-      if (nodeId && !isPanelVisible) {
+      if (nodeId) {
         setIsPanelVisible(true);
       }
       
@@ -299,7 +299,7 @@ export const MindmapViewer: React.FC = () => {
           if (platformAdapter.getPlatformType() === 'vscode') {
             const _editorAdapter = platformAdapter.editor;
             // TypeScript のため一時的に any を使用 - VSCodeEditorAdapter の jumpToNodeInCurrentFile メソッドを呼び出す
-            await (editorAdapter as VSCodeEditorAdapter).jumpToNodeInCurrentFile(nodeId);
+            await (_editorAdapter as VSCodeEditorAdapter).jumpToNodeInCurrentFile(nodeId);
             console.log(`ノードジャンプ実行: ${nodeId}`);
           }
         } catch (error) {
@@ -329,7 +329,7 @@ export const MindmapViewer: React.FC = () => {
     onBackgroundClick: () => {
       selectNode(null);
     },
-  }), [selectNode, isPanelVisible]);
+  }), [selectNode]);
 
   // レンダラーの初期化
   useEffect(() => {
