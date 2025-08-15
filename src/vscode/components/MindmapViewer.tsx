@@ -116,8 +116,24 @@ export const MindmapViewer: React.FC = () => {
         rendererRef.current.render(updatedData);
       }
       
-      // 新しく追加されたノードを選択
-      selectNode(newNode.id);
+      // 新しく追加されたノードを選択（リトライ付き）
+      const trySelectNode = (nodeId: string, retries = 5) => {
+        const attempt = () => {
+          if (!parsedData) return false;
+          const node = findNodeById((parsedData as MindmapData).root, nodeId);
+          if (node) {
+            selectNode(nodeId);
+            return true;
+          }
+          return false;
+        };
+        
+        if (!attempt() && retries > 0) {
+          setTimeout(() => trySelectNode(nodeId, retries - 1), 200);
+        }
+      };
+
+      trySelectNode(newNode.id);
       
       console.log(`子ノードを追加しました: ${newNode.id} (親: ${parentNodeId})`);
     } catch (error) {
@@ -185,8 +201,24 @@ export const MindmapViewer: React.FC = () => {
         rendererRef.current.render(updatedData);
       }
       
-      // 新しく追加されたノードを選択
-      selectNode(newNode.id);
+      // 新しく追加されたノードを選択（リトライ付き）
+      const trySelectNode = (nodeId: string, retries = 5) => {
+        const attempt = () => {
+          if (!parsedData) return false;
+          const node = findNodeById((parsedData as MindmapData).root, nodeId);
+          if (node) {
+            selectNode(nodeId);
+            return true;
+          }
+          return false;
+        };
+        
+        if (!attempt() && retries > 0) {
+          setTimeout(() => trySelectNode(nodeId, retries - 1), 200);
+        }
+      };
+
+      trySelectNode(newNode.id);
       
       console.log(`兄弟ノードを追加しました: ${newNode.id} (兄弟: ${siblingNodeId})`);
     } catch (error) {
