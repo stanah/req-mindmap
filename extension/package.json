@@ -63,10 +63,10 @@
     "menus": {
       "editor/title": [
         {
-          "command": "mindmapTool.openPreview",
+          "command": "mindmapTool.openPreviewToSide",
           "when": "resourceExtname == .json || resourceExtname == .yaml || resourceExtname == .yml",
           "group": "navigation",
-          "alt": "mindmapTool.openPreviewToSide"
+          "alt": "mindmapTool.openPreview"
         }
       ],
       "explorer/context": [
