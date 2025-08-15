@@ -45,16 +45,28 @@ export class ParserServiceImpl implements ParserService {
         throw new Error('ファイル内容が空です');
       }
 
+      console.log('JSONパース中...');
       // JSON解析
       const data = JSON.parse(content);
+      console.log('JSON.parse成功、データキー:', Object.keys(data));
       
       // JSON Schema による詳細バリデーション
+      console.log('JSONスキーマバリデーション開始...');
       const jsonSchemaResult = this.validateWithJsonSchema(data);
+      console.log('バリデーション結果:', { valid: jsonSchemaResult.valid, errorCount: jsonSchemaResult.errors.length });
+      
       if (!jsonSchemaResult.valid) {
         const errorMessages = jsonSchemaResult.errors.map(e => e.message).join(', ');
+        console.log('バリデーションエラー詳細:', jsonSchemaResult.errors.map(err => ({
+          path: err.instancePath || err.dataPath,
+          message: err.message,
+          allowedValues: err.params,
+          data: err.data
+        })));
         throw new Error(`データ構造が正しくありません: ${errorMessages}`);
       }
 
+      console.log('parseJSON完了');
       return data as MindmapData;
     } catch (error) {
       if (error instanceof SyntaxError) {
@@ -130,6 +142,7 @@ export class ParserServiceImpl implements ParserService {
    * 汎用パース関数（JSON/YAMLを自動判定）
    */
   async parse(content: string): Promise<{ success: boolean; data?: MindmapData; errors?: ParseError[] }> {
+    console.log('ParserService.parse開始 - content length:', content.length);
     try {
       // 空文字列チェック
       if (!content.trim()) {
@@ -147,14 +160,20 @@ export class ParserServiceImpl implements ParserService {
 
       // まずJSONとして解析を試行
       try {
+        console.log('JSON解析を試行中...');
         const data = await this.parseJSON(content);
+        console.log('JSON解析成功');
         return { success: true, data };
-      } catch {
+      } catch (jsonError) {
+        console.log('JSON解析失敗:', jsonError);
         // JSONで失敗した場合、YAMLを試行
         try {
+          console.log('YAML解析を試行中...');
           const data = await this.parseYAML(content);
+          console.log('YAML解析成功');
           return { success: true, data };
-        } catch {
+        } catch (yamlError) {
+          console.log('YAML解析失敗:', yamlError);
           // 両方失敗した場合、パースエラーを返す
           const parseErrors = this.getParseErrors(content);
           return {

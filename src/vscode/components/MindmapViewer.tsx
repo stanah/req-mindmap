@@ -159,7 +159,15 @@ export const MindmapViewer: React.FC = () => {
 
   // データの描画
   useEffect(() => {
+    console.log('MindmapViewer - データ描画useEffect:', {
+      hasRenderer: !!rendererRef.current,
+      hasParsedData: !!parsedData,
+      parsedDataTitle: parsedData?.title,
+      parsedDataKeys: parsedData ? Object.keys(parsedData) : null
+    });
+    
     if (!rendererRef.current || !parsedData) {
+      console.log('描画をスキップ - レンダラーまたはデータが存在しません');
       return;
     }
 

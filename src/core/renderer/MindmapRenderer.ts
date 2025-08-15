@@ -131,7 +131,7 @@ export class MindmapRenderer {
     this.settings = { ...this.settings, ...newSettings };
     
     // データが存在し、かつコンテナが有効な場合のみレイアウトと描画を実行
-    if (this.root && this.container && !this.isDestroyed) {
+    if (this.root && this.container) {
       try {
         this.applyLayout();
         this.draw();

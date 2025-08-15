@@ -912,6 +912,7 @@ export const useAppStore = create<AppStore>()(
         parseContent: async (content: string) => {
           console.log('parseContent開始 - content length:', content.length);
           console.log('content preview:', content.substring(0, 200));
+          console.log('parseContent called from:', new Error().stack?.split('\n')[2]);
           
           if (!content.trim()) {
             console.log('コンテンツが空のため、パース処理をスキップ');
@@ -946,18 +947,33 @@ export const useAppStore = create<AppStore>()(
             
             // パース処理を実行
             const result = await parserService.parse(content);
+            console.log('パース結果:', {
+              success: result.success,
+              hasData: !!result.data,
+              dataKeys: result.data ? Object.keys(result.data) : null,
+              errorCount: result.errors?.length || 0,
+              errors: result.errors
+            });
             
             let parsedData: MindmapData | null = null;
             const parseErrors: ParseError[] = [];
             
             if (result.success && result.data) {
               parsedData = result.data;
+              console.log('パース成功 - データタイトル:', parsedData.title);
               
               // ノードマッピングを作成
               const { ui } = get();
               const format = ui.editorSettings.language;
               currentNodeMapping = await createNodeMapping(content, format);
             } else if (result.errors) {
+              console.error('パースエラー詳細:', result.errors.map(err => ({
+                message: err.message,
+                line: err.line,
+                column: err.column,
+                code: err.code,
+                type: err.type
+              })));
               parseErrors.push(...result.errors);
               currentNodeMapping = null;
             }

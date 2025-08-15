@@ -84,6 +84,7 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
   onClose,
 }) => {
   const [newTagValue, setNewTagValue] = useState('');
+  const [currentTheme, setCurrentTheme] = useState<string | null>(null);
 
   const node = nodeId && data ? findNodeById(data.root, nodeId) : null;
 
@@ -91,6 +92,37 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
   useEffect(() => {
     setNewTagValue('');
   }, [nodeId]);
+
+  // Web版でテーマ変更を監視
+  useEffect(() => {
+    if (mode !== 'web') return;
+
+    const updateTheme = () => {
+      const theme = document.documentElement.getAttribute('data-theme');
+      setCurrentTheme(theme);
+    };
+
+    // 初期テーマ設定
+    updateTheme();
+
+    // MutationObserverでdata-theme属性の変更を監視
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+          updateTheme();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [mode]);
 
   // フィールド値の自動保存
   const handleFieldChange = useCallback((field: string, value: any) => {
@@ -157,11 +189,22 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
     const visibilityClass = isVisible ? 'visible' : 'hidden';
     const positionClass = position === 'sidebar' ? 'sidebar' : 'bottom';
     
-    return `${baseClass} ${visibilityClass} ${positionClass}`;
+    // Web版でもテーマクラスを適用
+    const themeClass = mode === 'web' && currentTheme 
+      ? currentTheme === 'dark' 
+        ? 'dark-theme' 
+        : 'light-theme'
+      : '';
+    
+    return `${baseClass} ${visibilityClass} ${positionClass} ${themeClass}`.trim();
   };
 
   return (
-    <div className={getPanelClassName()} data-testid="node-details-panel">
+    <div 
+      className={getPanelClassName()} 
+      data-testid="node-details-panel"
+      data-theme={mode === 'web' ? currentTheme : undefined}
+    >
       {/* パネルヘッダー */}
       <div className="panel-header">
         <div className="panel-title">

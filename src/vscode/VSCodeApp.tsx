@@ -80,10 +80,15 @@ function VSCodeApp() {
         console.log('初期ファイル内容を読み込み:', window.initialData.fileName, `(${initialContent.length}文字)`);
         console.log('初期ファイル内容（最初の100文字）:', initialContent.substring(0, 100));
         setCurrentContent(initialContent);
-        updateContent(initialContent);
+        
+        // updateContentの結果を詳しくログ
+        console.log('updateContentを呼び出します...');
+        const result = updateContent(initialContent);
+        console.log('updateContent完了:', result);
       } else {
         console.warn('window.initialDataが存在しないか、contentが空です');
         console.log('window.initialData:', window.initialData);
+        console.log('window object keys:', Object.keys(window));
       }
       
       setIsVSCodeReady(true);
