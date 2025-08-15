@@ -1,0 +1,162 @@
+/**
+ * 削除確認ダイアログのスタイル (VSCode拡張用)
+ */
+
+.delete-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.delete-confirm-dialog {
+  background: var(--vscode-editor-background, #1e1e1e);
+  color: var(--vscode-editor-foreground, #cccccc);
+  border: 1px solid var(--vscode-panel-border, #3c3c3c);
+  border-radius: 6px;
+  min-width: 400px;
+  max-width: 500px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: dialog-enter 0.2s ease-out;
+}
+
+@keyframes dialog-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.delete-confirm-header {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--vscode-panel-border, #3c3c3c);
+}
+
+.delete-confirm-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--vscode-errorForeground, #ff6b6b);
+}
+
+.delete-confirm-content {
+  padding: 16px 20px;
+  line-height: 1.5;
+}
+
+.delete-confirm-node-info {
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: var(--vscode-textBlockQuote-background, #262626);
+  border-left: 3px solid var(--vscode-textBlockQuote-border, #606060);
+  border-radius: 3px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 13px;
+}
+
+.delete-confirm-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 4px;
+}
+
+.warning-icon {
+  font-size: 16px;
+  margin-top: 2px;
+}
+
+.warning-text {
+  flex: 1;
+  font-size: 13px;
+  color: var(--vscode-editorWarning-foreground, #ffcc02);
+}
+
+.delete-confirm-message {
+  font-size: 14px;
+  color: var(--vscode-editor-foreground, #cccccc);
+}
+
+.delete-confirm-actions {
+  padding: 16px 20px;
+  border-top: 1px solid var(--vscode-panel-border, #3c3c3c);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.delete-confirm-button {
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 80px;
+}
+
+.delete-confirm-button--cancel {
+  background: var(--vscode-button-secondaryBackground, #3c3c3c);
+  color: var(--vscode-button-secondaryForeground, #cccccc);
+  border-color: var(--vscode-button-secondaryBorder, #3c3c3c);
+}
+
+.delete-confirm-button--cancel:hover {
+  background: var(--vscode-button-secondaryHoverBackground, #4c4c4c);
+}
+
+.delete-confirm-button--delete {
+  background: var(--vscode-errorForeground, #ff6b6b);
+  color: var(--vscode-button-foreground, #ffffff);
+  border-color: var(--vscode-errorForeground, #ff6b6b);
+}
+
+.delete-confirm-button--delete:hover {
+  background: #ff5252;
+  border-color: #ff5252;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+.delete-confirm-button:focus {
+  outline: 1px solid var(--vscode-focusBorder, #007acc);
+  outline-offset: 2px;
+}
+
+/* キーボードナビゲーション用 */
+.delete-confirm-button:focus-visible {
+  outline: 2px solid var(--vscode-focusBorder, #007acc);
+  outline-offset: 1px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 480px) {
+  .delete-confirm-dialog {
+    margin: 16px;
+    min-width: auto;
+    max-width: none;
+  }
+  
+  .delete-confirm-actions {
+    flex-direction: column;
+  }
+  
+  .delete-confirm-button {
+    width: 100%;
+  }
+}

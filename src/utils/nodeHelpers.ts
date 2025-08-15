@@ -114,3 +114,38 @@ export const addChildNode = (rootNode: MindmapNode, parentId: string, newNode: M
   
   return { ...rootNode };
 };
+
+/**
+ * ノードを削除する（子ノードも一緒に削除される）
+ */
+export const removeNode = (rootNode: MindmapNode, targetId: string): MindmapNode => {
+  // ルートノードの削除は禁止
+  if (rootNode.id === targetId) {
+    throw new Error('ルートノードは削除できません');
+  }
+
+  // 削除対象ノードが存在するかを事前にチェック
+  const targetExists = findNodeById(rootNode, targetId);
+  if (!targetExists) {
+    throw new Error('削除対象のノードが見つかりません');
+  }
+
+  // 再帰的にノードを削除する関数
+  const removeNodeRecursive = (node: MindmapNode): MindmapNode => {
+    if (!node.children) {
+      return { ...node };
+    }
+
+    // 子ノード配列から指定されたIDのノードを除外した新しい配列を作成
+    const newChildren = node.children
+      .filter(child => child.id !== targetId)
+      .map(child => removeNodeRecursive(child));
+
+    return {
+      ...node,
+      children: newChildren
+    };
+  };
+
+  return removeNodeRecursive(rootNode);
+};

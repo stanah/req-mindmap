@@ -13,6 +13,7 @@ interface NodeActionButtonsProps {
   data: MindmapNode | null;
   onAddChild: (parentNodeId: string) => void;
   onAddSibling: (siblingNodeId: string) => void;
+  onDeleteNode: (nodeId: string) => void;
   className?: string;
 }
 
@@ -21,6 +22,7 @@ export const NodeActionButtons: React.FC<NodeActionButtonsProps> = ({
   data,
   onAddChild,
   onAddSibling,
+  onDeleteNode,
   className = ''
 }) => {
 
@@ -67,6 +69,15 @@ export const NodeActionButtons: React.FC<NodeActionButtonsProps> = ({
     onAddSibling(selectedNodeId);
   };
 
+  const handleDeleteNode = () => {
+    // ルートノードの削除は禁止
+    if (!parentNode) {
+      console.warn('ルートノードは削除できません');
+      return;
+    }
+    onDeleteNode(selectedNodeId);
+  };
+
   return (
     <div className={`node-action-buttons ${className}`}>
       <div className="node-action-buttons__header">
@@ -97,6 +108,18 @@ export const NodeActionButtons: React.FC<NodeActionButtonsProps> = ({
             <path d="M8 2a1 1 0 0 1 1 1v4h4a1 1 0 1 1 0 2H9v4a1 1 0 1 1-2 0V9H3a1 1 0 1 1 0-2h4V3a1 1 0 0 1 1-1z"/>
           </svg>
           兄弟を追加
+        </button>
+        
+        <button
+          className="node-action-button node-action-button--delete"
+          onClick={handleDeleteNode}
+          disabled={!parentNode}
+          title={parentNode ? "選択されたノードを削除（子ノードも一緒に削除されます）" : "ルートノードは削除できません"}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M3.5 2.75a.75.75 0 0 1 .75-.75h8a.75.75 0 0 1 0 1.5h-8a.75.75 0 0 1-.75-.75zM4.5 4.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5v8a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 12.5v-8zM6 6a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4A.5.5 0 0 1 6 6zm3 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4A.5.5 0 0 1 9 6z"/>
+          </svg>
+          削除
         </button>
       </div>
     </div>

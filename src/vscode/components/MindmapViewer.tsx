@@ -13,7 +13,8 @@ import { ThemeToggle } from '../../web/components/ui/ThemeToggle';
 import { PlatformAdapterFactory } from '../../platform';
 import { NodeDetailsPanel } from '../../components/shared/NodeDetailsPanel';
 import { NodeActionButtons } from './NodeActionButtons';
-import { createNewNode, addChildNode, addSiblingNode } from '../../utils/nodeHelpers';
+import { DeleteConfirmDialog } from './DeleteConfirmDialog';
+import { createNewNode, addChildNode, addSiblingNode, removeNode, findNodeById } from '../../utils/nodeHelpers';
 import './MindmapViewer.css';
 import './NodeActionButtons.css';
 import '../../styles/NodeDetailsPanel.css';
@@ -33,6 +34,10 @@ export const MindmapViewer: React.FC = () => {
   
   // ノード詳細パネルの表示状態
   const [isPanelVisible, setIsPanelVisible] = useState(false);
+  
+  // 削除確認ダイアログの状態
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [nodeToDelete, setNodeToDelete] = useState<string | null>(null);
   
   // Zustandストアからの状態取得
   const parsedData = useAppStore(state => state.parse.parsedData);
@@ -184,6 +189,90 @@ export const MindmapViewer: React.FC = () => {
     } catch (error) {
       console.error('兄弟ノード追加に失敗:', error);
     }
+  };
+
+  // ノード削除のハンドラー関数（確認ダイアログを表示）
+  const handleDeleteNode = async (nodeId: string) => {
+    setNodeToDelete(nodeId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // 削除確認後の実際の削除処理
+  const handleConfirmDelete = async () => {
+    if (!nodeToDelete || !parsedData || !rendererRef.current) return;
+
+    try {
+      console.log('ノード削除開始:', { nodeId: nodeToDelete, parsedData: !!parsedData });
+      
+      // データ構造を更新（不変更新） - data.rootを使用
+      const dataAsAny = parsedData as any;
+      const rootNode = dataAsAny.root;
+      const updatedRootNode = removeNode(rootNode, nodeToDelete);
+      const updatedData = { ...parsedData, root: updatedRootNode };
+      
+      // VSCodeエディターのファイル内容を更新（これが最優先）
+      try {
+        const platformAdapter = PlatformAdapterFactory.getInstance();
+        if (platformAdapter.getPlatformType() === 'vscode') {
+          
+          // VSCodeにデータオブジェクトを送信（VSCode側で適切な形式に変換）
+          console.log('VSCode API確認:', { hasVscode: !!window.vscode, windowKeys: Object.keys(window) });
+          if (window.vscode) {
+            console.log('contentChangedメッセージ送信中:', { command: 'contentChanged', dataKeys: Object.keys(updatedData) });
+            window.vscode.postMessage({
+              command: 'contentChanged',
+              data: updatedData
+            });
+            console.log('VSCodeにcontentChangedメッセージを送信');
+            
+            // ファイル保存を少し遅延させて競合を回避
+            setTimeout(() => {
+              console.log('ファイル保存要求送信中');
+              window.vscode.postMessage({
+                command: 'saveFile',
+                data: updatedData
+              });
+              console.log('VSCodeにsaveFileメッセージを送信');
+            }, 100);
+          } else {
+            console.error('window.vscodeが存在しません');
+          }
+          console.log('ファイル更新・保存完了');
+          
+          // ファイル更新後は自動でパーサーが動くので、手動での状態更新は不要
+        }
+      } catch (fileError) {
+        console.error('ファイル書き戻しに失敗:', fileError);
+        // フォールバックとしてメモリ内のみ更新
+        useAppStore.setState((state) => ({
+          parse: {
+            ...state.parse,
+            parsedData: updatedData
+          }
+        }));
+        rendererRef.current.render(updatedData);
+      }
+      
+      // 削除されたノードが選択されていた場合、選択を解除
+      if (selectedNodeId === nodeToDelete) {
+        selectNode(null);
+      }
+      
+      console.log(`ノードを削除しました: ${nodeToDelete}`);
+    } catch (error) {
+      console.error('ノード削除に失敗:', error);
+      console.error('エラースタック:', error.stack);
+    } finally {
+      // ダイアログを閉じる
+      setIsDeleteDialogOpen(false);
+      setNodeToDelete(null);
+    }
+  };
+
+  // 削除キャンセル
+  const handleCancelDelete = () => {
+    setIsDeleteDialogOpen(false);
+    setNodeToDelete(null);
   };
 
   // イベントハンドラーの定義
@@ -377,6 +466,7 @@ export const MindmapViewer: React.FC = () => {
           data={parsedData}
           onAddChild={handleAddChild}
           onAddSibling={handleAddSibling}
+          onDeleteNode={handleDeleteNode}
           className="vscode-node-actions"
         />
       </div>
@@ -410,6 +500,14 @@ export const MindmapViewer: React.FC = () => {
         onNodeUpdate={updateNode}
         mode="vscode"
         position="bottom"
+      />
+      
+      {/* 削除確認ダイアログ */}
+      <DeleteConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        node={nodeToDelete && parsedData ? findNodeById((parsedData as any).root, nodeToDelete) : null}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
       />
     </div>
   );

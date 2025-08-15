@@ -105,6 +105,18 @@
   background: var(--vscode-button-secondaryHoverBackground);
 }
 
+.node-action-button--delete {
+  background: var(--vscode-errorForeground, #ff6b6b);
+  color: var(--vscode-button-foreground, #ffffff);
+  border-color: var(--vscode-errorForeground, #ff6b6b);
+}
+
+.node-action-button--delete:hover:not(:disabled) {
+  background: #ff5252;
+  border-color: #ff5252;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
 /* レスポンシブ対応 */
 @media (max-width: 480px) {
   .node-action-buttons__actions {
@@ -152,5 +164,16 @@
   
   .node-action-button--sibling:hover:not(:disabled) {
     background: #6a6a6a;
+  }
+  
+  .node-action-button--delete {
+    background: #ff6b6b;
+    color: #ffffff;
+    border-color: #ff6b6b;
+  }
+  
+  .node-action-button--delete:hover:not(:disabled) {
+    background: #ff5252;
+    border-color: #ff5252;
   }
 }
