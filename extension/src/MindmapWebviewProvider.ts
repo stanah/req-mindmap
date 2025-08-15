@@ -478,6 +478,18 @@ export class MindmapWebviewProvider {
     private async handleJumpToNodeInFile(webview: vscode.Webview, document: vscode.TextDocument, message: { nodeId?: string; line?: number; [key: string]: unknown }): Promise<void> {
         try {
             const { nodeId, requestId } = message;
+            
+            // nodeIdが未定義の場合はエラーレスポンスを送信
+            if (!nodeId) {
+                webview.postMessage({
+                    command: 'jumpToNodeInFileResponse',
+                    success: false,
+                    requestId,
+                    error: 'ノードIDが指定されていません'
+                });
+                return;
+            }
+            
             const content = document.getText();
             
             // ノードIDを検索するパターン
