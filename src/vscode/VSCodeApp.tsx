@@ -118,7 +118,7 @@ function VSCodeApp() {
       console.warn('VSCode API が利用できません');
       setIsVSCodeReady(true); // ブラウザモードとして続行
     }
-  }, [handleVSCodeMessage, updateContent]);
+  }, [handleVSCodeMessage, updateContent, currentContent]);
 
   // アプリケーションの初期化
   useEffect(() => {
@@ -162,7 +162,7 @@ function VSCodeApp() {
     };
 
     initApp();
-  }, [initialize, isVSCodeReady, initialized]);
+  }, [initialize, isVSCodeReady, initialized, addNotification, updateContent]);
 
   // ローディング中の表示
   if (!initialized || isLoading) {
