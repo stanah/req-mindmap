@@ -122,7 +122,7 @@ export class SchemaValidator {
     }
 
     // 必須フィールドのチェック
-    this.customSchema.fields.forEach(fieldDef => {
+    (this.customSchema.fields || []).forEach(fieldDef => {
       if (fieldDef.required && !fields.hasOwnProperty(fieldDef.name)) {
         errors.push({
           path: `${nodeId}.${fieldDef.name}`,
@@ -134,7 +134,7 @@ export class SchemaValidator {
 
     // フィールド値の検証
     Object.entries(fields).forEach(([fieldName, value]) => {
-      const fieldDef = this.customSchema!.fields.find(f => f.name === fieldName);
+      const fieldDef = (this.customSchema!.fields || []).find(f => f.name === fieldName);
       if (fieldDef) {
         this.validateFieldValue(value, fieldDef, `${nodeId}.${fieldName}`, errors);
       }

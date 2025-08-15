@@ -5,6 +5,8 @@
  */
 
 import * as yaml from 'js-yaml';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
 import type { 
   ParserService, 
   MindmapData, 
@@ -15,11 +17,23 @@ import type {
   DisplayRule
 } from '../types';
 import { schemaValidator } from '../utils/schemaValidator';
+import mindmapSchema from '../schemas/mindmap-schema.json';
 
 /**
  * パーサーサービスの実装クラス
  */
 export class ParserServiceImpl implements ParserService {
+  private ajv: Ajv;
+  private validateMindmap: any;
+
+  constructor() {
+    // AJVインスタンスを初期化
+    this.ajv = new Ajv({ allErrors: true, strict: false });
+    addFormats(this.ajv);
+    
+    // JSON Schemaをコンパイル
+    this.validateMindmap = this.ajv.compile(mindmapSchema);
+  }
   
   /**
    * JSON文字列を解析してマインドマップデータに変換
@@ -34,10 +48,10 @@ export class ParserServiceImpl implements ParserService {
       // JSON解析
       const data = JSON.parse(content);
       
-      // 基本的なバリデーション
-      const validationResult = this.validateData(data);
-      if (!validationResult.valid) {
-        const errorMessages = validationResult.errors.map(e => e.message).join(', ');
+      // JSON Schema による詳細バリデーション
+      const jsonSchemaResult = this.validateWithJsonSchema(data);
+      if (!jsonSchemaResult.valid) {
+        const errorMessages = jsonSchemaResult.errors.map(e => e.message).join(', ');
         throw new Error(`データ構造が正しくありません: ${errorMessages}`);
       }
 
@@ -72,20 +86,44 @@ export class ParserServiceImpl implements ParserService {
         throw new Error('YAMLファイルが空または無効です');
       }
 
-      // 基本的なバリデーション
-      const validationResult = this.validateData(data);
-      if (!validationResult.valid) {
-        const errorMessages = validationResult.errors.map(e => e.message).join(', ');
+      // スキーマが含まれている場合は分離
+      const processedData = this.extractAndApplySchema(data);
+
+      // JSON Schema による詳細バリデーション
+      const jsonSchemaResult = this.validateWithJsonSchema(processedData);
+      if (!jsonSchemaResult.valid) {
+        const errorMessages = jsonSchemaResult.errors.map(e => e.message).join(', ');
         throw new Error(`データ構造が正しくありません: ${errorMessages}`);
       }
 
-      return data as MindmapData;
+      return processedData as MindmapData;
     } catch (error) {
       if (error instanceof yaml.YAMLException) {
         throw new Error(`YAML構文エラー: ${error.message}`);
       }
       throw error;
     }
+  }
+
+  /**
+   * YAMLデータからスキーマを抽出し、適用する
+   */
+  private extractAndApplySchema(data: any): any {
+    // スキーマが含まれているかチェック
+    if (data && typeof data === 'object' && data.schema) {
+      const schema = data.schema;
+      const mindmapData = { ...data };
+      
+      // スキーマ部分を削除
+      delete mindmapData.schema;
+      
+      // スキーマを適用
+      mindmapData.schema = schema;
+      
+      return mindmapData;
+    }
+    
+    return data;
   }
 
   /**
@@ -227,6 +265,27 @@ export class ParserServiceImpl implements ParserService {
    */
   validateSchema(data: unknown): ValidationResult {
     return schemaValidator.validateMindmapData(data as MindmapData);
+  }
+
+  /**
+   * JSON Schema (AJV) による詳細バリデーション
+   */
+  validateWithJsonSchema(data: unknown): ValidationResult {
+    const isValid = this.validateMindmap(data);
+    
+    if (isValid) {
+      return { valid: true, errors: [] };
+    }
+
+    const errors = (this.validateMindmap.errors || []).map((error: any) => ({
+      path: error.instancePath || error.schemaPath || 'root',
+      message: `${error.instancePath || 'データ'}: ${error.message}`,
+      value: error.data,
+      expected: error.schema,
+      code: error.keyword || 'VALIDATION_ERROR'
+    }));
+
+    return { valid: false, errors };
   }
 
   /**
@@ -395,11 +454,11 @@ export class ParserServiceImpl implements ParserService {
     newSchema: CustomSchema
   ): Promise<{ migratedSchema: CustomSchema; migrationLog: string[] }> {
     const migrationLog: string[] = [];
-    const migratedFields = [...oldSchema.fields];
-    const migratedDisplayRules = [...oldSchema.displayRules];
+    const migratedFields = [...(oldSchema.fields || [])];
+    const migratedDisplayRules = [...(oldSchema.displayRules || [])];
 
     // 新しいフィールドを追加
-    for (const newField of newSchema.fields) {
+    for (const newField of newSchema.fields || []) {
       const existingField = migratedFields.find(f => f.name === newField.name);
       
       if (!existingField) {
@@ -418,7 +477,7 @@ export class ParserServiceImpl implements ParserService {
     }
 
     // 新しい表示ルールを追加
-    for (const newRule of newSchema.displayRules) {
+    for (const newRule of newSchema.displayRules || []) {
       const existingRule = migratedDisplayRules.find(r => r.field === newRule.field);
       
       if (!existingRule) {
@@ -448,31 +507,31 @@ export class ParserServiceImpl implements ParserService {
     addedRules: string[];
     removedRules: string[];
   } {
-    const oldFieldNames = new Set(oldSchema.fields.map(f => f.name));
-    const newFieldNames = new Set(newSchema.fields.map(f => f.name));
-    const oldRuleFields = new Set(oldSchema.displayRules.map(r => r.field));
-    const newRuleFields = new Set(newSchema.displayRules.map(r => r.field));
+    const oldFieldNames = new Set((oldSchema.fields || []).map(f => f.name));
+    const newFieldNames = new Set((newSchema.fields || []).map(f => f.name));
+    const oldRuleFields = new Set((oldSchema.displayRules || []).map(r => r.field));
+    const newRuleFields = new Set((newSchema.displayRules || []).map(r => r.field));
 
-    const addedFields = newSchema.fields
+    const addedFields = (newSchema.fields || [])
       .filter(f => !oldFieldNames.has(f.name))
       .map(f => f.name);
 
-    const removedFields = oldSchema.fields
+    const removedFields = (oldSchema.fields || [])
       .filter(f => !newFieldNames.has(f.name))
       .map(f => f.name);
 
-    const modifiedFields = newSchema.fields
+    const modifiedFields = (newSchema.fields || [])
       .filter(newField => {
-        const oldField = oldSchema.fields.find(f => f.name === newField.name);
+        const oldField = (oldSchema.fields || []).find(f => f.name === newField.name);
         return oldField && !this.areFieldsEqual(oldField, newField);
       })
       .map(f => f.name);
 
-    const addedRules = newSchema.displayRules
+    const addedRules = (newSchema.displayRules || [])
       .filter(r => !oldRuleFields.has(r.field))
       .map(r => r.field);
 
-    const removedRules = oldSchema.displayRules
+    const removedRules = (oldSchema.displayRules || [])
       .filter(r => !newRuleFields.has(r.field))
       .map(r => r.field);
 
