@@ -12,11 +12,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
-    "test:run": "vitest run",
-    "validate-yaml": "tsx scripts/validate-yaml.ts",
-    "validate": "pnpm validate-yaml src/data/samples/*.yaml",
-    "generate-types": "tsx scripts/generate-types.ts",
-    "prebuild": "pnpm generate-types"
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
