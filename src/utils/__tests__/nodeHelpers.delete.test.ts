@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { removeNode, findNodeById } from '../nodeHelpers';
-import type { MindmapNode } from '../../types/generated/mindmap';
+import type { MindmapNode } from "../../../types"';
 
 // テスト用のマインドマップデータを作成
 const createTestMindmap = (): MindmapNode => {

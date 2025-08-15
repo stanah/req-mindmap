@@ -12,7 +12,7 @@ import {
   addSiblingNode,
   addChildNode
 } from '../../utils/nodeHelpers';
-import type { MindmapNode } from '../../types/generated/mindmap';
+import type { MindmapNode } from "../../types";
 
 const createTestNode = (id: string, title: string, children: MindmapNode[] = []): MindmapNode => ({
   id,

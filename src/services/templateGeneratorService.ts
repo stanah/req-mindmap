@@ -185,8 +185,8 @@ export class TemplateGeneratorService {
       title: labels.projectTitle,
       root,
       metadata: {
-        created: new Date().toISOString(),
-        modified: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         templateType: 'starter-requirements'
       }
     };
@@ -342,8 +342,8 @@ export class TemplateGeneratorService {
       title: labels.customProject,
       root,
       metadata: {
-        created: new Date().toISOString(),
-        modified: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         templateType: 'custom-requirements'
       }
     };

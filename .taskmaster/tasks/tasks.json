@@ -674,7 +674,7 @@
             "description": "マインドマップの基本的なデータ構造をZodで定義し、TypeScript型を生成する",
             "dependencies": [],
             "details": "NodeSchemaとMindmapSchemaの基本構造を定義し、再帰的な子ノード構造をサポート。メタデータフィールド（createdAt、updatedAt、version）を含む完全な型定義を実装。z.infer<>を使用してTypeScript型を自動生成し、型の再利用性を確保",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "基本的なノード構造の検証テスト、再帰的な子ノードの検証テスト、メタデータフィールドの必須項目チェック"
           },
           {
@@ -1079,7 +1079,7 @@
         "dependencies": [
           17
         ],
-        "status": "pending",
+        "status": "deferred",
         "subtasks": [
           {
             "id": 1,
@@ -1149,7 +1149,7 @@
         "dependencies": [
           18
         ],
-        "status": "pending",
+        "status": "deferred",
         "subtasks": [
           {
             "id": 1,
@@ -1216,7 +1216,7 @@
         "dependencies": [
           19
         ],
-        "status": "pending",
+        "status": "deferred",
         "subtasks": [
           {
             "id": 1,
@@ -1525,7 +1525,7 @@
     ],
     "metadata": {
       "created": "2025-08-03T03:13:21.292Z",
-      "updated": "2025-08-15T10:26:18.787Z",
+      "updated": "2025-08-15T10:46:12.589Z",
       "description": "Tasks for master context"
     }
   }

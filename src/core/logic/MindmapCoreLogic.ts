@@ -818,7 +818,7 @@ export class MindmapCoreLogic implements ICoreLogic {
       throw new Error(`Invalid layout: ${settings.layout}`);
     }
     
-    if (settings.nodeSize && !['small', 'medium', 'large'].includes(settings.nodeSize)) {
+    if (settings.nodeSize && !['small', 'medium', 'large'].includes(String(settings.nodeSize))) {
       throw new Error(`Invalid nodeSize: ${settings.nodeSize}`);
     }
   }

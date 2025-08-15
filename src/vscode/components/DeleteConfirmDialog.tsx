@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import type { MindmapNode } from '../../types/generated/mindmap';
+import type { MindmapNode } from '../../types';
 import './DeleteConfirmDialog.css';
 
 interface DeleteConfirmDialogProps {

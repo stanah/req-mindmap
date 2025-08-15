@@ -32,7 +32,7 @@ export type {
   ValidationRule,
   DisplayRule,
   MindmapSettings
-} from './generated/mindmap';
+} from '../schemas/mindmap.zod';
 
 // サービス関連の型
 export * from './services';
@@ -54,6 +54,8 @@ export interface ParseError {
   code?: string;
   /** エラーの詳細情報 */
   details?: string;
+  /** エラーの種類 */
+  type?: string;
 }
 
 export interface SchemaError {
@@ -131,7 +133,7 @@ export interface EditorSettings {
 }
 
 // MindmapSettingsをインポートして使用
-import type { MindmapSettings as GeneratedMindmapSettings } from './generated/mindmap';
+import type { MindmapSettings as GeneratedMindmapSettings } from '../schemas/mindmap.zod';
 
 export interface AppSettings {
   /** エディタ設定 */

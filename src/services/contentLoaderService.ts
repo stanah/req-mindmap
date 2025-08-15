@@ -128,10 +128,10 @@ export class ContentLoaderService {
 
     // フォーマットに応じてコンテンツを処理
     let content: string;
-    if (options.format === 'yaml' && sample.format === 'json') {
+    if (options.format === 'yaml' && (sample as any).format === 'json') {
       // JSONをYAMLに変換（必要に応じて）
       content = this.convertJsonToYaml(sample.content as any);
-    } else if (options.format === 'json' && sample.format === 'yaml') {
+    } else if (options.format === 'json' && (sample as any).format === 'yaml') {
       // YAMLをJSONに変換（必要に応じて）
       content = this.convertYamlToJson(sample.content as string);
     } else {

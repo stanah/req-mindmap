@@ -5,7 +5,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { NodeActionButtons } from '../../../vscode/components/NodeActionButtons';
-import type { MindmapNode } from '../../../types/generated/mindmap';
+import type { MindmapNode } from "../../../types";
 
 const mockNode: MindmapNode = {
   id: 'root',

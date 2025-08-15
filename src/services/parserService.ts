@@ -5,8 +5,8 @@
  */
 
 import * as yaml from 'js-yaml';
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
+// import Ajv from 'ajv'; // 削除: Zodに移行済み
+// import addFormats from 'ajv-formats'; // 削除: Zodに移行済み
 import type { 
   ParserService, 
   MindmapData, 
@@ -16,23 +16,15 @@ import type {
   StyleSettings,
   DisplayRule
 } from '../types';
-import { schemaValidator } from '../utils/schemaValidator';
-import mindmapSchema from '../schemas/mindmap-schema.json';
+import { ZodMindmapValidator } from '../types';
+
 
 /**
  * パーサーサービスの実装クラス
  */
 export class ParserServiceImpl implements ParserService {
-  private ajv: Ajv;
-  private validateMindmap: any;
-
   constructor() {
-    // AJVインスタンスを初期化
-    this.ajv = new Ajv({ allErrors: true, strict: false });
-    addFormats(this.ajv);
-    
-    // JSON Schemaをコンパイル
-    this.validateMindmap = this.ajv.compile(mindmapSchema);
+    // Zodベースのバリデーションを使用するためAJVは不要
   }
   
   /**
@@ -50,19 +42,14 @@ export class ParserServiceImpl implements ParserService {
       const data = JSON.parse(content);
       console.log('JSON.parse成功、データキー:', Object.keys(data));
       
-      // JSON Schema による詳細バリデーション
-      console.log('JSONスキーマバリデーション開始...');
-      const jsonSchemaResult = this.validateWithJsonSchema(data);
-      console.log('バリデーション結果:', { valid: jsonSchemaResult.valid, errorCount: jsonSchemaResult.errors.length });
+      // Zodスキーマによるバリデーション
+      console.log('Zodスキーマバリデーション開始...');
+      const zodResult = ZodMindmapValidator.safeParse(data);
+      console.log('バリデーション結果:', { success: zodResult.success, errorCount: zodResult.success ? 0 : zodResult.errors?.length || 0 });
       
-      if (!jsonSchemaResult.valid) {
-        const errorMessages = jsonSchemaResult.errors.map(e => e.message).join(', ');
-        console.log('バリデーションエラー詳細:', jsonSchemaResult.errors.map(err => ({
-          path: err.instancePath || err.dataPath,
-          message: err.message,
-          allowedValues: err.params,
-          data: err.data
-        })));
+      if (!zodResult.success) {
+        const errorMessages = zodResult.errors?.map(e => e.message).join(', ') || '不明なエラー';
+        console.log('バリデーションエラー詳細:', zodResult.errors);
         throw new Error(`データ構造が正しくありません: ${errorMessages}`);
       }
 
@@ -101,10 +88,10 @@ export class ParserServiceImpl implements ParserService {
       // スキーマが含まれている場合は分離
       const processedData = this.extractAndApplySchema(data);
 
-      // JSON Schema による詳細バリデーション
-      const jsonSchemaResult = this.validateWithJsonSchema(processedData);
-      if (!jsonSchemaResult.valid) {
-        const errorMessages = jsonSchemaResult.errors.map(e => e.message).join(', ');
+      // Zodスキーマによるバリデーション
+      const zodResult = ZodMindmapValidator.safeParse(processedData);
+      if (!zodResult.success) {
+        const errorMessages = zodResult.errors?.map(e => e.message).join(', ') || '不明なエラー';
         throw new Error(`データ構造が正しくありません: ${errorMessages}`);
       }
 
@@ -280,32 +267,27 @@ export class ParserServiceImpl implements ParserService {
   }
 
   /**
-   * JSON Schemaに基づくバリデーション
+   * Zodスキーマに基づくバリデーション
    */
   validateSchema(data: unknown): ValidationResult {
-    return schemaValidator.validateMindmapData(data as MindmapData);
-  }
-
-  /**
-   * JSON Schema (AJV) による詳細バリデーション
-   */
-  validateWithJsonSchema(data: unknown): ValidationResult {
-    const isValid = this.validateMindmap(data);
+    const result = ZodMindmapValidator.safeParse(data);
     
-    if (isValid) {
+    if (result.success) {
       return { valid: true, errors: [] };
     }
-
-    const errors = (this.validateMindmap.errors || []).map((error: any) => ({
-      path: error.instancePath || error.schemaPath || 'root',
-      message: `${error.instancePath || 'データ'}: ${error.message}`,
-      value: error.data,
-      expected: error.schema,
-      code: error.keyword || 'VALIDATION_ERROR'
-    }));
-
-    return { valid: false, errors };
+    
+    return {
+      valid: false,
+      errors: (result.errors || []).map(e => ({
+        path: e.path || 'root',
+        message: e.message,
+        code: e.code || 'VALIDATION_ERROR',
+        value: undefined
+      }))
+    };
   }
+
+
 
   /**
    * カスタムスキーマに基づくバリデーション
@@ -316,14 +298,22 @@ export class ParserServiceImpl implements ParserService {
       return this.validateSchema(data);
     }
 
-    // カスタムスキーマ自体のバリデーション
-    const schemaValidation = schemaValidator.validateCustomSchema(data.schema);
-    if (!schemaValidation.valid) {
-      return schemaValidation;
+    // Zodでマインドマップデータ全体をバリデーション（カスタムスキーマ含む）
+    const result = ZodMindmapValidator.safeParse(data);
+    
+    if (result.success) {
+      return { valid: true, errors: [] };
     }
-
-    // カスタムスキーマに基づくデータバリデーション
-    return schemaValidator.validateWithCustomSchema(data, data.schema);
+    
+    return {
+      valid: false,
+      errors: (result.errors || []).map(e => ({
+        path: e.path || 'root',
+        message: e.message,
+        code: e.code || 'VALIDATION_ERROR',
+        value: undefined
+      }))
+    };
   }
 
   /**

@@ -5,7 +5,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DeleteConfirmDialog } from '../DeleteConfirmDialog';
-import type { MindmapNode } from '../../../types/generated/mindmap';
+import type { MindmapNode } from "../../../types";
 
 // テスト用のノードデータを作成
 const createTestNode = (id: string, title: string, childrenCount = 0): MindmapNode => {

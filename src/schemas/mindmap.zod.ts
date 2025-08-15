@@ -36,46 +36,49 @@ export const FieldTypeSchema = z.enum([
 ]);
 
 /**
+ * バリデーションルール
+ */
+export const ValidationRuleSchema = z.object({
+  type: z.enum(['required', 'min', 'max', 'pattern']),
+  value: z.union([z.string(), z.number()]).optional(),
+  message: z.string().optional()
+});
+
+/**
  * カスタムフィールド定義
  */
 export const FieldDefinitionSchema = z.object({
   /** フィールド名 */
-  name: z.string().min(1, 'フィールド名は必須です'),
+  name: z.string().min(1),
   
   /** フィールドの型 */
   type: FieldTypeSchema,
   
   /** 表示用ラベル */
-  label: z.string().min(1, 'ラベルは必須です'),
+  label: z.string().min(1),
   
   /** 必須フィールドかどうか */
-  required: z.boolean().optional().default(false),
+  required: z.boolean().default(false),
   
-  /** select/multiselect用の選択肢 */
+  /** 説明文 */
+  description: z.string().optional(),
+  
+  /** セレクト/マルチセレクト用のオプション */
   options: z.array(z.string()).optional(),
   
-  /** フィールドの説明 */
-  description: z.string().optional()
-}).refine(
-  (data) => {
-    // select/multiselectの場合はoptionsが必須
-    if ((data.type === 'select' || data.type === 'multiselect') && !data.options) {
-      return false;
-    }
-    return true;
-  },
-  {
-    message: 'select/multiselectタイプの場合、optionsは必須です',
-    path: ['options']
-  }
-);
+  /** フィールドの位置 */
+  location: z.enum(['node', 'custom']).optional(),
+  
+  /** バリデーションルール */
+  validation: z.array(ValidationRuleSchema).optional()
+});
 
 /**
  * タグ定義
  */
 export const TagDefinitionSchema = z.object({
   /** タグ名 */
-  name: z.string().min(1, 'タグ名は必須です'),
+  name: z.string().min(1),
   
   /** タグの色 */
   color: z.string().optional(),
@@ -85,23 +88,44 @@ export const TagDefinitionSchema = z.object({
 });
 
 /**
+ * 表示ルール
+ */
+export const DisplayRuleSchema = z.object({
+  field: z.string(),
+  displayType: z.enum(['text', 'badge', 'icon', 'progress']),
+  position: z.enum(['inline', 'tooltip', 'detail']),
+  style: z.record(z.any()).optional()
+});
+
+/**
  * カスタムスキーマ
  */
 export const CustomSchemaSchema = z.object({
+  /** スキーマバージョン */
+  version: z.string().optional(),
+  /** スキーマの説明 */
+  description: z.string().optional(),
+  /** 作成日時 */
+  createdAt: z.string().optional(),
+  /** 更新日時 */
+  updatedAt: z.string().optional(),
+  /** 基本フィールド定義 */
+  baseFields: z.array(FieldDefinitionSchema).optional(),
   /** カスタムフィールド定義 */
-  customFields: z.array(FieldDefinitionSchema).optional()
+  customFields: z.array(FieldDefinitionSchema).optional(),
+  /** 表示ルール */
+  displayRules: z.array(DisplayRuleSchema).optional()
 });
 
 /**
  * マインドマップノード（再帰的構造）
- * Zod v4の新しいgetterベースの再帰スキーマ定義を使用
  */
 export const MindmapNodeSchema = z.object({
   /** ノードの一意識別子 */
-  id: z.string().min(1, 'ノードIDは必須です'),
+  id: z.string().min(1),
   
   /** ノードのタイトル */
-  title: z.string().min(1, 'ノードタイトルは必須です'),
+  title: z.string().min(1),
   
   /** ノードの詳細説明 */
   description: z.string().optional(),
@@ -118,33 +142,45 @@ export const MindmapNodeSchema = z.object({
   /** カスタムフィールドの値 */
   customFields: z.record(z.any()).optional(),
   
+  /** ノードの色設定 */
+  color: z.string().optional(),
+  
+  /** ノードの折りたたみ状態 */
+  collapsed: z.boolean().optional(),
+  
+  /** ノードのメタデータ */
+  metadata: z.record(z.any()).optional(),
+  
   /** ノードの作成日時 */
-  createdAt: z.string().datetime().optional(),
+  createdAt: z.string().optional(),
   
   /** ノードの更新日時 */
-  updatedAt: z.string().datetime().optional(),
+  updatedAt: z.string().optional(),
   
   /** ノードの期限 */
-  deadline: z.string().datetime().optional(),
+  deadline: z.string().optional(),
   
   /** 子ノードの配列（再帰構造）*/
-  get children() {
-    return z.array(MindmapNodeSchema).optional();
-  }
+  children: z.array(z.any()).optional()
 });
+
+
 
 /**
  * メタデータ
  */
 export const MetadataSchema = z.object({
   /** 作成日時 */
-  createdAt: z.string().datetime().optional(),
+  createdAt: z.string().optional(),
   
   /** 更新日時 */
-  updatedAt: z.string().datetime().optional(),
+  updatedAt: z.string().optional(),
   
   /** メタデータの説明 */
-  description: z.string().optional()
+  description: z.string().optional(),
+  
+  /** テンプレートタイプ */
+  templateType: z.string().optional()
 });
 
 /**
@@ -152,10 +188,10 @@ export const MetadataSchema = z.object({
  */
 export const MindmapDataSchema = z.object({
   /** データ形式のバージョン */
-  version: z.string().min(1, 'バージョンは必須です'),
+  version: z.string().min(1),
   
   /** マインドマップのタイトル */
-  title: z.string().min(1, 'タイトルは必須です'),
+  title: z.string().min(1),
   
   /** マインドマップの説明 */
   description: z.string().optional(),
@@ -165,6 +201,15 @@ export const MindmapDataSchema = z.object({
   
   /** カスタムスキーマ */
   schema: CustomSchemaSchema.optional(),
+  
+  /** マインドマップの設定 */
+  settings: z.record(z.any()).optional(),
+  
+  /** マインドマップの作成日時 */
+  createdAt: z.string().optional(),
+  
+  /** マインドマップの更新日時 */
+  updatedAt: z.string().optional(),
   
   /** 利用可能なタグの定義 */
   tags: z.array(TagDefinitionSchema).optional(),
@@ -185,6 +230,34 @@ export type Metadata = z.infer<typeof MetadataSchema>;
 export type NodePriority = z.infer<typeof NodePrioritySchema>;
 export type NodeStatus = z.infer<typeof NodeStatusSchema>;
 export type FieldType = z.infer<typeof FieldTypeSchema>;
+
+/**
+ * マインドマップ設定
+ */
+export const MindmapSettingsSchema = z.object({
+  theme: z.string().optional(),
+  layout: z.string().optional(),
+  animation: z.boolean().optional(),
+  autoSave: z.boolean().optional(),
+  showMinimap: z.boolean().optional(),
+  nodeSize: z.number().optional(),
+  nodeWidth: z.number().optional(),
+  nodeSpacing: z.number().optional(),
+  levelSpacing: z.number().optional(),
+  verticalSpacing: z.number().optional(),
+  maxNodeWidth: z.number().optional(),
+  enableAnimation: z.boolean().optional(),
+  autoLayout: z.boolean().optional(),
+  zoom: z.number().optional(),
+  center: z.object({
+    x: z.number(),
+    y: z.number()
+  }).optional()
+});
+
+export type ValidationRule = z.infer<typeof ValidationRuleSchema>;
+export type DisplayRule = z.infer<typeof DisplayRuleSchema>;
+export type MindmapSettings = z.infer<typeof MindmapSettingsSchema>;
 
 /**
  * バリデーション結果

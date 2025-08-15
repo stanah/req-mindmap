@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import App from '../../web/App';
+import { ZodMindmapValidator } from '../../types';
 
 // タイマーのモック
 vi.useFakeTimers();
@@ -150,9 +151,9 @@ root:
 
       // バリデーション関数のシミュレート
       const validateMindmapData = (data: any): boolean => {
-        return !!(data.version && data.title && data.root && data.root.id && data.root.title);
+        const result = ZodMindmapValidator.safeParse(data);
+        return result.success;
       };
-
       expect(validateMindmapData(validData)).toBe(true);
       expect(validateMindmapData(invalidData)).toBe(false);
     });

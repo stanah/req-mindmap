@@ -20,12 +20,8 @@ import './NodeActionButtons.css';
 import '../../styles/NodeDetailsPanel.css';
 
 // VSCode APIの型定義
-declare global {
-  interface Window {
-    vscode?: {
-      postMessage: (message: any) => void;
-    };
-  }
+interface VSCodeApi {
+  postMessage: (message: any) => void;
 }
 
 export const MindmapViewer: React.FC = () => {
@@ -81,7 +77,7 @@ export const MindmapViewer: React.FC = () => {
           console.log('VSCode API確認:', { hasVscode: !!window.vscode, windowKeys: Object.keys(window) });
           if (window.vscode) {
             console.log('contentChangedメッセージ送信中:', { command: 'contentChanged', dataKeys: Object.keys(updatedData) });
-            window.vscode.postMessage({
+            window.vscode?.postMessage({
               command: 'contentChanged',
               data: updatedData  // contentではなくdataとして送信
             });
@@ -90,7 +86,7 @@ export const MindmapViewer: React.FC = () => {
             // ファイル保存を少し遅延させて競合を回避
             setTimeout(() => {
               console.log('ファイル保存要求送信中');
-              window.vscode.postMessage({
+              window.vscode?.postMessage({
                 command: 'saveFile',
                 data: updatedData
               });
@@ -121,7 +117,9 @@ export const MindmapViewer: React.FC = () => {
       console.log(`子ノードを追加しました: ${newNode.id} (親: ${parentNodeId})`);
     } catch (error) {
       console.error('子ノード追加に失敗:', error);
-      console.error('エラースタック:', error.stack);
+      if (error instanceof Error) {
+        console.error('エラースタック:', error.stack);
+      }
     }
   };
 
@@ -148,7 +146,7 @@ export const MindmapViewer: React.FC = () => {
           console.log('VSCode API確認:', { hasVscode: !!window.vscode, windowKeys: Object.keys(window) });
           if (window.vscode) {
             console.log('contentChangedメッセージ送信中:', { command: 'contentChanged', dataKeys: Object.keys(updatedData) });
-            window.vscode.postMessage({
+            window.vscode?.postMessage({
               command: 'contentChanged',
               data: updatedData  // contentではなくdataとして送信
             });
@@ -157,7 +155,7 @@ export const MindmapViewer: React.FC = () => {
             // ファイル保存を少し遅延させて競合を回避
             setTimeout(() => {
               console.log('ファイル保存要求送信中');
-              window.vscode.postMessage({
+              window.vscode?.postMessage({
                 command: 'saveFile',
                 data: updatedData
               });
@@ -219,7 +217,7 @@ export const MindmapViewer: React.FC = () => {
           console.log('VSCode API確認:', { hasVscode: !!window.vscode, windowKeys: Object.keys(window) });
           if (window.vscode) {
             console.log('contentChangedメッセージ送信中:', { command: 'contentChanged', dataKeys: Object.keys(updatedData) });
-            window.vscode.postMessage({
+            window.vscode?.postMessage({
               command: 'contentChanged',
               data: updatedData
             });
@@ -228,7 +226,7 @@ export const MindmapViewer: React.FC = () => {
             // ファイル保存を少し遅延させて競合を回避
             setTimeout(() => {
               console.log('ファイル保存要求送信中');
-              window.vscode.postMessage({
+              window.vscode?.postMessage({
                 command: 'saveFile',
                 data: updatedData
               });
@@ -261,7 +259,9 @@ export const MindmapViewer: React.FC = () => {
       console.log(`ノードを削除しました: ${nodeToDelete}`);
     } catch (error) {
       console.error('ノード削除に失敗:', error);
-      console.error('エラースタック:', error.stack);
+      if (error instanceof Error) {
+        console.error('エラースタック:', error.stack);
+      }
     } finally {
       // ダイアログを閉じる
       setIsDeleteDialogOpen(false);
@@ -463,7 +463,7 @@ export const MindmapViewer: React.FC = () => {
         {/* ノード追加ボタン */}
         <NodeActionButtons
           selectedNodeId={selectedNodeId}
-          data={parsedData}
+          data={parsedData?.root || null}
           onAddChild={handleAddChild}
           onAddSibling={handleAddSibling}
           onDeleteNode={handleDeleteNode}

@@ -2,7 +2,7 @@
  * ノード操作のヘルパー関数
  */
 
-import type { MindmapNode } from '../types/generated/mindmap';
+import type { MindmapNode } from '../types';
 
 /**
  * ユニークなノードIDを生成する
