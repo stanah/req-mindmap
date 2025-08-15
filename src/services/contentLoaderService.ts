@@ -4,7 +4,7 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { MindmapData } from '../types/mindmap';
+import type { MindmapData } from '../types';
 import { templateGeneratorService } from './templateGeneratorService';
 import type { TemplateGeneratorOptions } from './templateGeneratorService';
 import { sampleList } from '../data/samples';

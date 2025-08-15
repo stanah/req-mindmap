@@ -25,7 +25,7 @@ import type {
   MindmapData,
   ParseError,
   MindmapNode
-} from '../types/mindmap';
+} from '../types';
 import { DEBOUNCE_DELAY } from '../utils/constants';
 import { generateId, detectFileFormat, deepClone, findNodeById } from '../utils/helpers';
 import { createNodeMapping, getNodeIdAtCursor, getEditorPositionForNode, type NodeMappingResult } from '../utils/nodeMapping';

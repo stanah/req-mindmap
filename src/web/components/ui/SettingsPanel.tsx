@@ -8,7 +8,7 @@
 import React, { useState, useRef } from 'react';
 import { useAppStore } from '../../../stores/appStore';
 import { settingsService } from '../../../services/settingsService';
-import type { EditorSettings, MindmapSettings } from '../../../types/mindmap';
+import type { EditorSettings, MindmapSettings } from '../../../types';
 
 interface SettingsPanelProps {
   isOpen: boolean;

@@ -1,4 +1,4 @@
-import type { MindmapData, MindmapNode } from '../types/mindmap';
+import type { MindmapData, MindmapNode } from '../types';
 
 /**
  * テンプレートタイプ定義

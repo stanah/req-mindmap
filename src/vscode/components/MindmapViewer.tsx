@@ -7,7 +7,7 @@ import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { useAppStore } from '../../stores';
 import { MindmapCore } from '../../core';
 import type { RendererEventHandlers } from '../../core';
-import type { MindmapNode } from '../../types/mindmap';
+import type { MindmapNode } from '../../types';
 import { PlatformAdapterFactory } from '../../platform';
 import { ThemeToggle } from '../../web/components/ui/ThemeToggle';
 import { NodeDetailsPanel } from './NodeDetailsPanel';

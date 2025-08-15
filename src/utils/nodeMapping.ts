@@ -4,7 +4,7 @@
  * JSON/YAMLの解析結果からノードIDとエディタ内の位置情報を対応付ける
  */
 
-import type { MindmapData, MindmapNode } from '../types/mindmap';
+import type { MindmapData, MindmapNode } from '../types';
 import type { EditorCursorPosition } from '../types/store';
 
 /**

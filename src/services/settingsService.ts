@@ -5,7 +5,7 @@
  * 最近開いたファイル管理、セッション状態管理を行います。
  */
 
-import type { AppSettings } from '../types/mindmap';
+import type { AppSettings } from '../types';
 
 /**
  * 自動保存設定

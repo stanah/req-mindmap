@@ -6,7 +6,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
 import { NodeDetailsPanel } from '../NodeDetailsPanel';
-import type { MindmapData } from '../../../types/mindmap';
+import type { MindmapData } from "../types"';
 
 // テスト用のサンプルデータ
 const sampleData: MindmapData = {
