@@ -74,9 +74,10 @@ export const VSCodeThemeToggle: React.FC<VSCodeThemeToggleProps> = ({ className 
         return '☀️';
       case 'dark':
         return '🌙';
-      case 'auto':
+      case 'auto': {
         const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         return systemIsDark ? '🌙🔄' : '☀️🔄';
+      }
       default:
         return '🔄';
     }

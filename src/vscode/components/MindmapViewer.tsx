@@ -358,6 +358,12 @@ export const MindmapViewer: React.FC = () => {
         target.style.cursor = 'default';
       }
     },
+    onNodeToggle: (nodeId: string, event: MouseEvent) => {
+      console.log('ノード展開・折りたたみ:', nodeId);
+      if (rendererRef.current) {
+        rendererRef.current.toggleNode(nodeId);
+      }
+    },
     onBackgroundClick: () => {
       selectNode(null);
     },

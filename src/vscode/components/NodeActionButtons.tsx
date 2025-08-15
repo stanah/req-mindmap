@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { MdAdd, MdDelete } from 'react-icons/md';
+import { MdAdd, MdDelete, MdExpandMore, MdExpandLess } from 'react-icons/md';
 import type { MindmapNode, MindmapData } from '../../types';
 import { findNodeById, findParentNode } from '../../utils/nodeHelpers';
 import './NodeActionButtons.css';
@@ -15,6 +15,9 @@ interface NodeActionButtonsProps {
   onAddChild: (parentNodeId: string) => void;
   onAddSibling: (siblingNodeId: string) => void;
   onDeleteNode: (nodeId: string) => void;
+  onExpandNode?: (nodeId: string) => void;
+  onCollapseNode?: (nodeId: string) => void;
+  isNodeCollapsed?: (nodeId: string) => boolean;
   className?: string;
 }
 
@@ -24,6 +27,9 @@ export const NodeActionButtons: React.FC<NodeActionButtonsProps> = ({
   onAddChild,
   onAddSibling,
   onDeleteNode,
+  onExpandNode,
+  onCollapseNode,
+  isNodeCollapsed,
   className = ''
 }) => {
 
@@ -37,6 +43,9 @@ export const NodeActionButtons: React.FC<NodeActionButtonsProps> = ({
         </button>
         <button className="node-action-button" disabled title="ノードを選択してください">
           <MdAdd size={16} />
+        </button>
+        <button className="node-action-button" disabled title="ノードを選択してください">
+          <MdExpandMore size={16} />
         </button>
         <button className="node-action-button" disabled title="ノードを選択してください">
           <MdDelete size={16} />
@@ -83,6 +92,24 @@ export const NodeActionButtons: React.FC<NodeActionButtonsProps> = ({
     onDeleteNode(selectedNodeId);
   };
 
+  const handleToggleExpand = () => {
+    if (!onExpandNode || !onCollapseNode || !isNodeCollapsed) {
+      return;
+    }
+    
+    if (isNodeCollapsed(selectedNodeId)) {
+      onExpandNode(selectedNodeId);
+    } else {
+      onCollapseNode(selectedNodeId);
+    }
+  };
+
+  // 子ノードの有無をチェック
+  const hasChildren = selectedNode.children && selectedNode.children.length > 0;
+  
+  // 折りたたみ状態を取得
+  const collapsed = isNodeCollapsed ? isNodeCollapsed(selectedNodeId) : false;
+
   return (
     <div className={`node-action-buttons ${className}`}>
       <button
@@ -100,6 +127,21 @@ export const NodeActionButtons: React.FC<NodeActionButtonsProps> = ({
         title={parentNode ? "兄弟ノードを追加" : "ルートノードには兄弟ノードを追加できません"}
       >
         <MdAdd size={16} />
+      </button>
+      
+      <button
+        className="node-action-button node-action-button--expand"
+        onClick={handleToggleExpand}
+        disabled={!hasChildren || !onExpandNode || !onCollapseNode}
+        title={
+          !hasChildren 
+            ? "子ノードがありません" 
+            : collapsed 
+              ? "ノードを展開"
+              : "ノードを折りたたみ"
+        }
+      >
+        {collapsed ? <MdExpandMore size={16} /> : <MdExpandLess size={16} />}
       </button>
       
       <button
