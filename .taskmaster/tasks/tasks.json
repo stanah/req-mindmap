@@ -575,8 +575,8 @@
             "id": 9,
             "title": "VSCode拡張用ノード削除機能の実装",
             "description": "選択ノードを削除する機能と確認ダイアログを実装する",
-            "details": "",
-            "status": "pending",
+            "details": "<info added on 2025-08-15T10:26:12.543Z>\nVSCode拡張用ノード削除機能の実装が完了しました。\n\n## 実装した機能\n\n### 1. nodeHelpers.ts にremoveNode関数を追加\n- ルートノード削除の防止\n- 存在しないノード削除時のエラーハンドリング\n- 子ノードも含めた完全削除\n- 不変性を保った新しいデータ構造の返却\n\n### 2. 削除確認ダイアログコンポーネント（DeleteConfirmDialog）\n- VSCodeテーマに適応したダークモード対応\n- 子ノード数の自動カウントと警告表示\n- 確認・キャンセルボタンの実装\n- オーバーレイとダイアログアニメーション\n\n### 3. NodeActionButtonsに削除ボタンを追加\n- 既存の子・兄弟追加ボタンと統一されたUIデザイン\n- ルートノード削除時の無効化\n- 削除ボタン専用のCSS（エラーカラー）\n\n### 4. MindmapViewerに削除機能統合\n- handleDeleteNode関数: 確認ダイアログ表示\n- handleConfirmDelete関数: 実際の削除処理と VSCode との連携\n- VSCode API経由でのファイル更新・保存\n- 削除されたノードの選択解除\n\n### 5. テスト実装\n- removeNode関数の単体テスト（7つのテストケース）\n- 削除確認ダイアログの動作テスト\n- 不変性、エラーハンドリング、データ構造保持の検証\n\n## 動作確認\n- TypeScriptビルド: ✅ 成功\n- VSCode拡張ビルド: ✅ 成功  \n- 削除機能テスト: ✅ 7/7テスト通過\n\n## 実装の特徴\n- 安全な削除（ルートノード保護、確認ダイアログ）\n- データ不変性の保持\n- VSCode API との完全統合（ファイル更新・保存）\n- 子ノードを含む完全削除\n- ユーザーフレンドリーなUI/UX\n\nVSCode拡張でノードを選択し、削除ボタンをクリックすると確認ダイアログが表示され、「削除する」を選択するとノードと全ての子ノードが削除されます。\n</info added on 2025-08-15T10:26:12.543Z>",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 10
           },
@@ -1525,7 +1525,7 @@
     ],
     "metadata": {
       "created": "2025-08-03T03:13:21.292Z",
-      "updated": "2025-08-15T08:34:27.848Z",
+      "updated": "2025-08-15T10:26:18.787Z",
       "description": "Tasks for master context"
     }
   }
