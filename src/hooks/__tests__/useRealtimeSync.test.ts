@@ -228,7 +228,14 @@ describe('useRealtimeSync', () => {
         result.current.syncContent(content);
       });
 
-      vi.clearAllMocks();
+      // デバウンス期間完了まで待機
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      act(() => {
+        vi.clearAllMocks();
+      });
 
       // 同じ内容で再度同期
       act(() => {
@@ -341,7 +348,9 @@ describe('useRealtimeSync', () => {
       rerender();
       
       // 既存のタイマーをクリア
-      vi.clearAllMocks();
+      act(() => {
+        vi.clearAllMocks();
+      });
 
       // 新しい設定で再度同期を開始
       act(() => {
@@ -427,14 +436,14 @@ describe('useRealtimeSync', () => {
       expect(result.current.syncStats.failedSyncs).toBe(0);
     });
 
-    it('エラー時に失敗統計が更新される', () => {
+    it('エラー時に失敗統計が更新される', async () => {
       mockParseContent.mockImplementation(() => {
         throw new Error('Parse error');
       });
 
       const { result } = renderHook(() => useRealtimeSync());
 
-      act(() => {
+      await act(async () => {
         result.current.syncContentImmediate('invalid');
       });
 

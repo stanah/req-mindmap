@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import App from '../../web/App';
 import type { MindmapData } from '../../types';
 
@@ -206,7 +206,9 @@ describe('マインドマップ操作のE2Eテスト', () => {
 
   describe('ズーム操作', () => {
     it('ズームイン・ズームアウト・リセットの完全なワークフローを実行する', async () => {
-      render(<App />);
+      await act(async () => {
+        render(<App />);
+      });
 
       // Appが正常にレンダリングされることを確認（同期的にチェック）
       const newFileButton = screen.queryByRole('button', { name: /新規/ });
@@ -219,7 +221,9 @@ describe('マインドマップ操作のE2Eテスト', () => {
     });
 
     it('マウスホイールでズーム操作を実行する', async () => {
-      render(<App />);
+      await act(async () => {
+        render(<App />);
+      });
 
       //基本的なレンダリングを確認
       expect(screen.getByRole('button', { name: /新規/ })).toBeInTheDocument();
@@ -232,7 +236,9 @@ describe('マインドマップ操作のE2Eテスト', () => {
     });
 
     it('キーボードショートカットでズーム操作を実行する', async () => {
-      render(<App />);
+      await act(async () => {
+        render(<App />);
+      });
 
       // 基本的なレンダリングを確認
       expect(screen.getByRole('button', { name: /新規/ })).toBeInTheDocument();
@@ -241,14 +247,18 @@ describe('マインドマップ操作のE2Eテスト', () => {
 
   describe('パン操作', () => {
     it('ドラッグでパン操作を実行する', async () => {
-      render(<App />);
+      await act(async () => {
+        render(<App />);
+      });
 
       // 基本的なレンダリングを確認
       expect(screen.getByRole('button', { name: /新規/ })).toBeInTheDocument();
     });
 
     it('キーボード矢印キーでパン操作を実行する', async () => {
-      render(<App />);
+      await act(async () => {
+        render(<App />);
+      });
 
       // 基本的なレンダリングを確認
       expect(screen.getByRole('button', { name: /新規/ })).toBeInTheDocument();
@@ -257,21 +267,27 @@ describe('マインドマップ操作のE2Eテスト', () => {
 
   describe('ノード折りたたみ・展開操作', () => {
     it('ノードの折りたたみ・展開の完全なワークフローを実行する', async () => {
-      render(<App />);
+      await act(async () => {
+        render(<App />);
+      });
 
       // 基本的なレンダリングを確認
       expect(screen.getByRole('button', { name: /新規/ })).toBeInTheDocument();
     });
 
     it('全展開・全折りたたみ機能を実行する', async () => {
-      render(<App />);
+      await act(async () => {
+        render(<App />);
+      });
 
       // 基本的なレンダリングを確認
       expect(screen.getByRole('button', { name: /新規/ })).toBeInTheDocument();
     });
 
     it('キーボードショートカットで折りたたみ・展開操作を実行する', async () => {
-      render(<App />);
+      await act(async () => {
+        render(<App />);
+      });
 
       // 基本的なレンダリングを確認
       expect(screen.getByRole('button', { name: /新規/ })).toBeInTheDocument();
@@ -280,21 +296,27 @@ describe('マインドマップ操作のE2Eテスト', () => {
 
   describe('ノード選択とハイライト', () => {
     it('ノード選択とエディタ同期の完全なワークフローを実行する', async () => {
-      render(<App />);
+      await act(async () => {
+        render(<App />);
+      });
 
       // 基本的なレンダリングを確認
       expect(screen.getByRole('button', { name: /新規/ })).toBeInTheDocument();
     });
 
     it('複数ノード選択機能を実行する', async () => {
-      render(<App />);
+      await act(async () => {
+        render(<App />);
+      });
 
       // 基本的なレンダリングを確認
       expect(screen.getByRole('button', { name: /新規/ })).toBeInTheDocument();
     });
 
     it('キーボードナビゲーションでノード選択を実行する', async () => {
-      render(<App />);
+      await act(async () => {
+        render(<App />);
+      });
 
       // 基本的なレンダリングを確認
       expect(screen.getByRole('button', { name: /新規/ })).toBeInTheDocument();
@@ -303,7 +325,9 @@ describe('マインドマップ操作のE2Eテスト', () => {
 
   describe('レイアウト切り替え', () => {
     it('ツリーレイアウトと放射状レイアウトの切り替えを実行する', async () => {
-      render(<App />);
+      await act(async () => {
+        render(<App />);
+      });
 
       // 基本的なレンダリングを確認
       expect(screen.getByRole('button', { name: /新規/ })).toBeInTheDocument();
@@ -317,7 +341,9 @@ describe('マインドマップ操作のE2Eテスト', () => {
     });
 
     it('レイアウト設定の永続化を確認する', async () => {
-      render(<App />);
+      await act(async () => {
+        render(<App />);
+      });
 
       // 基本的なレンダリングを確認
       expect(screen.getByRole('button', { name: /新規/ })).toBeInTheDocument();
@@ -326,7 +352,9 @@ describe('マインドマップ操作のE2Eテスト', () => {
 
   describe('パフォーマンステスト', () => {
     it('大量ノードでのマインドマップ操作パフォーマンスを確認する', async () => {
-      render(<App />);
+      await act(async () => {
+        render(<App />);
+      });
 
       // 基本的なレンダリングを確認
       expect(screen.getByRole('button', { name: /新規/ })).toBeInTheDocument();
