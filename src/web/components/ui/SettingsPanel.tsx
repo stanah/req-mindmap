@@ -8,7 +8,6 @@
 import React, { useState, useRef } from 'react';
 import { useAppStore } from '../../../stores/appStore';
 import { settingsService } from '../../../services/settingsService';
-import { ContentLoadModal } from './ContentLoadModal';
 import type { EditorSettings, MindmapSettings } from '../../../types/mindmap';
 
 interface SettingsPanelProps {
@@ -30,7 +29,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
   const [activeTab, setActiveTab] = useState<'editor' | 'mindmap' | 'content' | 'session' | 'about'>('editor');
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const [showContentLoadModal, setShowContentLoadModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
@@ -435,30 +433,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
             </div>
           )}
 
-          {/* コンテンツ設定 */}
-          {activeTab === 'content' && (
-            <div className="setting-section">
-              <h3>コンテンツ読み込み</h3>
-              
-              <div className="setting-actions">
-                <div className="action-group">
-                  <h4>テンプレート・サンプル読み込み</h4>
-                  <p className="action-description">
-                    スキーマベーステンプレート、サンプルデータ、カスタムテンプレートを読み込むことができます。
-                  </p>
-                  <div className="action-buttons">
-                    <button
-                      className="action-btn primary"
-                      onClick={() => setShowContentLoadModal(true)}
-                    >
-                      📚 コンテンツ読み込み
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* セッション設定 */}
           {activeTab === 'session' && (
             <div className="setting-section">
@@ -575,12 +549,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
           accept=".json"
           style={{ display: 'none' }}
           onChange={handleFileSelect}
-        />
-
-        {/* コンテンツ読み込みモーダル */}
-        <ContentLoadModal
-          isOpen={showContentLoadModal}
-          onClose={() => setShowContentLoadModal(false)}
         />
       </div>
     </div>
