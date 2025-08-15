@@ -91,6 +91,18 @@
           "type": "object",
           "description": "カスタムフィールドの値"
         },
+        "createdAt": {
+          "type": "string",
+          "description": "ノードの作成日時"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ノードの更新日時"
+        },
+        "deadline": {
+          "type": "string",
+          "description": "ノードの期限"
+        },
         "children": {
           "type": "array",
           "items": {

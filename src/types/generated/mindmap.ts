@@ -123,6 +123,18 @@ customFields?: {
 
 }
 /**
+ * ノードの作成日時
+ */
+createdAt?: string
+/**
+ * ノードの更新日時
+ */
+updatedAt?: string
+/**
+ * ノードの期限
+ */
+deadline?: string
+/**
  * 子ノードの配列
  */
 children?: MindmapNode[]
