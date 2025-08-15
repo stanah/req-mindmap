@@ -86,7 +86,7 @@ describe('FileService', () => {
       mockFile.text = vi.fn().mockResolvedValue(JSON.stringify(testData));
 
       mockFileHandle.getFile.mockResolvedValue(mockFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      (global.showOpenFilePicker as jest.MockedFunction<typeof global.showOpenFilePicker>).mockResolvedValue([mockFileHandle]);
 
       const result = await fileService.openFile();
 
@@ -111,7 +111,7 @@ root:
       mockFile.text = vi.fn().mockResolvedValue(yamlContent);
 
       mockFileHandle.getFile.mockResolvedValue(mockFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      (global.showOpenFilePicker as jest.MockedFunction<typeof global.showOpenFilePicker>).mockResolvedValue([mockFileHandle]);
 
       // YAMLパーサーのモック
       vi.doMock('yaml', () => ({
@@ -132,7 +132,7 @@ root:
     });
 
     it('ファイル選択がキャンセルされた場合', async () => {
-      (global.showOpenFilePicker as any).mockRejectedValue(new DOMException('User cancelled', 'AbortError'));
+      (global.showOpenFilePicker as jest.MockedFunction<typeof global.showOpenFilePicker>).mockRejectedValue(new DOMException('User cancelled', 'AbortError'));
 
       const result = await fileService.openFile();
 
@@ -147,7 +147,7 @@ root:
       mockFile.text = vi.fn().mockResolvedValue('invalid content');
 
       mockFileHandle.getFile.mockResolvedValue(mockFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      (global.showOpenFilePicker as jest.MockedFunction<typeof global.showOpenFilePicker>).mockResolvedValue([mockFileHandle]);
 
       const result = await fileService.openFile();
 
@@ -157,7 +157,7 @@ root:
 
     it('ファイル読み込みエラーを適切に処理する', async () => {
       mockFileHandle.getFile.mockRejectedValue(new Error('File read error'));
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      (global.showOpenFilePicker as jest.MockedFunction<typeof global.showOpenFilePicker>).mockResolvedValue([mockFileHandle]);
 
       const result = await fileService.openFile();
 
@@ -173,7 +173,7 @@ root:
       mockFile.text = vi.fn().mockResolvedValue(invalidJson);
 
       mockFileHandle.getFile.mockResolvedValue(mockFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      (global.showOpenFilePicker as jest.MockedFunction<typeof global.showOpenFilePicker>).mockResolvedValue([mockFileHandle]);
 
       const result = await fileService.openFile();
 
@@ -193,7 +193,7 @@ title: "test
       mockFile.text = vi.fn().mockResolvedValue(invalidYaml);
 
       mockFileHandle.getFile.mockResolvedValue(mockFile);
-      (global.showOpenFilePicker as any).mockResolvedValue([mockFileHandle]);
+      (global.showOpenFilePicker as jest.MockedFunction<typeof global.showOpenFilePicker>).mockResolvedValue([mockFileHandle]);
 
       // YAMLパーサーでエラーを発生させるモック
       vi.doMock('yaml', () => ({
@@ -227,7 +227,7 @@ title: "test
 
     it('JSONファイルを正しく保存する', async () => {
       mockFileHandle.createWritable.mockResolvedValue(mockWritableStream);
-      (global.showSaveFilePicker as any).mockResolvedValue(mockFileHandle);
+      (global.showSaveFilePicker as jest.MockedFunction<typeof global.showSaveFilePicker>).mockResolvedValue(mockFileHandle);
 
       const result = await fileService.saveFile(testData, 'json');
 
@@ -243,7 +243,7 @@ title: "test
 
     it('YAMLファイルを正しく保存する', async () => {
       mockFileHandle.createWritable.mockResolvedValue(mockWritableStream);
-      (global.showSaveFilePicker as any).mockResolvedValue(mockFileHandle);
+      (global.showSaveFilePicker as jest.MockedFunction<typeof global.showSaveFilePicker>).mockResolvedValue(mockFileHandle);
 
       // YAMLstringifyのモック
       vi.doMock('yaml', () => ({
@@ -263,7 +263,7 @@ title: "test
     });
 
     it('ファイル保存がキャンセルされた場合', async () => {
-      (global.showSaveFilePicker as any).mockRejectedValue(new DOMException('User cancelled', 'AbortError'));
+      (global.showSaveFilePicker as jest.MockedFunction<typeof global.showSaveFilePicker>).mockRejectedValue(new DOMException('User cancelled', 'AbortError'));
 
       const result = await fileService.saveFile(testData, 'json');
 
@@ -274,7 +274,7 @@ title: "test
     it('ファイル書き込みエラーを適切に処理する', async () => {
       mockWritableStream.write.mockRejectedValue(new Error('Write error'));
       mockFileHandle.createWritable.mockResolvedValue(mockWritableStream);
-      (global.showSaveFilePicker as any).mockResolvedValue(mockFileHandle);
+      (global.showSaveFilePicker as jest.MockedFunction<typeof global.showSaveFilePicker>).mockResolvedValue(mockFileHandle);
 
       const result = await fileService.saveFile(testData, 'json');
 
@@ -283,7 +283,7 @@ title: "test
     });
 
     it('サポートされていない形式の場合エラーを返す', async () => {
-      const result = await fileService.saveFile(testData, 'xml' as any);
+      const result = await fileService.saveFile(testData, 'xml' as never);
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('サポートされていない形式');
@@ -345,7 +345,7 @@ title: "test
         { name: 'test2.yaml', path: '/path/to/test2.yaml', lastModified: Date.now() - 1000 }
       ];
 
-      (localStorage.getItem as any).mockReturnValue(JSON.stringify(recentFiles));
+      (localStorage.getItem as jest.MockedFunction<typeof localStorage.getItem>).mockReturnValue(JSON.stringify(recentFiles));
 
       const result = fileService.getRecentFiles();
 
@@ -369,7 +369,7 @@ title: "test
         });
       }
 
-      const setItemCalls = (localStorage.setItem as any).mock.calls;
+      const setItemCalls = (localStorage.setItem as jest.MockedFunction<typeof localStorage.setItem>).mock.calls;
       const lastCall = setItemCalls[setItemCalls.length - 1];
       const savedData = JSON.parse(lastCall[1]);
 
@@ -391,7 +391,7 @@ title: "test
       const updatedFile = new File([newContent], 'test.json');
 
       // 内部的にファイル変更を通知
-      (fileService as any).notifyFileChange(updatedFile);
+      (fileService as typeof fileService & { notifyFileChange: (file: unknown) => void }).notifyFileChange(updatedFile);
 
       expect(callback).toHaveBeenCalledWith(updatedFile);
     });
@@ -404,7 +404,7 @@ title: "test
       fileService.stopWatching();
 
       // 変更通知があっても呼ばれない
-      (fileService as any).notifyFileChange(testFile);
+      (fileService as typeof fileService & { notifyFileChange: (file: unknown) => void }).notifyFileChange(testFile);
 
       expect(callback).not.toHaveBeenCalled();
     });
@@ -413,11 +413,11 @@ title: "test
   describe('エラーハンドリング', () => {
     it('File System Access APIが利用できない場合の代替処理', async () => {
       // File System Access APIを無効化
-      const originalShowOpenFilePicker = (global as any).showOpenFilePicker;
-      const originalShowSaveFilePicker = (global as any).showSaveFilePicker;
+      const originalShowOpenFilePicker = (global as typeof global & { showOpenFilePicker?: unknown }).showOpenFilePicker;
+      const originalShowSaveFilePicker = (global as typeof global & { showSaveFilePicker?: unknown }).showSaveFilePicker;
       
-      (global as any).showOpenFilePicker = undefined;
-      (global as any).showSaveFilePicker = undefined;
+      (global as typeof global & { showOpenFilePicker?: unknown }).showOpenFilePicker = undefined;
+      (global as typeof global & { showSaveFilePicker?: unknown }).showSaveFilePicker = undefined;
 
       const result = await fileService.openFile();
 
@@ -425,8 +425,8 @@ title: "test
       expect(result.error).toContain('ファイルシステムアクセス');
       
       // 後始末
-      (global as any).showOpenFilePicker = originalShowOpenFilePicker;
-      (global as any).showSaveFilePicker = originalShowSaveFilePicker;
+      (global as typeof global & { showOpenFilePicker?: unknown }).showOpenFilePicker = originalShowOpenFilePicker;
+      (global as typeof global & { showSaveFilePicker?: unknown }).showSaveFilePicker = originalShowSaveFilePicker;
     });
 
     it('セキュリティエラーを適切に処理する', async () => {

@@ -13,7 +13,7 @@ import type { MindmapData } from '../../types';
 
 describe('MindmapState 状態管理仕様', () => {
   // let state: MindmapState;
-  let eventLog: any[];
+  let eventLog: { type: string; data?: unknown }[];
 
   const _sampleData: MindmapData = {
     version: '1.0',

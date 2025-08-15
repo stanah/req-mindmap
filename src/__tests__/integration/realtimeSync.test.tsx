@@ -98,7 +98,7 @@ root:
         const mockYamlParse = (content: string) => {
           // 簡単なYAML風パース（テスト用）
           const lines = content.trim().split('\n');
-          const result: any = {};
+          const result: Record<string, string> = {};
           
           for (const line of lines) {
             if (line.includes(':')) {
@@ -150,7 +150,7 @@ root:
       };
 
       // バリデーション関数のシミュレート
-      const validateMindmapData = (data: any): boolean => {
+      const validateMindmapData = (data: unknown): boolean => {
         const result = ZodMindmapValidator.safeParse(data);
         return result.success;
       };

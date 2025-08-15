@@ -64,7 +64,7 @@ vi.mock('../../core/renderer/MindmapCore', () => ({
             svgElement.appendChild(textElement);
             
             if (node.children) {
-              node.children.forEach((child: any) => addNode(child, textElement));
+              node.children.forEach((child: MindmapNode) => addNode(child, textElement));
             }
           };
           

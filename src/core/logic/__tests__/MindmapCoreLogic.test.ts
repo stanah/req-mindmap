@@ -57,7 +57,7 @@ const sampleMindmapData: MindmapData = {
 
 describe('MindmapCoreLogic TDD仕様定義', () => {
   let coreLogic: MindmapCoreLogic;
-  let eventLog: any[];
+  let eventLog: { type: string; data?: unknown }[];
 
   beforeEach(() => {
     eventLog = [];
@@ -84,8 +84,8 @@ describe('MindmapCoreLogic TDD仕様定義', () => {
     });
 
     it('無効なデータでエラーハンドリングが働くこと', () => {
-      expect(() => coreLogic.setData(null as any)).toThrow();
-      expect(() => coreLogic.setData({} as any)).toThrow();
+      expect(() => coreLogic.setData(null as never)).toThrow();
+      expect(() => coreLogic.setData({} as never)).toThrow();
     });
   });
 

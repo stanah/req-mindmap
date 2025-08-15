@@ -109,7 +109,7 @@ describe('PlatformAdapterFactory', () => {
       expect(adapter.getPlatformType()).toBe('vscode');
 
       // モックをクリーンアップ
-      delete (window as any).acquireVsCodeApi;
+      delete (window as typeof window & { acquireVsCodeApi?: unknown }).acquireVsCodeApi;
     });
   });
 });

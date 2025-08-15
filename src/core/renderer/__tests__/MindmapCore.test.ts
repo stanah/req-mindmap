@@ -67,7 +67,7 @@ const mockTreeLayout = vi.fn((root) => {
     root.x = 0;
     root.y = 0;
     if (root.children) {
-      root.children.forEach((child: any, index: number) => {
+      root.children.forEach((child: { x: number; y: number; children?: unknown[] }, index: number) => {
         child.x = index * 100 - ((root.children.length - 1) * 100) / 2;
         child.y = 100;
       });
@@ -90,7 +90,7 @@ vi.mock('d3', () => ({
   select: vi.fn(() => mockSelection),
   selectAll: vi.fn(() => mockSelection),
   hierarchy: vi.fn((data) => {
-    const mockRoot: any = {
+    const mockRoot: { data: MindmapNode; depth: number; x: number; y: number; children?: unknown[]; descendants: () => unknown[] } = {
       data,
       depth: 0,
       x: 0,
@@ -108,7 +108,7 @@ vi.mock('d3', () => ({
     
     // 子ノードがある場合の処理
     if (data?.children) {
-      mockRoot.children = data.children.map((child: any, index: number) => ({
+      mockRoot.children = data.children.map((child: MindmapNode, index: number) => ({
         data: child,
         parent: mockRoot,
         depth: 1,
@@ -157,7 +157,7 @@ vi.mock('d3', () => ({
 
 describe('MindmapCore 統合テスト', () => {
   let mindmapCore: MindmapCore;
-  let mockEventHandlers: any;
+  let mockEventHandlers: Record<string, (...args: unknown[]) => void>;
   let renderOptions: RenderOptions;
 
   // テスト用のサンプルデータ
@@ -260,7 +260,7 @@ describe('MindmapCore 統合テスト', () => {
     it('無効なデータでエラーが発生しないこと', () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       
-      mindmapCore.render(null as any);
+      mindmapCore.render(null as never);
       
       expect(consoleSpy).toHaveBeenCalledWith('描画データが無効です');
       consoleSpy.mockRestore();

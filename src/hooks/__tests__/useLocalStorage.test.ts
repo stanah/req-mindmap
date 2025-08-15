@@ -271,7 +271,7 @@ describe('useLocalStorage', () => {
       });
       
       // 関数は特別なオブジェクト形式で保存されるため、originalFunctionで比較
-      expect((result.current[0] as any).__originalFunction).toBe(testFunction);
+      expect((result.current[0] as { __originalFunction: () => string }).__originalFunction).toBe(testFunction);
     });
 
     it('空文字列を正しく処理する', () => {
