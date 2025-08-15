@@ -12,8 +12,20 @@ import type { RendererEventHandlers } from '../../core';
 import { ThemeToggle } from '../../web/components/ui/ThemeToggle';
 import { PlatformAdapterFactory } from '../../platform';
 import { NodeDetailsPanel } from '../../components/shared/NodeDetailsPanel';
+import { NodeActionButtons } from './NodeActionButtons';
+import { createNewNode, addChildNode, addSiblingNode } from '../../utils/nodeHelpers';
 import './MindmapViewer.css';
+import './NodeActionButtons.css';
 import '../../styles/NodeDetailsPanel.css';
+
+// VSCode APIの型定義
+declare global {
+  interface Window {
+    vscode?: {
+      postMessage: (message: any) => void;
+    };
+  }
+}
 
 export const MindmapViewer: React.FC = () => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -29,10 +41,130 @@ export const MindmapViewer: React.FC = () => {
   const _cursorCorrespondingNodeId = useAppStore(state => state.ui.cursorCorrespondingNodeId);
   const selectNode = useAppStore(state => state.selectNode);
 
+
   // ノード更新フックの使用
   const { updateNode } = useMindmapNodeUpdate({ rendererRef });
 
-  // 従来のハンドラー（削除済み - 共通ロジックを使用）
+  // ノード追加のハンドラー関数
+  const handleAddChild = async (parentNodeId: string) => {
+    if (!parsedData || !rendererRef.current) return;
+
+    try {
+      console.log('子ノード追加開始:', { parentNodeId, parsedData: !!parsedData });
+      
+      // 新しい子ノードを作成
+      const newNode = createNewNode('新しい子ノード', 'ここに説明を入力してください');
+      console.log('新しいノードを作成:', newNode);
+      
+      // データ構造を更新（不変更新） - data.rootを使用
+      const dataAsAny = parsedData as any;
+      const rootNode = dataAsAny.root;
+      console.log('ルートノード取得:', { hasRootNode: !!rootNode });
+      
+      const updatedRootNode = addChildNode(rootNode, parentNodeId, newNode);
+      console.log('ノード追加完了:', { updatedRootNode: !!updatedRootNode });
+      
+      const updatedData = { ...parsedData, root: updatedRootNode };
+      
+      // VSCodeエディターのファイル内容を更新（これが最優先）
+      try {
+        const platformAdapter = PlatformAdapterFactory.getInstance();
+        if (platformAdapter.getPlatformType() === 'vscode') {
+          const editorAdapter = platformAdapter.editor;
+          
+          // VSCodeにデータオブジェクトを送信（VSCode側で適切な形式に変換）
+          console.log('VSCode API確認:', { hasVscode: !!window.vscode, windowKeys: Object.keys(window) });
+          if (window.vscode) {
+            console.log('contentChangedメッセージ送信中:', { command: 'contentChanged', dataKeys: Object.keys(updatedData) });
+            window.vscode.postMessage({
+              command: 'contentChanged',
+              data: updatedData  // contentではなくdataとして送信
+            });
+            console.log('VSCodeにcontentChangedメッセージを送信');
+          } else {
+            console.error('window.vscodeが存在しません');
+          }
+          console.log('ファイル更新完了');
+          
+          // ファイル更新後は自動でパーサーが動くので、手動での状態更新は不要
+        }
+      } catch (fileError) {
+        console.error('ファイル書き戻しに失敗:', fileError);
+        // フォールバックとしてメモリ内のみ更新
+        useAppStore.setState((state) => ({
+          parse: {
+            ...state.parse,
+            parsedData: updatedData
+          }
+        }));
+        rendererRef.current.render(updatedData);
+      }
+      
+      // 新しく追加されたノードを選択
+      selectNode(newNode.id);
+      
+      console.log(`子ノードを追加しました: ${newNode.id} (親: ${parentNodeId})`);
+    } catch (error) {
+      console.error('子ノード追加に失敗:', error);
+      console.error('エラースタック:', error.stack);
+    }
+  };
+
+  const handleAddSibling = async (siblingNodeId: string) => {
+    if (!parsedData || !rendererRef.current) return;
+
+    try {
+      // 新しい兄弟ノードを作成
+      const newNode = createNewNode('新しい兄弟ノード', 'ここに説明を入力してください');
+      
+      // データ構造を更新（不変更新） - data.rootを使用
+      const dataAsAny = parsedData as any;
+      const rootNode = dataAsAny.root;
+      const updatedRootNode = addSiblingNode(rootNode, siblingNodeId, newNode);
+      const updatedData = { ...parsedData, root: updatedRootNode };
+      
+      // VSCodeエディターのファイル内容を更新（これが最優先）
+      try {
+        const platformAdapter = PlatformAdapterFactory.getInstance();
+        if (platformAdapter.getPlatformType() === 'vscode') {
+          const editorAdapter = platformAdapter.editor;
+          
+          // VSCodeにデータオブジェクトを送信（VSCode側で適切な形式に変換）
+          console.log('VSCode API確認:', { hasVscode: !!window.vscode, windowKeys: Object.keys(window) });
+          if (window.vscode) {
+            console.log('contentChangedメッセージ送信中:', { command: 'contentChanged', dataKeys: Object.keys(updatedData) });
+            window.vscode.postMessage({
+              command: 'contentChanged',
+              data: updatedData  // contentではなくdataとして送信
+            });
+            console.log('VSCodeにcontentChangedメッセージを送信');
+          } else {
+            console.error('window.vscodeが存在しません');
+          }
+          console.log('ファイル更新完了');
+          
+          // ファイル更新後は自動でパーサーが動くので、手動での状態更新は不要
+        }
+      } catch (fileError) {
+        console.error('ファイル書き戻しに失敗:', fileError);
+        // フォールバックとしてメモリ内のみ更新
+        useAppStore.setState((state) => ({
+          parse: {
+            ...state.parse,
+            parsedData: updatedData
+          }
+        }));
+        rendererRef.current.render(updatedData);
+      }
+      
+      // 新しく追加されたノードを選択
+      selectNode(newNode.id);
+      
+      console.log(`兄弟ノードを追加しました: ${newNode.id} (兄弟: ${siblingNodeId})`);
+    } catch (error) {
+      console.error('兄弟ノード追加に失敗:', error);
+    }
+  };
 
   // イベントハンドラーの定義
   const eventHandlers: RendererEventHandlers = useMemo(() => ({
@@ -46,15 +178,18 @@ export const MindmapViewer: React.FC = () => {
       }
       
       // マインドマップファイル内の該当ノード定義箇所にジャンプ
-      try {
-        const platformAdapter = PlatformAdapterFactory.getInstance();
-        if (platformAdapter.getPlatformType() === 'vscode') {
-          const editorAdapter = platformAdapter.editor;
-          await (editorAdapter as any).jumpToNodeInCurrentFile(nodeId);
-          console.log(`ノードジャンプ実行: ${nodeId}`);
+      // 動的に追加されたノード（node_で始まる）はジャンプをスキップ
+      if (!nodeId.startsWith('node_')) {
+        try {
+          const platformAdapter = PlatformAdapterFactory.getInstance();
+          if (platformAdapter.getPlatformType() === 'vscode') {
+            const editorAdapter = platformAdapter.editor;
+            await (editorAdapter as any).jumpToNodeInCurrentFile(nodeId);
+            console.log(`ノードジャンプ実行: ${nodeId}`);
+          }
+        } catch (error) {
+          console.error('ノードジャンプに失敗:', error);
         }
-      } catch (error) {
-        console.error('ノードジャンプに失敗:', error);
       }
       
       // ダブルクリックでフォーカス
@@ -187,6 +322,15 @@ export const MindmapViewer: React.FC = () => {
       {/* VSCode用のツールバー */}
       <div className="vscode-toolbar">
         <ThemeToggle className="vscode-theme-toggle" />
+        
+        {/* ノード追加ボタン */}
+        <NodeActionButtons
+          selectedNodeId={selectedNodeId}
+          data={parsedData}
+          onAddChild={handleAddChild}
+          onAddSibling={handleAddSibling}
+          className="vscode-node-actions"
+        />
       </div>
       
       <div className="mindmap-container">
