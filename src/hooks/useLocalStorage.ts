@@ -75,8 +75,8 @@ export function useLocalStorage<T>(
       let storageValue = valueToStore;
       if (typeof valueToStore === 'object' && valueToStore !== null && (valueToStore as { __isFunction?: boolean }).__isFunction) {
         // 関数の場合は__originalFunctionは除いてシリアライズ
-        const { __originalFunction, ...serializableData } = valueToStore as { __originalFunction: unknown, [key: string]: unknown };
-        storageValue = serializableData;
+        const { __originalFunction, ...serializableData } = valueToStore as unknown as { __originalFunction: unknown, [key: string]: unknown };
+        storageValue = serializableData as T;
       }
       
       window.localStorage.setItem(key, JSON.stringify(storageValue));

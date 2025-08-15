@@ -55,7 +55,7 @@ export const NodeActionButtons: React.FC<NodeActionButtonsProps> = ({
   }
 
   // YAMLの構造を確認 - ルートノードはdata.rootにある
-  const mindmapData = data as MindmapData;
+  const mindmapData = data as unknown as MindmapData;
   const rootNode = mindmapData.root;
   
   if (!rootNode) {

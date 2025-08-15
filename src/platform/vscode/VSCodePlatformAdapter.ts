@@ -3,7 +3,7 @@ import { VSCodeFileSystemAdapter } from './VSCodeFileSystemAdapter';
 import { VSCodeEditorAdapter } from './VSCodeEditorAdapter';
 import { VSCodeUIAdapter } from './VSCodeUIAdapter';
 import { VSCodeSettingsAdapter } from './VSCodeSettingsAdapter';
-import VSCodeApiSingleton from './VSCodeApiSingleton';
+import VSCodeApiSingleton, { type VSCodeApi } from './VSCodeApiSingleton';
 
 /**
  * VSCode拡張環境用のメインプラットフォームアダプター
@@ -25,7 +25,7 @@ export class VSCodePlatformAdapter implements PlatformAdapter {
   /**
    * VSCode APIを安全に取得する（シングルトン経由）
    */
-  static getVSCodeApi(): unknown {
+  static getVSCodeApi(): VSCodeApi | null {
     return VSCodeApiSingleton.getInstance().getApi();
   }
 

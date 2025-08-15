@@ -87,9 +87,9 @@ async function saveMindmapData(data: MindmapData): Promise<void> {
  */
 async function saveToVSCode(data: MindmapData): Promise<void> {
   // HTMLで初期化されたVSCode APIインスタンスを使用
-  const vscode = (window as { vscodeApiInstance?: unknown; vscode?: unknown }).vscodeApiInstance || (window as { vscode?: unknown }).vscode;
+  const vscode = (window as { vscodeApiInstance?: { postMessage: (message: unknown) => void }; vscode?: { postMessage: (message: unknown) => void } }).vscodeApiInstance || (window as { vscode?: { postMessage: (message: unknown) => void } }).vscode;
   
-  if (!vscode) {
+  if (!vscode || !('postMessage' in vscode)) {
     throw new Error('VSCode APIが利用できません - HTMLで初期化されていない可能性があります');
   }
   

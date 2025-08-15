@@ -20,7 +20,7 @@ export class VSCodeEditorAdapter implements EditorAdapter {
 
   private initialize(): void {
     const vscode = VSCodePlatformAdapter.getVSCodeApi();
-    if (vscode && typeof vscode.postMessage === 'function') {
+    if (vscode && 'postMessage' in vscode) {
       this.vscode = vscode;
       
       // VSCodeからのメッセージを受信
@@ -62,11 +62,12 @@ export class VSCodeEditorAdapter implements EditorAdapter {
       const requestId = `${++this.requestId}`;
       
       // レスポンスハンドラーを登録
-      this.messageHandlers.set(requestId, (data: { error?: string; result?: unknown }) => {
-        if (data.error) {
-          reject(new Error(data.error));
+      this.messageHandlers.set(requestId, (data: unknown) => {
+        const response = data as { error?: string; result?: T };
+        if (response.error) {
+          reject(new Error(response.error));
         } else {
-          resolve(data.result);
+          resolve(response.result as T);
         }
       });
 

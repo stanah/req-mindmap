@@ -6,6 +6,8 @@ import type { FileService } from '../types';
 export interface FileInfo {
   /** ファイル名 */
   name: string;
+  /** ファイルパス */
+  path: string;
   /** ファイルサイズ（バイト） */
   size: number;
   /** ファイル形式 */
@@ -103,6 +105,7 @@ export class BrowserFileService implements FileService {
     
     return {
       name: file.name,
+      path: file.name, // ブラウザ環境ではファイル名をパスとして使用
       size: file.size,
       type: file.type,
       lastModified: file.lastModified,
@@ -515,9 +518,9 @@ export class BrowserFileService implements FileService {
         
         if (value === '') {
           // ネストしたオブジェクト
-          currentObj[key] = {};
+          currentObj[key] = {} as Record<string, unknown>;
           stack.push(currentObj);
-          currentObj = currentObj[key];
+          currentObj = currentObj[key] as Record<string, unknown>;
         } else if (value.startsWith('"') && value.endsWith('"')) {
           // 文字列値
           currentObj[key] = value.slice(1, -1);
@@ -611,12 +614,19 @@ export class BrowserFileService implements FileService {
   }
 
   // 最近使用したファイル関連のメソッド
-  addToRecentFiles(fileInfo: { name: string; path: string; lastModified: number }): void {
+  addToRecentFiles(fileInfo: Pick<FileInfo, 'name' | 'path' | 'lastModified'>): void {
     // 既存のエントリを削除
     this.recentFiles = this.recentFiles.filter(f => f.path !== fileInfo.path);
     
-    // 新しいエントリを先頭に追加
-    this.recentFiles.unshift(fileInfo);
+    // 新しいエントリを先頭に追加（完全なFileInfo形式に変換）
+    const completeFileInfo: FileInfo = {
+      ...fileInfo,
+      size: 0, // 不明な場合のデフォルト値
+      type: 'application/octet-stream', // 不明な場合のデフォルト値
+      extension: fileInfo.name.split('.').pop()?.toLowerCase() || '',
+      detectedFormat: 'unknown' as const
+    };
+    this.recentFiles.unshift(completeFileInfo);
     
     // 最大10件まで保持
     if (this.recentFiles.length > 10) {

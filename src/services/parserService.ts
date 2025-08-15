@@ -110,8 +110,9 @@ export class ParserServiceImpl implements ParserService {
   private extractAndApplySchema(data: unknown): unknown {
     // スキーマが含まれているかチェック
     if (data && typeof data === 'object' && (data as { schema?: unknown }).schema) {
-      const schema = data.schema;
-      const mindmapData = { ...data };
+      const dataObj = data as { schema?: unknown; [key: string]: unknown };
+      const schema = dataObj.schema;
+      const mindmapData = { ...dataObj };
       
       // スキーマ部分を削除
       delete mindmapData.schema;

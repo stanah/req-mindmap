@@ -148,6 +148,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
         const content = event.target?.result as string;
         const fileInfo = {
           name: file.name,
+          path: file.name, // ブラウザ環境ではファイル名をパスとして使用
           size: file.size,
           type: file.type,
           lastModified: file.lastModified,

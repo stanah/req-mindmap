@@ -17,7 +17,7 @@ export class VSCodeUIAdapter implements UIAdapter {
 
   private initialize(): void {
     const vscode = VSCodePlatformAdapter.getVSCodeApi();
-    if (vscode) {
+    if (vscode && 'postMessage' in vscode) {
       this.vscode = vscode;
       
       // VSCodeからのメッセージを受信
@@ -45,11 +45,12 @@ export class VSCodeUIAdapter implements UIAdapter {
       const requestId = `${++this.requestId}`;
       
       // レスポンスハンドラーを登録
-      this.messageHandlers.set(requestId, (data: { error?: string; result?: T }) => {
-        if (data.error) {
-          reject(new Error(data.error));
+      this.messageHandlers.set(requestId, (data: unknown) => {
+        const response = data as { error?: string; result?: T };
+        if (response.error) {
+          reject(new Error(response.error));
         } else {
-          resolve(data.result);
+          resolve(response.result as T);
         }
       });
 

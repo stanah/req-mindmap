@@ -165,13 +165,21 @@ export class BrowserPlatformAdapter implements PlatformAdapter {
     };
     timing: PerformanceTiming;
   } {
-    const result: { timing: PerformanceTiming; memory?: unknown } = {
+    const result: {
+      timing: PerformanceTiming;
+      memory?: {
+        usedJSHeapSize: number;
+        totalJSHeapSize: number;
+        jsHeapSizeLimit: number;
+      };
+    } = {
       timing: performance.timing
     };
 
     // メモリ情報（Chrome系ブラウザのみ）
     if ('memory' in performance) {
-      result.memory = (performance as Performance & { memory: unknown }).memory;
+      const memory = (performance as Performance & { memory: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
+      result.memory = memory;
     }
 
     return result;

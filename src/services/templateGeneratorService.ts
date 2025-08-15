@@ -92,7 +92,7 @@ export class TemplateGeneratorService {
       metadata: {
         templateType,
         generatedAt: new Date().toISOString(),
-        schemaVersion: schema.properties?.version?.default || '1.0'
+        schemaVersion: (schema.properties?.version as { default?: string })?.default || '1.0'
       }
     };
   }
@@ -119,8 +119,8 @@ export class TemplateGeneratorService {
     }
 
     // 明示的なテンプレートタイプ指定があればそれを使用
-    const templateTypeValue = schema.properties?.templateType?.const ||
-      schema.properties?.templateType?.default;
+    const templateTypeValue = (schema.properties?.templateType as { const?: string; default?: string })?.const ||
+      (schema.properties?.templateType as { const?: string; default?: string })?.default;
 
     if (templateTypeValue?.includes('starter')) return 'starter';
     if (templateTypeValue?.includes('standard')) return 'standard';
@@ -326,8 +326,9 @@ export class TemplateGeneratorService {
     };
 
     // スキーマのプロパティを解析して動的にノードを生成
-    if (schema.properties?.core?.properties) {
-      Object.entries(schema.properties.core.properties).forEach(([key, _prop]: [string, unknown]) => {
+    const coreProperties = (schema.properties?.core as { properties?: Record<string, unknown> })?.properties;
+    if (coreProperties) {
+      Object.entries(coreProperties).forEach(([key, _prop]: [string, unknown]) => {
         root.children?.push({
           id: key,
           title: this.formatPropertyName(key, locale),

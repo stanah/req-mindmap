@@ -98,7 +98,7 @@ export class BrowserEditorAdapter implements EditorAdapter {
 
     try {
       const monacoModule = await import('monaco-editor');
-      const markers: Array<{ startLineNumber: number; startColumn: number; endLineNumber: number; endColumn: number; message: string; severity: unknown }> = await Promise.all(errors.map(async error => ({
+      const markers: monaco.editor.IMarkerData[] = await Promise.all(errors.map(async error => ({
         startLineNumber: error.line,
         startColumn: error.column,
         endLineNumber: error.endLine || error.line,
@@ -147,7 +147,7 @@ export class BrowserEditorAdapter implements EditorAdapter {
   /**
    * エラーの重要度をMonacoの形式にマップ
    */
-  private async mapSeverity(severity: 'error' | 'warning' | 'info'): Promise<number> {
+  private async mapSeverity(severity: 'error' | 'warning' | 'info'): Promise<monaco.MarkerSeverity> {
     try {
       const monacoModule = await import('monaco-editor');
       switch (severity) {

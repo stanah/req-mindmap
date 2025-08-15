@@ -19,7 +19,7 @@ export class VSCodeSettingsAdapter implements SettingsAdapter {
 
   private initialize(): void {
     const vscode = VSCodePlatformAdapter.getVSCodeApi();
-    if (vscode) {
+    if (vscode && 'postMessage' in vscode) {
       this.vscode = vscode;
       
       // VSCodeからのメッセージを受信
@@ -46,15 +46,16 @@ export class VSCodeSettingsAdapter implements SettingsAdapter {
   }
 
   private handleSettingsEvent(message: unknown): void {
-    switch (message.command) {
+    const msg = message as { command?: string; [key: string]: unknown };
+    switch (msg.command) {
       case 'configurationChanged':
-        this.settingsCache.set(message.key, message.value);
-        this.changeCallbacks.forEach(callback => callback(message.key, message.value));
+        this.settingsCache.set(msg.key as string, msg.value);
+        this.changeCallbacks.forEach(callback => callback(msg.key as string, msg.value));
         break;
       case 'initialConfiguration':
         // 初期設定を受信
-        if (message.settings) {
-          Object.entries(message.settings).forEach(([key, value]) => {
+        if (msg.settings) {
+          Object.entries(msg.settings as Record<string, unknown>).forEach(([key, value]) => {
             this.settingsCache.set(key, value);
           });
         }
@@ -72,10 +73,11 @@ export class VSCodeSettingsAdapter implements SettingsAdapter {
       
       // レスポンスハンドラーを登録
       this.messageHandlers.set(requestId, (data: unknown) => {
-        if (data.error) {
-          reject(new Error(data.error));
+        const response = data as { error?: string; result?: T };
+        if (response.error) {
+          reject(new Error(response.error));
         } else {
-          resolve(data.result);
+          resolve(response.result as T);
         }
       });
 
