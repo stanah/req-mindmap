@@ -14,7 +14,9 @@ import {
   MdFullscreen,
   MdInfo,
   MdAdd,
-  MdDelete 
+  MdDelete,
+  MdKeyboardArrowRight,
+  MdKeyboardArrowDown
 } from 'react-icons/md';
 import type { MindmapData } from '../../types';
 import type { MindmapCore } from '../../core';
@@ -110,20 +112,22 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           className="toolbar-button"
           onClick={() => selectedNodeId && onAddChild(selectedNodeId)}
           disabled={!selectedNodeId}
-          title="子ノードを追加"
+          title="子ノードを追加 - 選択中のノードから右方向に新しいノードを作成します"
           aria-label="子ノードを追加"
         >
-          <MdAdd size={16} />
+          <MdKeyboardArrowRight size={12} />
+          <MdAdd size={12} />
         </button>
         
         <button
           className="toolbar-button"
           onClick={() => selectedNodeId && onAddSibling(selectedNodeId)}
           disabled={!selectedNodeId || !data?.root}
-          title="兄弟ノードを追加"
+          title="兄弟ノードを追加 - 選択中のノードと同じ階層の下方向に新しいノードを作成します"
           aria-label="兄弟ノードを追加"
         >
-          <MdAdd size={16} />
+          <MdKeyboardArrowDown size={12} />
+          <MdAdd size={12} />
         </button>
         
         <button
