@@ -4,6 +4,7 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
+import { IoColorPalette } from 'react-icons/io5';
 
 interface VSCodeThemeToggleProps {
   className?: string;
@@ -111,7 +112,7 @@ export const VSCodeThemeToggle: React.FC<VSCodeThemeToggleProps> = ({ className 
       aria-label={`テーマを切り替え (現在: ${getThemeLabel()})`}
       type="button"
     >
-      <span className="codicon codicon-symbol-color" aria-hidden="true"></span>
+      <IoColorPalette size={16} />
     </button>
   );
 };
