@@ -236,11 +236,7 @@ export class MindmapWebviewProvider {
 
                     case 'appInitialized':
                         console.log('アプリケーション初期化完了:', message.timestamp);
-                        // 初期データを送信
-                        webview.postMessage({
-                            command: 'updateContent',
-                            content: document.getText()
-                        });
+                        // 初期データは window.initialData で既に渡されているため送信しない
                         break;
 
                     case 'initializationError':
