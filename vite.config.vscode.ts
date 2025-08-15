@@ -53,6 +53,9 @@ export default defineConfig({
       'zustand'
     ]
   },
+  
+  // 静的アセットの処理設定
+  assetsInclude: ['**/*.ttf', '**/*.woff', '**/*.woff2'],
 
   // VSCode Webviewでは外部リソースの読み込みが制限される
   server: {
