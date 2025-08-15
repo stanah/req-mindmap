@@ -1,6 +1,6 @@
 /**
  * VSCode拡張専用テーマ切り替えコンポーネント
- * VSCodeのテーマシステムと協調して動作
+ * 無限ループを回避するシンプルな実装
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
@@ -11,8 +11,9 @@ interface VSCodeThemeToggleProps {
 
 export const VSCodeThemeToggle: React.FC<VSCodeThemeToggleProps> = ({ className = '' }) => {
   const [vscodeTheme, setVscodeTheme] = useState<'light' | 'dark'>('light');
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // VSCodeテーマの検出
+  // VSCodeテーマの検出（一度だけ）
   const detectVSCodeTheme = useCallback((): 'light' | 'dark' => {
     // VSCode環境での検出方法
     const bodyClasses = document.body.classList;
@@ -49,117 +50,54 @@ export const VSCodeThemeToggle: React.FC<VSCodeThemeToggleProps> = ({ className 
     return 'light';
   }, []);
 
-  // VSCodeテーマをCSS変数に適用
-  const applyVSCodeTheme = useCallback((theme: 'light' | 'dark') => {
-    const root = document.documentElement;
-    
-    // VSCode拡張用のテーマクラス設定
-    root.classList.remove('vscode-light', 'vscode-dark');
-    root.classList.add(`vscode-${theme}`);
-    
-    // データ属性設定
-    root.setAttribute('data-vscode-theme', theme);
-    
-    console.log(`VSCode theme applied: ${theme}`);
-  }, []);
-
-  // VSCodeからのテーマ変更メッセージを処理
+  // 初期化時のテーマ検出（一度だけ実行）
   useEffect(() => {
+    if (isInitialized) return;
+    
+    const timer = setTimeout(() => {
+      const detectedTheme = detectVSCodeTheme();
+      setVscodeTheme(detectedTheme);
+      setIsInitialized(true);
+      console.log(`Initial VSCode theme detected: ${detectedTheme}`);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [detectVSCodeTheme, isInitialized]);
+
+  // VSCodeからのテーマ変更メッセージを処理（メッセージベースのみ）
+  useEffect(() => {
+    if (!window.vscode) return;
+
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
       if (message.command === 'themeChanged') {
         const newTheme = message.theme as 'light' | 'dark';
-        setVscodeTheme(newTheme);
-        applyVSCodeTheme(newTheme);
         console.log('Received theme change from VSCode:', newTheme);
+        setVscodeTheme(newTheme);
       }
     };
 
-    // VSCode環境でのみメッセージリスナーを追加
-    if (window.vscode) {
-      window.addEventListener('message', handleMessage);
-      return () => window.removeEventListener('message', handleMessage);
-    }
-  }, [applyVSCodeTheme]);
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
-  // 初期テーマの検出と設定
-  useEffect(() => {
-    let mounted = true;
-    
-    const initializeTheme = () => {
-      if (!mounted) return;
-      
-      const detectedTheme = detectVSCodeTheme();
-      setVscodeTheme(detectedTheme);
-      applyVSCodeTheme(detectedTheme);
-    };
-
-    // 少し遅延させてVSCodeの初期化を待つ
-    const timer = setTimeout(initializeTheme, 100);
-    
-    return () => {
-      mounted = false;
-      clearTimeout(timer);
-    };
-  }, [detectVSCodeTheme, applyVSCodeTheme]);
-
-  // MutationObserverでVSCodeのテーマ変更を監視
-  useEffect(() => {
-    let mounted = true;
-    
-    const observer = new MutationObserver((mutations) => {
-      if (!mounted) return;
-      
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && 
-            (mutation.attributeName === 'class' || mutation.attributeName === 'data-theme')) {
-          const newTheme = detectVSCodeTheme();
-          if (newTheme !== vscodeTheme) {
-            setVscodeTheme(newTheme);
-            applyVSCodeTheme(newTheme);
-          }
-        }
-      });
-    });
-
-    // bodyとdocumentElementの変更を監視
-    observer.observe(document.body, { 
-      attributes: true, 
-      attributeFilter: ['class', 'data-theme'] 
-    });
-    
-    observer.observe(document.documentElement, { 
-      attributes: true, 
-      attributeFilter: ['class', 'data-theme'] 
-    });
-
-    return () => {
-      mounted = false;
-      observer.disconnect();
-    };
-  }, [detectVSCodeTheme, applyVSCodeTheme, vscodeTheme]);
-
-  // VSCodeにテーマ変更を要求
+  // VSCodeテーマ選択画面を開く
   const handleThemeToggle = useCallback(() => {
-    // VSCodeのコマンドパレットを開いてテーマ選択を促す
+    console.log('Theme toggle clicked');
+    
     if (window.vscode) {
-      window.vscode.postMessage({
-        command: 'info',
-        message: 'VSCodeのテーマ変更: Ctrl+K Ctrl+T でテーマ選択画面を開けます'
-      });
-      
       // VSCodeのテーマ選択コマンドを実行
       window.vscode.postMessage({
         command: 'requestThemeChange',
-        theme: vscodeTheme === 'light' ? 'dark' : 'light'
+        currentTheme: vscodeTheme
       });
     } else {
-      // VSCode環境でない場合はローカルで切り替え
+      // VSCode環境でない場合は手動で切り替え（デバッグ用）
       const newTheme = vscodeTheme === 'light' ? 'dark' : 'light';
       setVscodeTheme(newTheme);
-      applyVSCodeTheme(newTheme);
+      console.log(`Manual theme toggle: ${newTheme}`);
     }
-  }, [vscodeTheme, applyVSCodeTheme]);
+  }, [vscodeTheme]);
 
   const getThemeLabel = () => {
     return vscodeTheme === 'dark' ? 'ダークモード' : 'ライトモード';
