@@ -4,75 +4,7 @@ metadata:
   createdAt: "2025-01-03T00:00:00Z"
   updatedAt: "2025-01-03T00:00:00Z"
   description: "マインドマップツールとMCPエージェント統合プロジェクトの包括的要件定義"
-  version: "1.0.0"
 schema:
-  version: "2.0"
-  description: "要件定義プロジェクト用スキーマ"
-  
-  # 基本フィールド（ノード直下のプロパティ、変更不可）
-  baseFields:
-    - name: "id"
-      type: "string"
-      label: "ID"
-      required: true
-      description: "ノードの一意識別子"
-    - name: "title"
-      type: "string"
-      label: "タイトル"
-      required: true
-      description: "ノードのタイトル"
-    - name: "description"
-      type: "string"
-      label: "説明"
-      description: "ノードの詳細説明"
-    - name: "type"
-      type: "string"
-      label: "種類"
-      description: "ノードの種類"
-    - name: "priority"
-      type: "select"
-      label: "優先度"
-      options:
-        - "critical"
-        - "high"
-        - "medium"
-        - "low"
-      description: "要件の優先度レベル"
-    - name: "status"
-      type: "select"
-      label: "ステータス"
-      options:
-        - "draft"
-        - "pending"
-        - "in-progress"
-        - "review"
-        - "done"
-        - "deferred"
-        - "cancelled"
-      defaultValue: "draft"
-      description: "要件の現在のステータス"
-    - name: "createdAt"
-      type: "string"
-      label: "作成日時"
-      description: "ノードが作成された日時（ISO文字列）"
-    - name: "updatedAt"
-      type: "string"
-      label: "更新日時"
-      description: "ノードが最後に更新された日時（ISO文字列）"
-    - name: "assignee"
-      type: "string"
-      label: "担当者"
-      description: "ノードの担当者"
-    - name: "deadline"
-      type: "string"
-      label: "期限"
-      description: "ノードの期限日（ISO文字列）"
-    - name: "collapsed"
-      type: "boolean"
-      label: "折りたたみ状態"
-      description: "ノードが折りたたまれているかどうか"
-  
-  # カスタムフィールド（ユーザが追加・変更可能）
   customFields:
     - name: "category"
       type: "select"
@@ -1094,10 +1026,3 @@ root:
       status: "draft"
   priority: "critical"
   status: "draft"
-settings:
-  theme: "light"
-  layout: "tree"
-  autoSave:
-    enabled: true
-    interval: 30
-  version: "1.0.0"

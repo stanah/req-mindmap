@@ -19,29 +19,27 @@
       "type": "string",
       "description": "マインドマップの説明"
     },
-    "author": {
-      "type": "string",
-      "description": "作成者"
-    },
-    "createdAt": {
-      "type": "string",
-      "format": "date-time",
-      "description": "作成日時"
-    },
-    "updatedAt": {
-      "type": "string",
-      "format": "date-time",
-      "description": "更新日時"
-    },
     "metadata": {
       "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "createdAt": {
+          "type": "string",
+          "description": "作成日時"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "更新日時"
+        },
+        "description": {
+          "type": "string",
+          "description": "メタデータの説明"
+        }
+      },
       "description": "追加のメタデータ"
     },
     "schema": {
       "$ref": "#/definitions/CustomSchema"
-    },
-    "settings": {
-      "$ref": "#/definitions/MindmapSettings"
     },
     "tags": {
       "type": "array",
@@ -72,10 +70,6 @@
           "type": "string",
           "description": "ノードの詳細説明"
         },
-        "type": {
-          "type": "string",
-          "description": "ノードの種類"
-        },
         "priority": {
           "type": "string",
           "enum": ["critical", "high", "medium", "low"],
@@ -85,29 +79,6 @@
           "type": "string",
           "enum": ["draft", "pending", "in-progress", "review", "done", "cancelled", "deferred"],
           "description": "ノードのステータス"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "作成日時"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "更新日時"
-        },
-        "assignee": {
-          "type": "string",
-          "description": "担当者"
-        },
-        "deadline": {
-          "type": "string",
-          "format": "date-time",
-          "description": "期限"
-        },
-        "collapsed": {
-          "type": "boolean",
-          "description": "折りたたみ状態"
         },
         "tags": {
           "type": "array",
@@ -119,44 +90,6 @@
         "customFields": {
           "type": "object",
           "description": "カスタムフィールドの値"
-        },
-        "metadata": {
-          "type": "object",
-          "description": "拡張可能なメタデータ"
-        },
-        "position": {
-          "type": "object",
-          "required": ["x", "y"],
-          "additionalProperties": false,
-          "properties": {
-            "x": { "type": "number" },
-            "y": { "type": "number" }
-          },
-          "description": "ノードの表示位置"
-        },
-        "color": {
-          "type": "string",
-          "description": "ノードの色"
-        },
-        "icon": {
-          "type": "string",
-          "description": "ノードのアイコン"
-        },
-        "links": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["url", "title"],
-            "properties": {
-              "url": { "type": "string" },
-              "title": { "type": "string" },
-              "type": {
-                "type": "string",
-                "enum": ["reference", "documentation", "issue", "other"]
-              }
-            }
-          },
-          "description": "関連リンク"
         },
         "children": {
           "type": "array",
@@ -171,44 +104,12 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "version": {
-          "type": "string",
-          "description": "スキーマのバージョン"
-        },
-        "description": {
-          "type": "string",
-          "description": "スキーマの説明"
-        },
-        "baseFields": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/FieldDefinition"
-          },
-          "description": "基本フィールド定義（変更不可）"
-        },
         "customFields": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/FieldDefinition"
           },
-          "description": "カスタムフィールド定義（ユーザが追加可能）"
-        },
-        "displayRules": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DisplayRule"
-          },
-          "description": "表示ルールの配列"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "作成日時"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "更新日時"
+          "description": "カスタムフィールド定義"
         }
       }
     },
@@ -230,11 +131,6 @@
           "type": "string",
           "description": "表示用ラベル"
         },
-        "location": {
-          "type": "string",
-          "enum": ["node", "customFields"],
-          "description": "フィールドの配置場所"
-        },
         "required": {
           "type": "boolean",
           "description": "必須フィールドかどうか"
@@ -244,84 +140,16 @@
           "items": { "type": "string" },
           "description": "select/multiselect用の選択肢"
         },
-        "defaultValue": {
-          "oneOf": [
-            { "type": "string" },
-            { "type": "number" },
-            { "type": "boolean" },
-            {
-              "type": "array",
-              "items": { "type": "string" }
-            }
-          ],
-          "description": "デフォルト値"
-        },
         "description": {
           "type": "string",
           "description": "フィールドの説明"
-        },
-        "validation": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ValidationRule"
-          },
-          "description": "バリデーションルール"
-        }
-      }
-    },
-    "ValidationRule": {
-      "type": "object",
-      "required": ["type"],
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": ["required", "minLength", "maxLength", "pattern", "min", "max", "range", "length"],
-          "description": "バリデーションの種類"
-        },
-        "value": {
-          "oneOf": [
-            { "type": "string" },
-            { "type": "number" }
-          ],
-          "description": "バリデーションの値"
-        },
-        "message": {
-          "type": "string",
-          "description": "エラーメッセージ"
-        }
-      }
-    },
-    "DisplayRule": {
-      "type": "object",
-      "required": ["field", "displayType"],
-      "properties": {
-        "field": {
-          "type": "string",
-          "description": "対象フィールド名"
-        },
-        "displayType": {
-          "type": "string",
-          "enum": ["badge", "icon", "color", "text"],
-          "description": "表示タイプ"
-        },
-        "condition": {
-          "type": "string",
-          "description": "表示条件"
-        },
-        "style": {
-          "type": "object",
-          "description": "スタイル設定"
-        },
-        "position": {
-          "type": "string",
-          "enum": ["inline", "tooltip", "sidebar"],
-          "description": "表示位置"
         }
       }
     },
     "TagDefinition": {
       "type": "object",
       "required": ["name"],
+      "additionalProperties": false,
       "properties": {
         "name": {
           "type": "string",
@@ -334,89 +162,6 @@
         "description": {
           "type": "string",
           "description": "タグの説明"
-        }
-      }
-    },
-    "MindmapSettings": {
-      "type": "object",
-      "properties": {
-        "theme": {
-          "type": "string",
-          "enum": ["light", "dark", "auto"],
-          "description": "テーマ"
-        },
-        "layout": {
-          "type": "string",
-          "enum": ["tree", "radial", "force"],
-          "description": "レイアウト"
-        },
-        "zoom": {
-          "type": "number",
-          "description": "ズームレベル"
-        },
-        "center": {
-          "type": "object",
-          "required": ["x", "y"],
-          "additionalProperties": false,
-          "properties": {
-            "x": { "type": "number" },
-            "y": { "type": "number" }
-          },
-          "description": "中心位置"
-        },
-        "nodeSize": {
-          "type": "string",
-          "enum": ["small", "medium", "large"],
-          "description": "ノードサイズ"
-        },
-        "enableAnimation": {
-          "type": "boolean",
-          "description": "アニメーション有効/無効"
-        },
-        "enableAnimations": {
-          "type": "boolean",
-          "description": "アニメーション有効/無効（別名）"
-        },
-        "autoLayout": {
-          "type": "boolean",
-          "description": "自動レイアウト有効/無効"
-        },
-        "showMinimap": {
-          "type": "boolean",
-          "description": "ミニマップ表示"
-        },
-        "nodeWidth": {
-          "type": "number",
-          "description": "ノードの幅"
-        },
-        "maxNodeWidth": {
-          "type": "number",
-          "description": "ノードの最大幅"
-        },
-        "nodeSpacing": {
-          "type": "number",
-          "description": "ノード間の間隔"
-        },
-        "levelSpacing": {
-          "type": "number",
-          "description": "レベル間の間隔"
-        },
-        "verticalSpacing": {
-          "type": "number",
-          "description": "縦間隔の調整係数"
-        },
-        "autoSave": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "enabled": { "type": "boolean" },
-            "interval": { "type": "number" }
-          },
-          "description": "自動保存設定"
-        },
-        "version": {
-          "type": "string",
-          "description": "設定のバージョン"
         }
       }
     }
