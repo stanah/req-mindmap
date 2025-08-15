@@ -20,7 +20,7 @@ export class VSCodeEditorAdapter implements EditorAdapter {
 
   private initialize(): void {
     const vscode = VSCodePlatformAdapter.getVSCodeApi();
-    if (vscode) {
+    if (vscode && typeof vscode.postMessage === 'function') {
       this.vscode = vscode;
       
       // VSCodeからのメッセージを受信
@@ -44,11 +44,11 @@ export class VSCodeEditorAdapter implements EditorAdapter {
   private handleEditorEvent(message: { command: string; content?: string; line?: number; column?: number }): void {
     switch (message.command) {
       case 'contentChanged':
-        this.currentContent = message.content;
-        this.contentChangeCallbacks.forEach(callback => callback(message.content));
+        this.currentContent = message.content || '';
+        this.contentChangeCallbacks.forEach(callback => callback(message.content || ''));
         break;
       case 'cursorPositionChanged':
-        this.cursorChangeCallbacks.forEach(callback => callback(message.line, message.column));
+        this.cursorChangeCallbacks.forEach(callback => callback(message.line || 0, message.column || 0));
         break;
     }
   }

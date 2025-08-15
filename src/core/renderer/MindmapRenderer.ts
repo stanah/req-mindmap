@@ -594,7 +594,7 @@ export class MindmapRenderer {
     }
   }
 
-  private drawPriorityBadges(nodeUpdate: d3.Selection<SVGGElement, D3Node, SVGGElement, unknown>): void {
+  private drawPriorityBadges(nodeUpdate: d3.Selection<SVGGElement, D3Node, d3.BaseType, unknown>): void {
     nodeUpdate.selectAll('.priority-badge').remove();
 
     nodeUpdate.each((d: D3Node, i, nodes) => {
@@ -635,7 +635,7 @@ export class MindmapRenderer {
     });
   }
 
-  private drawStatusBadges(nodeUpdate: d3.Selection<SVGGElement, D3Node, SVGGElement, unknown>): void {
+  private drawStatusBadges(nodeUpdate: d3.Selection<SVGGElement, D3Node, d3.BaseType, unknown>): void {
     nodeUpdate.selectAll('.status-badge').remove();
 
     nodeUpdate.each((d: D3Node, i, nodes) => {
@@ -683,13 +683,13 @@ export class MindmapRenderer {
   /**
    * 展開・折りたたみボタンの描画
    */
-  private drawExpandCollapseButtons(nodeUpdate: d3.Selection<SVGGElement, D3Node, SVGGElement, unknown>): void {
+  private drawExpandCollapseButtons(nodeUpdate: d3.Selection<SVGGElement, D3Node, d3.BaseType, unknown>): void {
     // 既存のボタンを削除
     nodeUpdate.selectAll('.expand-collapse-button').remove();
     
     // 子ノードを持つノードのみにボタンを追加
     const nodesWithChildren = nodeUpdate.filter((d: D3Node) => 
-      d.data.children && d.data.children.length > 0
+      Boolean(d.data.children && d.data.children.length > 0)
     );
     
     const buttonGroup = nodesWithChildren

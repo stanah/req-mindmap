@@ -16,7 +16,7 @@ export class BrowserSettingsAdapter implements SettingsAdapter {
 
   get<T>(key: string, defaultValue?: T): T {
     const value = this.settings[key];
-    return value !== undefined ? value : (defaultValue as T);
+    return value !== undefined ? (value as T) : (defaultValue as T);
   }
 
   async set<T>(key: string, value: T): Promise<void> {
