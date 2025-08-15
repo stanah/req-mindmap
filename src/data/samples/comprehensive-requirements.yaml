@@ -1,1028 +1,1029 @@
 version: "1.0"
-title: "req-mindmap プロジェクト要件定義"
+title: req-mindmap プロジェクト要件定義
 metadata:
   createdAt: "2025-01-03T00:00:00Z"
   updatedAt: "2025-01-03T00:00:00Z"
-  description: "マインドマップツールとMCPエージェント統合プロジェクトの包括的要件定義"
-schema:
-  customFields:
-    - name: "category"
-      type: "select"
-      label: "カテゴリ"
-      options:
-        - "functional"
-        - "non-functional"
-        - "quality"
-        - "constraint"
-      required: true
-      description: "要件の分類"
-    - name: "userRole"
-      type: "string"
-      label: "対象ユーザー"
-      description: "この要件の対象となるユーザー役割"
-    - name: "businessValue"
-      type: "string"
-      label: "ビジネス価値"
-      description: "この要件が提供するビジネス価値"
-    - name: "complexity"
-      type: "select"
-      label: "複雑度"
-      options:
-        - "low"
-        - "medium"
-        - "high"
-        - "very-high"
-      description: "実装の複雑度レベル"
-    - name: "dependencies"
-      type: "string"
-      label: "依存関係"
-      description: "他の要件との依存関係"
+  description: マインドマップツールとMCPエージェント統合プロジェクトの包括的要件定義
 tags:
-  - name: "ui-frontend"
+  - name: ui-frontend
     color: "#2196F3"
-    description: "UI・フロントエンド関連"
-  - name: "mcp-integration"
+    description: UI・フロントエンド関連
+  - name: mcp-integration
     color: "#4CAF50"
-    description: "MCP統合関連"
-  - name: "ai-features"
+    description: MCP統合関連
+  - name: ai-features
     color: "#FF9800"
-    description: "AI機能関連"
-  - name: "collaboration"
+    description: AI機能関連
+  - name: collaboration
     color: "#9C27B0"
-    description: "コラボレーション機能"
-  - name: "performance"
+    description: コラボレーション機能
+  - name: performance
     color: "#F44336"
-    description: "パフォーマンス関連"
-  - name: "security"
+    description: パフォーマンス関連
+  - name: security
     color: "#795548"
-    description: "セキュリティ関連"
-  - name: "usability"
+    description: セキュリティ関連
+  - name: usability
     color: "#607D8B"
-    description: "使いやすさ関連"
+    description: 使いやすさ関連
 root:
-  id: "root"
-  title: "req-mindmap プロジェクト要件定義"
-  description: "マインドマップベースの要件定義ツールとMCPエージェント統合システム"
+  id: root
+  title: req-mindmap プロジェクト要件定義
+  description: マインドマップベースの要件定義ツールとMCPエージェント統合システム
   tags: []
   customFields:
-    category: "functional"
+    category: functional
   children:
-    - id: "developer-needs"
-      title: "開発者の要求"
-      description: "開発者が効率的に作業するための要求事項"
+    - id: developer-needs
+      title: 開発者の要求
+      description: 開発者が効率的に作業するための要求事項
       tags:
-        - "ui-frontend"
+        - ui-frontend
       customFields:
-        category: "functional"
-        userRole: "開発者"
-        businessValue: "開発効率の向上とワークフロー統合"
+        category: functional
+        userRole: 開発者
+        businessValue: 開発効率の向上とワークフロー統合
       children:
-        - id: "version-control-need"
-          title: "バージョン管理しやすい形式で管理したい"
-          description: "テキストベースでGitによるバージョン管理が可能な形式で要件を管理したい"
+        - id: version-control-need
+          title: バージョン管理しやすい形式で管理したい
+          description: テキストベースでGitによるバージョン管理が可能な形式で要件を管理したい
           tags:
-            - "ui-frontend"
+            - ui-frontend
           customFields:
-            category: "functional"
-            userRole: "開発者"
-            businessValue: "変更履歴の追跡と協業の促進"
-            complexity: "medium"
+            category: functional
+            userRole: 開発者
+            businessValue: 変更履歴の追跡と協業の促進
+            complexity: medium
           children:
-            - id: "file-format-support"
-              title: "ファイル形式サポート機能"
-              description: "JSON/YAML形式でのマインドマップデータ管理機能"
+            - id: file-format-support
+              title: ファイル形式サポート機能
+              description: JSON/YAML形式でのマインドマップデータ管理機能
               tags:
-                - "ui-frontend"
+                - ui-frontend
               customFields:
-                category: "functional"
-                complexity: "medium"
-                dependencies: "パーサーライブラリ"
+                category: functional
+                complexity: medium
+                dependencies: パーサーライブラリ
               children:
-                - id: "json-support"
-                  title: "JSON形式サポート"
-                  description: "JSON形式でマインドマップデータを読み書きできる"
+                - id: json-support
+                  title: JSON形式サポート
+                  description: JSON形式でマインドマップデータを読み書きできる
                   customFields:
-                    category: "functional"
-                  priority: "high"
-                  status: "draft"
-                - id: "yaml-support"
-                  title: "YAML形式サポート"
-                  description: "YAML形式でマインドマップデータを読み書きできる"
+                    category: functional
+                  priority: high
+                  status: draft
+                - id: yaml-support
+                  title: YAML形式サポート
+                  description: YAML形式でマインドマップデータを読み書きできる
                   customFields:
-                    category: "functional"
-                  priority: "high"
-                  status: "draft"
-                - id: "format-validation"
-                  title: "形式検証機能"
-                  description: "ファイル形式が不正な場合の適切なエラー表示"
+                    category: functional
+                  priority: high
+                  status: draft
+                - id: format-validation
+                  title: 形式検証機能
+                  description: ファイル形式が不正な場合の適切なエラー表示
                   customFields:
-                    category: "quality"
-                  priority: "medium"
-                  status: "draft"
-                - id: "format-conversion"
-                  title: "JSON/YAML相互変換機能"
-                  description: "JSON形式とYAML形式の相互変換とモード選択機能"
+                    category: quality
+                  priority: medium
+                  status: draft
+                - id: format-conversion
+                  title: JSON/YAML相互変換機能
+                  description: JSON形式とYAML形式の相互変換とモード選択機能
                   tags:
-                    - "ui-frontend"
+                    - ui-frontend
                   customFields:
-                    category: "functional"
-                    complexity: "medium"
-                    dependencies: "js-yamlライブラリ"
+                    category: functional
+                    complexity: medium
+                    dependencies: js-yamlライブラリ
                   children:
-                    - id: "format-mode-selection"
-                      title: "フォーマットモード選択"
-                      description: "ユーザーがJSON/YAMLモードを選択できる"
+                    - id: format-mode-selection
+                      title: フォーマットモード選択
+                      description: ユーザーがJSON/YAMLモードを選択できる
                       customFields:
-                        category: "functional"
-                        complexity: "low"
-                      priority: "high"
-                      status: "draft"
-                    - id: "auto-conversion-on-load"
-                      title: "読み込み時自動変換"
-                      description: "ファイル読み込み時に選択されたモードに自動変換する"
+                        category: functional
+                        complexity: low
+                      priority: high
+                      status: draft
+                    - id: auto-conversion-on-load
+                      title: 読み込み時自動変換
+                      description: ファイル読み込み時に選択されたモードに自動変換する
                       customFields:
-                        category: "functional"
-                        complexity: "medium"
-                      priority: "high"
-                      status: "draft"
-                    - id: "conversion-validation"
-                      title: "変換時検証機能"
-                      description: "変換処理の成功/失敗を適切に表示し、エラー時の詳細情報を提供"
+                        category: functional
+                        complexity: medium
+                      priority: high
+                      status: draft
+                    - id: conversion-validation
+                      title: 変換時検証機能
+                      description: 変換処理の成功/失敗を適切に表示し、エラー時の詳細情報を提供
                       customFields:
-                        category: "quality"
-                        complexity: "low"
-                      priority: "medium"
-                      status: "draft"
-                  priority: "high"
-                  status: "draft"
-              priority: "high"
-              status: "draft"
-          priority: "high"
-          status: "draft"
-        - id: "workflow-integration-need"
-          title: "既存の開発ワークフローに統合したい"
-          description: "VSCodeなどの既存ツールとシームレスに連携したい"
+                        category: quality
+                        complexity: low
+                      priority: medium
+                      status: draft
+                  priority: high
+                  status: draft
+              priority: high
+              status: draft
+          priority: high
+          status: draft
+        - id: workflow-integration-need
+          title: 既存の開発ワークフローに統合したい
+          description: VSCodeなどの既存ツールとシームレスに連携したい
           tags:
-            - "ui-frontend"
+            - ui-frontend
           customFields:
-            category: "functional"
-            userRole: "開発者"
-            businessValue: "既存環境への自然な統合"
-            complexity: "high"
+            category: functional
+            userRole: 開発者
+            businessValue: 既存環境への自然な統合
+            complexity: high
           children:
-            - id: "vscode-extension-prep"
-              title: "VSCode拡張対応準備"
-              description: "将来的なVSCode拡張としての提供に向けたアーキテクチャ設計"
+            - id: vscode-extension-prep
+              title: VSCode拡張対応準備
+              description: 将来的なVSCode拡張としての提供に向けたアーキテクチャ設計
               tags:
-                - "ui-frontend"
+                - ui-frontend
               customFields:
-                category: "functional"
-                complexity: "high"
-                dependencies: "モジュラー設計, WebView API"
-              priority: "medium"
-              status: "draft"
-          priority: "medium"
-          status: "draft"
-        - id: "efficient-editing-need"
-          title: "効率的に編集作業をしたい"
-          description: "リアルタイムフィードバックと生産性向上機能を活用したい"
+                category: functional
+                complexity: high
+                dependencies: モジュラー設計, WebView API
+              priority: medium
+              status: draft
+          priority: medium
+          status: draft
+        - id: efficient-editing-need
+          title: 効率的に編集作業をしたい
+          description: リアルタイムフィードバックと生産性向上機能を活用したい
           tags:
-            - "ui-frontend"
-            - "usability"
+            - ui-frontend
+            - usability
           customFields:
-            category: "functional"
-            userRole: "開発者"
-            businessValue: "作業効率の大幅改善"
-            complexity: "medium"
+            category: functional
+            userRole: 開発者
+            businessValue: 作業効率の大幅改善
+            complexity: medium
           children:
-            - id: "realtime-editing"
-              title: "リアルタイム編集・表示"
-              description: "左側エディタの変更が右側マインドマップに即座に反映される"
+            - id: realtime-editing
+              title: リアルタイム編集・表示
+              description: 左側エディタの変更が右側マインドマップに即座に反映される
               tags:
-                - "ui-frontend"
-                - "performance"
+                - ui-frontend
+                - performance
               customFields:
-                category: "functional"
-                complexity: "medium"
-              priority: "high"
-              status: "draft"
-            - id: "shortcut-customization"
-              title: "ショートカットキーカスタマイズ"
-              description: "ユーザー定義のキーボードショートカット設定機能"
+                category: functional
+                complexity: medium
+              priority: high
+              status: draft
+            - id: shortcut-customization
+              title: ショートカットキーカスタマイズ
+              description: ユーザー定義のキーボードショートカット設定機能
               tags:
-                - "ui-frontend"
-                - "usability"
+                - ui-frontend
+                - usability
               customFields:
-                category: "functional"
-                complexity: "low"
-              priority: "medium"
-              status: "draft"
-            - id: "auto-save-versioning"
-              title: "自動保存・バージョン管理"
-              description: "定期的な自動保存と編集履歴の管理機能"
+                category: functional
+                complexity: low
+              priority: medium
+              status: draft
+            - id: auto-save-versioning
+              title: 自動保存・バージョン管理
+              description: 定期的な自動保存と編集履歴の管理機能
               tags:
-                - "ui-frontend"
+                - ui-frontend
               customFields:
-                category: "functional"
-                complexity: "medium"
-              priority: "high"
-              status: "draft"
-          priority: "high"
-          status: "draft"
-        - id: "secure-environment-need"
-          title: "セキュアな環境で作業したい"
-          description: "インターネット接続なしでも動作する環境で機密情報を扱いたい"
+                category: functional
+                complexity: medium
+              priority: high
+              status: draft
+          priority: high
+          status: draft
+        - id: secure-environment-need
+          title: セキュアな環境で作業したい
+          description: インターネット接続なしでも動作する環境で機密情報を扱いたい
           tags:
-            - "security"
+            - security
           customFields:
-            category: "constraint"
-            userRole: "開発者"
-            businessValue: "セキュリティ要件の遵守"
-            complexity: "low"
+            category: constraint
+            userRole: 開発者
+            businessValue: セキュリティ要件の遵守
+            complexity: low
           children:
-            - id: "local-execution"
-              title: "ローカル環境実行"
-              description: "インターネット接続なしで完全にローカルで動作する"
+            - id: local-execution
+              title: ローカル環境実行
+              description: インターネット接続なしで完全にローカルで動作する
               tags:
-                - "security"
+                - security
               customFields:
-                category: "constraint"
-                complexity: "low"
-              priority: "medium"
-              status: "draft"
-          priority: "medium"
-          status: "draft"
-      priority: "high"
-      status: "draft"
-    - id: "analyst-needs"
-      title: "要件定義者の要求"
-      description: "要件定義作業を効率化し質を向上させるための要求事項"
+                category: constraint
+                complexity: low
+              priority: medium
+              status: draft
+          priority: medium
+          status: draft
+      priority: high
+      status: draft
+    - id: analyst-needs
+      title: 要件定義者の要求
+      description: 要件定義作業を効率化し質を向上させるための要求事項
       tags:
-        - "ui-frontend"
-        - "ai-features"
+        - ui-frontend
+        - ai-features
       customFields:
-        category: "functional"
-        userRole: "要件定義者"
-        businessValue: "要件定義品質の向上と作業効率化"
+        category: functional
+        userRole: 要件定義者
+        businessValue: 要件定義品質の向上と作業効率化
       children:
-        - id: "visual-confirmation-need"
-          title: "思考を整理しながら視覚的に確認したい"
-          description: "テキスト編集しながら構造を視覚的に把握したい"
+        - id: visual-confirmation-need
+          title: 思考を整理しながら視覚的に確認したい
+          description: テキスト編集しながら構造を視覚的に把握したい
           tags:
-            - "ui-frontend"
-            - "usability"
+            - ui-frontend
+            - usability
           customFields:
-            category: "functional"
-            userRole: "要件定義者"
-            businessValue: "思考プロセスの可視化と理解促進"
-            complexity: "medium"
+            category: functional
+            userRole: 要件定義者
+            businessValue: 思考プロセスの可視化と理解促進
+            complexity: medium
           children:
-            - id: "mindmap-visualization"
-              title: "マインドマップ視覚化"
-              description: "階層構造を持つ要件の視覚的表示機能"
+            - id: mindmap-visualization
+              title: マインドマップ視覚化
+              description: 階層構造を持つ要件の視覚的表示機能
               tags:
-                - "ui-frontend"
+                - ui-frontend
               customFields:
-                category: "functional"
-                complexity: "medium"
-                dependencies: "D3.js, SVG描画"
-              priority: "high"
-              status: "draft"
-            - id: "node-basic-info-display"
-              title: "ノード基本情報簡易表示"
-              description: "priorityやstatusなどの基本情報をノードに最低限の表現で表示する機能"
+                category: functional
+                complexity: medium
+                dependencies: D3.js, SVG描画
+              priority: high
+              status: draft
+            - id: node-basic-info-display
+              title: ノード基本情報簡易表示
+              description: priorityやstatusなどの基本情報をノードに最低限の表現で表示する機能
               tags:
-                - "ui-frontend"
-                - "usability"
+                - ui-frontend
+                - usability
               customFields:
-                category: "functional"
-                complexity: "medium"
-                dependencies: "CSS, アイコンライブラリ"
+                category: functional
+                complexity: medium
+                dependencies: CSS, アイコンライブラリ
               children:
-                - id: "priority-visual-indicator"
-                  title: "優先度視覚インジケーター"
-                  description: "ノードの角や境界線に色を付けて優先度を表示"
+                - id: priority-visual-indicator
+                  title: 優先度視覚インジケーター
+                  description: ノードの角や境界線に色を付けて優先度を表示
                   customFields:
-                    category: "functional"
-                    complexity: "low"
-                  priority: "high"
-                  status: "draft"
-                - id: "status-visual-indicator"
-                  title: "ステータス視覚インジケーター"
-                  description: "ノードにアイコンや背景色でステータスを表示"
+                    category: functional
+                    complexity: low
+                  priority: high
+                  status: draft
+                - id: status-visual-indicator
+                  title: ステータス視覚インジケーター
+                  description: ノードにアイコンや背景色でステータスを表示
                   customFields:
-                    category: "functional"
-                    complexity: "low"
-                  priority: "high"
-                  status: "draft"
-                - id: "minimal-text-overlay"
-                  title: "最小限テキストオーバーレイ"
-                  description: "ホバーまたはクリック時に基本情報を小さくオーバーレイ表示"
+                    category: functional
+                    complexity: low
+                  priority: high
+                  status: draft
+                - id: minimal-text-overlay
+                  title: 最小限テキストオーバーレイ
+                  description: ホバーまたはクリック時に基本情報を小さくオーバーレイ表示
                   customFields:
-                    category: "functional"
-                    complexity: "medium"
-                  priority: "medium"
-                  status: "draft"
-                - id: "color-legend"
-                  title: "カラー凡例機能"
-                  description: "色やアイコンの意味を示す凡例をUI上に表示"
+                    category: functional
+                    complexity: medium
+                  priority: medium
+                  status: draft
+                - id: color-legend
+                  title: カラー凡例機能
+                  description: 色やアイコンの意味を示す凡例をUI上に表示
                   customFields:
-                    category: "usability"
-                    complexity: "low"
-                  priority: "medium"
-                  status: "draft"
-              priority: "high"
-              status: "draft"
-          priority: "high"
-          status: "draft"
-        - id: "project-efficiency-need"
-          title: "類似プロジェクトで効率化したい"
-          description: "過去の要件定義パターンを再利用して効率化したい"
+                    category: usability
+                    complexity: low
+                  priority: medium
+                  status: draft
+              priority: high
+              status: draft
+          priority: high
+          status: draft
+        - id: project-efficiency-need
+          title: 類似プロジェクトで効率化したい
+          description: 過去の要件定義パターンを再利用して効率化したい
           tags:
-            - "ui-frontend"
+            - ui-frontend
           customFields:
-            category: "functional"
-            userRole: "要件定義者"
-            businessValue: "要件定義作業の標準化と高速化"
-            complexity: "medium"
+            category: functional
+            userRole: 要件定義者
+            businessValue: 要件定義作業の標準化と高速化
+            complexity: medium
           children:
-            - id: "template-functionality"
-              title: "テンプレート機能"
-              description: "要件定義パターンのテンプレート化と再利用機能"
+            - id: template-functionality
+              title: テンプレート機能
+              description: 要件定義パターンのテンプレート化と再利用機能
               tags:
-                - "ui-frontend"
+                - ui-frontend
               customFields:
-                category: "functional"
-                complexity: "medium"
-              priority: "medium"
-              status: "draft"
-          priority: "medium"
-          status: "draft"
-        - id: "ai-assistance-need"
-          title: "AIの支援を受けて質を向上させたい"
-          description: "AI技術を活用して要件定義の品質と完成度を向上させたい"
+                category: functional
+                complexity: medium
+              priority: medium
+              status: draft
+          priority: medium
+          status: draft
+        - id: ai-assistance-need
+          title: AIの支援を受けて質を向上させたい
+          description: AI技術を活用して要件定義の品質と完成度を向上させたい
           tags:
-            - "ai-features"
+            - ai-features
           customFields:
-            category: "functional"
-            userRole: "要件定義者"
-            businessValue: "AI活用による品質向上と見落とし防止"
-            complexity: "high"
+            category: functional
+            userRole: 要件定義者
+            businessValue: AI活用による品質向上と見落とし防止
+            complexity: high
           children:
-            - id: "ai-assistant-integration"
-              title: "AIアシスタント統合"
-              description: "AI支援による要件候補提案と改善提案機能"
+            - id: ai-assistant-integration
+              title: AIアシスタント統合
+              description: AI支援による要件候補提案と改善提案機能
               tags:
-                - "ai-features"
+                - ai-features
               customFields:
-                category: "functional"
-                complexity: "high"
-                dependencies: "AI API, プロンプト設計"
-              priority: "high"
-              status: "draft"
-            - id: "consistency-check"
-              title: "要件一貫性チェック"
-              description: "AI による要件間の矛盾や不整合の自動検出"
+                category: functional
+                complexity: high
+                dependencies: AI API, プロンプト設計
+              priority: high
+              status: draft
+            - id: consistency-check
+              title: 要件一貫性チェック
+              description: AI による要件間の矛盾や不整合の自動検出
               tags:
-                - "ai-features"
-                - "mcp-integration"
+                - ai-features
+                - mcp-integration
               customFields:
-                category: "quality"
-                complexity: "high"
-              priority: "high"
-              status: "draft"
-            - id: "priority-suggestion"
-              title: "優先度自動提案"
-              description: "依存関係とビジネス価値に基づく優先度の自動提案"
+                category: quality
+                complexity: high
+              priority: high
+              status: draft
+            - id: priority-suggestion
+              title: 優先度自動提案
+              description: 依存関係とビジネス価値に基づく優先度の自動提案
               tags:
-                - "ai-features"
-                - "mcp-integration"
+                - ai-features
+                - mcp-integration
               customFields:
-                category: "functional"
-                complexity: "medium"
-              priority: "medium"
-              status: "draft"
-            - id: "test-case-generation"
-              title: "テストケース自動生成"
-              description: "要件から対応するテストケースの自動生成"
+                category: functional
+                complexity: medium
+              priority: medium
+              status: draft
+            - id: test-case-generation
+              title: テストケース自動生成
+              description: 要件から対応するテストケースの自動生成
               tags:
-                - "ai-features"
-                - "mcp-integration"
+                - ai-features
+                - mcp-integration
               customFields:
-                category: "functional"
-                complexity: "high"
-              priority: "medium"
-              status: "draft"
-          priority: "high"
-          status: "draft"
-        - id: "rich-expression-need"
-          title: "豊かな表現で要件を記述したい"
-          description: "マークダウンやリッチテキストで詳細で分かりやすい要件を記述したい"
+                category: functional
+                complexity: high
+              priority: medium
+              status: draft
+          priority: high
+          status: draft
+        - id: rich-expression-need
+          title: 豊かな表現で要件を記述したい
+          description: マークダウンやリッチテキストで詳細で分かりやすい要件を記述したい
           tags:
-            - "ui-frontend"
+            - ui-frontend
           customFields:
-            category: "functional"
-            userRole: "要件定義者"
-            businessValue: "要件表現力の向上と可読性改善"
-            complexity: "medium"
+            category: functional
+            userRole: 要件定義者
+            businessValue: 要件表現力の向上と可読性改善
+            complexity: medium
           children:
-            - id: "rich-text-editing"
-              title: "リッチテキスト編集"
-              description: "マークダウン対応のリッチテキスト編集機能"
+            - id: rich-text-editing
+              title: リッチテキスト編集
+              description: マークダウン対応のリッチテキスト編集機能
               tags:
-                - "ui-frontend"
+                - ui-frontend
               customFields:
-                category: "functional"
-                complexity: "medium"
-              priority: "medium"
-              status: "draft"
-          priority: "medium"
-          status: "draft"
-        - id: "categorization-need"
-          title: "要件を分類・整理したい"
-          description: "タグやラベルを使って要件を分類し、特定の観点から整理したい"
+                category: functional
+                complexity: medium
+              priority: medium
+              status: draft
+          priority: medium
+          status: draft
+        - id: categorization-need
+          title: 要件を分類・整理したい
+          description: タグやラベルを使って要件を分類し、特定の観点から整理したい
           tags:
-            - "ui-frontend"
-            - "usability"
+            - ui-frontend
+            - usability
           customFields:
-            category: "functional"
-            userRole: "要件定義者"
-            businessValue: "要件の構造化と検索性向上"
-            complexity: "medium"
+            category: functional
+            userRole: 要件定義者
+            businessValue: 要件の構造化と検索性向上
+            complexity: medium
           children:
-            - id: "tag-label-management"
-              title: "タグ・ラベル管理"
-              description: "要件のタグ付け、分類、フィルタリング機能"
+            - id: tag-label-management
+              title: タグ・ラベル管理
+              description: 要件のタグ付け、分類、フィルタリング機能
               tags:
-                - "ui-frontend"
+                - ui-frontend
               customFields:
-                category: "functional"
-                complexity: "medium"
-              priority: "medium"
-              status: "draft"
-          priority: "medium"
-          status: "draft"
-        - id: "impact-understanding-need"
-          title: "変更の影響を把握したい"
-          description: "要件変更時の他要件への影響範囲を事前に把握したい"
+                category: functional
+                complexity: medium
+              priority: medium
+              status: draft
+          priority: medium
+          status: draft
+        - id: impact-understanding-need
+          title: 変更の影響を把握したい
+          description: 要件変更時の他要件への影響範囲を事前に把握したい
           tags:
-            - "ai-features"
-            - "mcp-integration"
+            - ai-features
+            - mcp-integration
           customFields:
-            category: "functional"
-            userRole: "要件定義者"
-            businessValue: "変更リスクの最小化と影響予測"
-            complexity: "high"
+            category: functional
+            userRole: 要件定義者
+            businessValue: 変更リスクの最小化と影響予測
+            complexity: high
           children:
-            - id: "impact-analysis"
-              title: "影響範囲分析"
-              description: "要件変更時の関連要件への影響範囲の自動分析"
+            - id: impact-analysis
+              title: 影響範囲分析
+              description: 要件変更時の関連要件への影響範囲の自動分析
               tags:
-                - "ai-features"
-                - "mcp-integration"
+                - ai-features
+                - mcp-integration
               customFields:
-                category: "functional"
-                complexity: "high"
-              priority: "high"
-              status: "draft"
-          priority: "high"
-          status: "draft"
-      priority: "high"
-      status: "draft"
-    - id: "manager-needs"
-      title: "プロジェクトマネージャーの要求"
-      description: "プロジェクト全体の管理と統制のための要求事項"
+                category: functional
+                complexity: high
+              priority: high
+              status: draft
+          priority: high
+          status: draft
+      priority: high
+      status: draft
+    - id: manager-needs
+      title: プロジェクトマネージャーの要求
+      description: プロジェクト全体の管理と統制のための要求事項
       tags:
-        - "ui-frontend"
-        - "collaboration"
+        - ui-frontend
+        - collaboration
       customFields:
-        category: "functional"
-        userRole: "プロジェクトマネージャー"
-        businessValue: "プロジェクト可視性と統制力の向上"
+        category: functional
+        userRole: プロジェクトマネージャー
+        businessValue: プロジェクト可視性と統制力の向上
       children:
-        - id: "overall-understanding-need"
-          title: "全体像と関係性を把握したい"
-          description: "プロジェクト全体の構造と要件間の関係性を俯瞰したい"
+        - id: overall-understanding-need
+          title: 全体像と関係性を把握したい
+          description: プロジェクト全体の構造と要件間の関係性を俯瞰したい
           tags:
-            - "ui-frontend"
-            - "ai-features"
+            - ui-frontend
+            - ai-features
           customFields:
-            category: "functional"
-            userRole: "プロジェクトマネージャー"
-            businessValue: "プロジェクト全体の可視化と理解促進"
-            complexity: "medium"
+            category: functional
+            userRole: プロジェクトマネージャー
+            businessValue: プロジェクト全体の可視化と理解促進
+            complexity: medium
           children:
-            - id: "mindmap-integration-analysis"
-              title: "マインドマップ統合分析"
-              description: "複数マインドマップの統合分析と関連性可視化"
+            - id: mindmap-integration-analysis
+              title: マインドマップ統合分析
+              description: 複数マインドマップの統合分析と関連性可視化
               tags:
-                - "ai-features"
-                - "mcp-integration"
+                - ai-features
+                - mcp-integration
               customFields:
-                category: "functional"
-                complexity: "high"
-              priority: "medium"
-              status: "draft"
-          priority: "high"
-          status: "draft"
-        - id: "progress-management-need"
-          title: "進捗状況を管理したい"
-          description: "各要件の実装進捗と全体的な完成度を追跡したい"
+                category: functional
+                complexity: high
+              priority: medium
+              status: draft
+          priority: high
+          status: draft
+        - id: progress-management-need
+          title: 進捗状況を管理したい222
+          description: 各要件の実装進捗と全体的な完成度を追跡したい
           tags:
-            - "ui-frontend"
+            - ui-frontend
           customFields:
-            category: "functional"
-            userRole: "プロジェクトマネージャー"
-            businessValue: "プロジェクト進行状況の透明性確保"
-            complexity: "medium"
+            category: functional
+            userRole: プロジェクトマネージャー
+            businessValue: プロジェクト進行状況の透明性確保
+            complexity: medium
           children:
-            - id: "progress-tracking"
-              title: "進捗管理機能"
-              description: "各要件の進捗率設定と全体進捗の可視化"
+            - id: progress-tracking
+              title: 進捗管理機能
+              description: 各要件の進捗率設定と全体進捗の可視化
               tags:
-                - "ui-frontend"
+                - ui-frontend
               customFields:
-                category: "functional"
-                complexity: "medium"
-              priority: "high"
-              status: "draft"
-            - id: "progress-reporting"
-              title: "進捗レポート生成"
-              description: "プロジェクト進捗の自動レポート生成機能"
+                category: functional
+                complexity: medium
+              priority: high
+              status: draft
+            - id: progress-reporting
+              title: 進捗レポート生成
+              description: プロジェクト進捗の自動レポート生成機能
               tags:
-                - "ai-features"
-                - "mcp-integration"
+                - ai-features
+                - mcp-integration
               customFields:
-                category: "functional"
-                complexity: "medium"
-              priority: "medium"
-              status: "draft"
-          priority: "high"
-          status: "draft"
-        - id: "stakeholder-communication-need"
-          title: "ステークホルダーとコミュニケーションしたい"
-          description: "要件定義結果を様々な形式で共有し、外部ツールと連携したい"
+                category: functional
+                complexity: medium
+              priority: medium
+              status: draft
+          priority: high
+          status: draft
+          updatedAt: "2025-08-15T05:46:34.932Z"
+        - id: stakeholder-communication-need
+          title: ステークホルダーとコミュニケーションしたい
+          description: 要件定義結果を様々な形式で共有し、外部ツールと連携したい
           tags:
-            - "ui-frontend"
-            - "mcp-integration"
+            - ui-frontend
+            - mcp-integration
           customFields:
-            category: "functional"
-            userRole: "プロジェクトマネージャー"
-            businessValue: "ステークホルダーとの円滑な情報共有"
-            complexity: "medium"
+            category: functional
+            userRole: プロジェクトマネージャー
+            businessValue: ステークホルダーとの円滑な情報共有
+            complexity: medium
           children:
-            - id: "advanced-export"
-              title: "高度なエクスポート機能"
-              description: "PDF、PNG、Mermaid、Excel等の多様な形式での出力"
+            - id: advanced-export
+              title: 高度なエクスポート機能
+              description: PDF、PNG、Mermaid、Excel等の多様な形式での出力
               tags:
-                - "ui-frontend"
+                - ui-frontend
               customFields:
-                category: "functional"
-                complexity: "medium"
-              priority: "high"
-              status: "draft"
-            - id: "stakeholder-analysis"
-              title: "ステークホルダー分析"
-              description: "要件に関わるステークホルダーの自動識別と影響度分析"
+                category: functional
+                complexity: medium
+              priority: high
+              status: draft
+            - id: stakeholder-analysis
+              title: ステークホルダー分析
+              description: 要件に関わるステークホルダーの自動識別と影響度分析
               tags:
-                - "ai-features"
-                - "mcp-integration"
+                - ai-features
+                - mcp-integration
               customFields:
-                category: "functional"
-                complexity: "high"
-              priority: "medium"
-              status: "draft"
-            - id: "external-tool-integration"
-              title: "外部ツール連携"
-              description: "Jira、Trello、GitHub Issues等との連携機能"
+                category: functional
+                complexity: high
+              priority: medium
+              status: draft
+            - id: external-tool-integration
+              title: 外部ツール連携
+              description: Jira、Trello、GitHub Issues等との連携機能
               tags:
-                - "mcp-integration"
+                - mcp-integration
               customFields:
-                category: "functional"
-                complexity: "high"
-              priority: "medium"
-              status: "draft"
-          priority: "high"
-          status: "draft"
-        - id: "data-flexibility-need"
-          title: "データ構造を柔軟に扱いたい"
-          description: "プロジェクトの特性に応じてカスタマイズ可能なデータ構造を使いたい"
+                category: functional
+                complexity: high
+              priority: medium
+              status: draft
+          priority: high
+          status: draft
+        - id: data-flexibility-need
+          title: データ構造を柔軟に扱いたい
+          description: プロジェクトの特性に応じてカスタマイズ可能なデータ構造を使いたい
           tags:
-            - "ui-frontend"
+            - ui-frontend
           customFields:
-            category: "functional"
-            userRole: "プロジェクトマネージャー"
-            businessValue: "プロジェクト固有要件への対応力"
-            complexity: "high"
+            category: functional
+            userRole: プロジェクトマネージャー
+            businessValue: プロジェクト固有要件への対応力
+            complexity: high
           children:
-            - id: "data-structure-flexibility"
-              title: "データ構造の柔軟性"
-              description: "カスタムフィールドとメタデータによる拡張可能なデータ構造"
+            - id: data-structure-flexibility
+              title: データ構造の柔軟性
+              description: カスタムフィールドとメタデータによる拡張可能なデータ構造
               tags:
-                - "ui-frontend"
+                - ui-frontend
               customFields:
-                category: "functional"
-                complexity: "high"
-              priority: "medium"
-              status: "draft"
-          priority: "medium"
-          status: "draft"
-      priority: "high"
-      status: "draft"
-    - id: "team-needs"
-      title: "チームメンバーの要求"
-      description: "チーム作業とコラボレーションのための要求事項"
+                category: functional
+                complexity: high
+              priority: medium
+              status: draft
+          priority: medium
+          status: draft
+      priority: high
+      status: draft
+    - id: team-needs
+      title: チームメンバーの要求
+      description: チーム作業とコラボレーションのための要求事項
       tags:
-        - "collaboration"
-        - "usability"
+        - collaboration
+        - usability
       customFields:
-        category: "functional"
-        userRole: "チームメンバー"
-        businessValue: "チーム協業効率の向上"
+        category: functional
+        userRole: チームメンバー
+        businessValue: チーム協業効率の向上
       children:
-        - id: "collaborative-editing-need"
-          title: "複数人で同時に編集したい"
-          description: "チームメンバーがリアルタイムで同じマインドマップを編集したい"
+        - id: collaborative-editing-need
+          title: 複数人で同時に編集したい
+          description: チームメンバーがリアルタイムで同じマインドマップを編集したい
           tags:
-            - "collaboration"
+            - collaboration
           customFields:
-            category: "functional"
-            userRole: "チームメンバー"
-            businessValue: "チーム作業の効率化と同期"
-            complexity: "high"
+            category: functional
+            userRole: チームメンバー
+            businessValue: チーム作業の効率化と同期
+            complexity: high
           children:
-            - id: "collaboration-features"
-              title: "コラボレーション機能"
-              description: "リアルタイム同時編集とコメント機能"
+            - id: collaboration-features
+              title: コラボレーション機能
+              description: リアルタイム同時編集とコメント機能
               tags:
-                - "collaboration"
+                - collaboration
               customFields:
-                category: "functional"
-                complexity: "high"
-                dependencies: "WebSocket, 競合解決アルゴリズム"
-              priority: "medium"
-              status: "draft"
-          priority: "medium"
-          status: "draft"
-        - id: "comfortable-work-need"
-          title: "快適に長時間作業したい"
-          description: "目に優しく、個人の好みに合わせた作業環境で長時間作業したい"
+                category: functional
+                complexity: high
+                dependencies: WebSocket, 競合解決アルゴリズム
+              priority: medium
+              status: draft
+          priority: medium
+          status: draft
+        - id: comfortable-work-need
+          title: 快適に長時間作業したい
+          description: 目に優しく、個人の好みに合わせた作業環境で長時間作業したい
           tags:
-            - "usability"
-            - "ui-frontend"
+            - usability
+            - ui-frontend
           customFields:
-            category: "non-functional"
-            userRole: "チームメンバー"
-            businessValue: "作業快適性と生産性の向上"
-            complexity: "low"
+            category: non-functional
+            userRole: チームメンバー
+            businessValue: 作業快適性と生産性の向上
+            complexity: low
           children:
-            - id: "ui-theme-customization"
-              title: "UIテーマ・カスタマイズ"
-              description: "ダークモード、カラーテーマ、フォント設定等のカスタマイズ"
+            - id: ui-theme-customization
+              title: UIテーマ・カスタマイズ
+              description: ダークモード、カラーテーマ、フォント設定等のカスタマイズ
               tags:
-                - "ui-frontend"
-                - "usability"
+                - ui-frontend
+                - usability
               customFields:
-                category: "non-functional"
-                complexity: "low"
-              priority: "medium"
-              status: "draft"
-          priority: "medium"
-          status: "draft"
-        - id: "large-scale-operation-need"
-          title: "大規模なマインドマップでもスムーズに操作したい"
-          description: "多数のノードがあっても快適に閲覧・編集作業を行いたい"
+                category: non-functional
+                complexity: low
+              priority: medium
+              status: draft
+          priority: medium
+          status: draft
+        - id: large-scale-operation-need
+          title: 大規模なマインドマップでもスムーズに操作したい
+          description: 多数のノードがあっても快適に閲覧・編集作業を行いたい
           tags:
-            - "performance"
+            - performance
           customFields:
-            category: "non-functional"
-            userRole: "チームメンバー"
-            businessValue: "大規模プロジェクトでの使用可能性"
-            complexity: "medium"
+            category: non-functional
+            userRole: チームメンバー
+            businessValue: 大規模プロジェクトでの使用可能性
+            complexity: medium
           children:
-            - id: "performance-usability"
-              title: "パフォーマンスと使いやすさ"
-              description: "大規模データでの描画パフォーマンス最適化"
+            - id: performance-usability
+              title: パフォーマンスと使いやすさ
+              description: 大規模データでの描画パフォーマンス最適化
               tags:
-                - "performance"
-                - "ui-frontend"
+                - performance
+                - ui-frontend
               customFields:
-                category: "non-functional"
-                complexity: "medium"
-              priority: "high"
-              status: "draft"
-          priority: "high"
-          status: "draft"
-      priority: "medium"
-      status: "draft"
-    - id: "ai-developer-needs"
-      title: "AI開発者の要求"
-      description: "AIエージェントによるマインドマップ操作のための要求事項"
+                category: non-functional
+                complexity: medium
+              priority: high
+              status: draft
+          priority: high
+          status: draft
+      priority: medium
+      status: draft
+    - id: ai-developer-needs
+      title: AI開発者の要求
+      description: AIエージェントによるマインドマップ操作のための要求事項
       tags:
-        - "mcp-integration"
-        - "ai-features"
+        - mcp-integration
+        - ai-features
       customFields:
-        category: "functional"
-        userRole: "AI開発者"
-        businessValue: "AI統合による自動化と知能化"
+        category: functional
+        userRole: AI開発者
+        businessValue: AI統合による自動化と知能化
       children:
-        - id: "schema-understanding-need"
-          title: "AgentがMCPでマインドマップを理解したい"
-          description: "AIエージェントがマインドマップの構造とデータスキーマを理解して適切に操作したい"
+        - id: schema-understanding-need
+          title: AgentがMCPでマインドマップを理解したい
+          description: AIエージェントがマインドマップの構造とデータスキーマを理解して適切に操作したい
           tags:
-            - "mcp-integration"
+            - mcp-integration
           customFields:
-            category: "functional"
-            userRole: "AI開発者"
-            businessValue: "AI による適切なデータ操作の実現"
-            complexity: "medium"
+            category: functional
+            userRole: AI開発者
+            businessValue: AI による適切なデータ操作の実現
+            complexity: medium
           children:
-            - id: "schema-understanding"
-              title: "スキーマ理解機能"
-              description: "MCPを通じたマインドマップスキーマの提供と理解機能"
+            - id: schema-understanding
+              title: スキーマ理解機能
+              description: MCPを通じたマインドマップスキーマの提供と理解機能
               tags:
-                - "mcp-integration"
+                - mcp-integration
               customFields:
-                category: "functional"
-                complexity: "medium"
-              priority: "critical"
-              status: "draft"
-            - id: "data-reading"
-              title: "データ読み取り機能"
-              description: "MCPを通じたマインドマップデータの読み取り機能"
+                category: functional
+                complexity: medium
+              priority: critical
+              status: draft
+            - id: data-reading
+              title: データ読み取り機能
+              description: MCPを通じたマインドマップデータの読み取り機能
               tags:
-                - "mcp-integration"
+                - mcp-integration
               customFields:
-                category: "functional"
-                complexity: "low"
-              priority: "critical"
-              status: "draft"
-          priority: "critical"
-          status: "draft"
-        - id: "dynamic-update-need"
-          title: "Agentがマインドマップを動的に更新したい"
-          description: "AIエージェントがマインドマップを分析して必要に応じて構造や内容を更新したい"
+                category: functional
+                complexity: low
+              priority: critical
+              status: draft
+          priority: critical
+          status: draft
+        - id: dynamic-update-need
+          title: Agentがマインドマップを動的に更新したい
+          description: AIエージェントがマインドマップを分析して必要に応じて構造や内容を更新したい
           tags:
-            - "mcp-integration"
+            - mcp-integration
           customFields:
-            category: "functional"
-            userRole: "AI開発者"
-            businessValue: "AI による動的なコンテンツ改善"
-            complexity: "medium"
+            category: functional
+            userRole: AI開発者
+            businessValue: AI による動的なコンテンツ改善
+            complexity: medium
           children:
-            - id: "node-addition"
-              title: "ノード追加機能"
-              description: "MCPを通じた新規ノードの追加機能"
+            - id: node-addition
+              title: ノード追加機能
+              description: MCPを通じた新規ノードの追加機能
               tags:
-                - "mcp-integration"
+                - mcp-integration
               customFields:
-                category: "functional"
-                complexity: "medium"
-              priority: "high"
-              status: "draft"
-            - id: "node-update"
-              title: "ノード更新機能"
-              description: "MCPを通じた既存ノードの更新機能"
+                category: functional
+                complexity: medium
+              priority: high
+              status: draft
+            - id: node-update
+              title: ノード更新機能
+              description: MCPを通じた既存ノードの更新機能
               tags:
-                - "mcp-integration"
+                - mcp-integration
               customFields:
-                category: "functional"
-                complexity: "medium"
-              priority: "high"
-              status: "draft"
-            - id: "node-deletion"
-              title: "ノード削除機能"
-              description: "MCPを通じたノードの削除機能"
+                category: functional
+                complexity: medium
+              priority: high
+              status: draft
+            - id: node-deletion
+              title: ノード削除機能
+              description: MCPを通じたノードの削除機能
               tags:
-                - "mcp-integration"
+                - mcp-integration
               customFields:
-                category: "functional"
-                complexity: "medium"
-              priority: "medium"
-              status: "draft"
-          priority: "high"
-          status: "draft"
-        - id: "natural-language-operation-need"
-          title: "Agentが自然言語で操作したい"
-          description: "AIエージェントが自然言語の指示でマインドマップを操作したい"
+                category: functional
+                complexity: medium
+              priority: medium
+              status: draft
+          priority: high
+          status: draft
+        - id: natural-language-operation-need
+          title: Agentが自然言語で操作したい
+          description: AIエージェントが自然言語の指示でマインドマップを操作したい
           tags:
-            - "mcp-integration"
-            - "ai-features"
+            - mcp-integration
+            - ai-features
           customFields:
-            category: "functional"
-            userRole: "AI開発者"
-            businessValue: "直感的なAI操作インターフェース"
-            complexity: "high"
+            category: functional
+            userRole: AI開発者
+            businessValue: 直感的なAI操作インターフェース
+            complexity: high
           children:
-            - id: "natural-language-operation"
-              title: "自然言語操作"
-              description: "自然言語によるマインドマップ操作の解釈と実行"
+            - id: natural-language-operation
+              title: 自然言語操作
+              description: 自然言語によるマインドマップ操作の解釈と実行
               tags:
-                - "mcp-integration"
-                - "ai-features"
+                - mcp-integration
+                - ai-features
               customFields:
-                category: "functional"
-                complexity: "high"
-              priority: "medium"
-              status: "draft"
-          priority: "medium"
-          status: "draft"
-        - id: "efficient-processing-need"
-          title: "Agentが大きなマインドマップを効率的に扱いたい"
-          description: "大規模なマインドマップでもAIエージェントが効率的に検索・操作したい"
+                category: functional
+                complexity: high
+              priority: medium
+              status: draft
+          priority: medium
+          status: draft
+        - id: efficient-processing-need
+          title: Agentが大きなマインドマップを効率的に扱いたい
+          description: 大規模なマインドマップでもAIエージェントが効率的に検索・操作したい
           tags:
-            - "mcp-integration"
-            - "performance"
+            - mcp-integration
+            - performance
           customFields:
-            category: "non-functional"
-            userRole: "AI開発者"
-            businessValue: "大規模データでのAI性能確保"
-            complexity: "medium"
+            category: non-functional
+            userRole: AI開発者
+            businessValue: 大規模データでのAI性能確保
+            complexity: medium
           children:
-            - id: "search-filtering"
-              title: "検索・フィルタリング機能"
-              description: "MCPを通じた効率的な検索とフィルタリング機能"
+            - id: search-filtering
+              title: 検索・フィルタリング機能
+              description: MCPを通じた効率的な検索とフィルタリング機能
               tags:
-                - "mcp-integration"
+                - mcp-integration
               customFields:
-                category: "functional"
-                complexity: "medium"
-              priority: "high"
-              status: "draft"
-            - id: "mcp-performance-optimization"
-              title: "パフォーマンス最適化（MCP）"
-              description: "大規模データでのMCP操作の最適化"
+                category: functional
+                complexity: medium
+              priority: high
+              status: draft
+            - id: mcp-performance-optimization
+              title: パフォーマンス最適化（MCP）
+              description: 大規模データでのMCP操作の最適化
               tags:
-                - "mcp-integration"
-                - "performance"
+                - mcp-integration
+                - performance
               customFields:
-                category: "non-functional"
-                complexity: "medium"
-              priority: "medium"
-              status: "draft"
-          priority: "high"
-          status: "draft"
-        - id: "safe-operation-need"
-          title: "Agentが安全にマインドマップを操作したい"
-          description: "AIエージェントによる操作が安全で、必要時に復旧可能な状態を維持したい"
+                category: non-functional
+                complexity: medium
+              priority: medium
+              status: draft
+          priority: high
+          status: draft
+        - id: safe-operation-need
+          title: Agentが安全にマインドマップを操作したい
+          description: AIエージェントによる操作が安全で、必要時に復旧可能な状態を維持したい
           tags:
-            - "mcp-integration"
-            - "security"
+            - mcp-integration
+            - security
           customFields:
-            category: "non-functional"
-            userRole: "AI開発者"
-            businessValue: "AI操作の安全性と信頼性確保"
-            complexity: "medium"
+            category: non-functional
+            userRole: AI開発者
+            businessValue: AI操作の安全性と信頼性確保
+            complexity: medium
           children:
-            - id: "security-features"
-              title: "セキュリティ機能"
-              description: "MCPアクセス制御と操作監査機能"
+            - id: security-features
+              title: セキュリティ機能
+              description: MCPアクセス制御と操作監査機能
               tags:
-                - "mcp-integration"
-                - "security"
+                - mcp-integration
+                - security
               customFields:
-                category: "non-functional"
-                complexity: "medium"
-              priority: "high"
-              status: "draft"
-            - id: "backup-restore"
-              title: "バックアップ・復元機能"
-              description: "MCPを通じたバックアップ作成と復元機能"
+                category: non-functional
+                complexity: medium
+              priority: high
+              status: draft
+            - id: backup-restore
+              title: バックアップ・復元機能
+              description: MCPを通じたバックアップ作成と復元機能
               tags:
-                - "mcp-integration"
+                - mcp-integration
               customFields:
-                category: "functional"
-                complexity: "medium"
-              priority: "high"
-              status: "draft"
-          priority: "high"
-          status: "draft"
-        - id: "analysis-need"
-          title: "Agentがマインドマップを分析したい"
-          description: "AIエージェントがマインドマップの品質や構造を分析して改善提案したい"
+                category: functional
+                complexity: medium
+              priority: high
+              status: draft
+          priority: high
+          status: draft
+        - id: analysis-need
+          title: Agentがマインドマップを分析したい
+          description: AIエージェントがマインドマップの品質や構造を分析して改善提案したい
           tags:
-            - "mcp-integration"
-            - "ai-features"
+            - mcp-integration
+            - ai-features
           customFields:
-            category: "functional"
-            userRole: "AI開発者"
-            businessValue: "AI による品質分析と改善支援"
-            complexity: "high"
+            category: functional
+            userRole: AI開発者
+            businessValue: AI による品質分析と改善支援
+            complexity: high
           children:
-            - id: "structure-analysis"
-              title: "構造分析機能"
-              description: "マインドマップの構造分析と品質評価機能"
+            - id: structure-analysis
+              title: 構造分析機能
+              description: マインドマップの構造分析と品質評価機能
               tags:
-                - "mcp-integration"
-                - "ai-features"
+                - mcp-integration
+                - ai-features
               customFields:
-                category: "functional"
-                complexity: "high"
-              priority: "medium"
-              status: "draft"
-          priority: "medium"
-          status: "draft"
-        - id: "extensibility-need"
-          title: "Agentが将来的な機能追加に対応したい"
-          description: "新しいAI機能や分析手法を容易に追加できる拡張性を確保したい"
+                category: functional
+                complexity: high
+              priority: medium
+              status: draft
+          priority: medium
+          status: draft
+        - id: extensibility-need
+          title: Agentが将来的な機能追加に対応したい
+          description: 新しいAI機能や分析手法を容易に追加できる拡張性を確保したい
           tags:
-            - "mcp-integration"
+            - mcp-integration
           customFields:
-            category: "non-functional"
-            userRole: "AI開発者"
-            businessValue: "将来的な機能拡張への対応力"
-            complexity: "medium"
+            category: non-functional
+            userRole: AI開発者
+            businessValue: 将来的な機能拡張への対応力
+            complexity: medium
           children:
-            - id: "extension-features"
-              title: "拡張機能"
-              description: "プラグインアーキテクチャによる機能拡張対応"
+            - id: extension-features
+              title: 拡張機能
+              description: プラグインアーキテクチャによる機能拡張対応
               tags:
-                - "mcp-integration"
+                - mcp-integration
               customFields:
-                category: "non-functional"
-                complexity: "medium"
-              priority: "low"
-              status: "draft"
-          priority: "low"
-          status: "draft"
-        - id: "implementation-support-need"
-          title: "Agentが要件から実装を支援したい"
-          description: "要件定義からコードやテストケースの生成で実装を支援したい"
+                category: non-functional
+                complexity: medium
+              priority: low
+              status: draft
+          priority: low
+          status: draft
+        - id: implementation-support-need
+          title: Agentが要件から実装を支援したい
+          description: 要件定義からコードやテストケースの生成で実装を支援したい
           tags:
-            - "ai-features"
-            - "mcp-integration"
+            - ai-features
+            - mcp-integration
           customFields:
-            category: "functional"
-            userRole: "AI開発者"
-            businessValue: "要件から実装への橋渡し支援"
-            complexity: "very-high"
+            category: functional
+            userRole: AI開発者
+            businessValue: 要件から実装への橋渡し支援
+            complexity: very-high
           children:
-            - id: "code-generation"
-              title: "コード生成機能"
-              description: "要件からの実装コード自動生成機能"
+            - id: code-generation
+              title: コード生成機能
+              description: 要件からの実装コード自動生成機能
               tags:
-                - "ai-features"
-                - "mcp-integration"
+                - ai-features
+                - mcp-integration
               customFields:
-                category: "functional"
-                complexity: "very-high"
-              priority: "low"
-              status: "draft"
-          priority: "low"
-          status: "draft"
-      priority: "high"
-      status: "draft"
-    - id: "quality-requirements"
-      title: "品質要件（非機能要件）"
-      description: "システム全体の品質を担保するための非機能要件"
+                category: functional
+                complexity: very-high
+              priority: low
+              status: draft
+          priority: low
+          status: draft
+      priority: high
+      status: draft
+    - id: quality-requirements
+      title: 品質要件（非機能要件）
+      description: システム全体の品質を担保するための非機能要件
       tags:
-        - "performance"
-        - "security"
-        - "usability"
+        - performance
+        - security
+        - usability
       customFields:
-        category: "non-functional"
-        businessValue: "システム品質の担保と運用安定性"
+        category: non-functional
+        businessValue: システム品質の担保と運用安定性
       children:
-        - id: "security-requirements"
-          title: "セキュリティ要件"
-          description: "システムとデータの安全性を確保するための要件"
+        - id: security-requirements
+          title: セキュリティ要件
+          description: システムとデータの安全性を確保するための要件
           tags:
-            - "security"
+            - security
           customFields:
-            category: "non-functional"
-            complexity: "medium"
-          priority: "high"
-          status: "draft"
-        - id: "performance-requirements"
-          title: "パフォーマンス要件"
-          description: "システムの応答性と処理能力に関する要件"
+            category: non-functional
+            complexity: medium
+          priority: high
+          status: draft
+        - id: performance-requirements
+          title: パフォーマンス要件
+          description: システムの応答性と処理能力に関する要件
           tags:
-            - "performance"
+            - performance
           customFields:
-            category: "non-functional"
-            complexity: "medium"
-          priority: "high"
-          status: "draft"
-        - id: "availability-requirements"
-          title: "可用性要件"
-          description: "システムの可用性と信頼性に関する要件"
+            category: non-functional
+            complexity: medium
+          priority: high
+          status: draft
+        - id: availability-requirements
+          title: 可用性要件
+          description: システムの可用性と信頼性に関する要件
           tags:
-            - "performance"
+            - performance
           customFields:
-            category: "non-functional"
-            complexity: "low"
-          priority: "medium"
-          status: "draft"
-        - id: "extensibility-requirements"
-          title: "拡張性要件"
-          description: "将来的な機能拡張への対応に関する要件"
+            category: non-functional
+            complexity: low
+          priority: medium
+          status: draft
+        - id: extensibility-requirements
+          title: 拡張性要件
+          description: 将来的な機能拡張への対応に関する要件
           tags: []
           customFields:
-            category: "non-functional"
-            complexity: "medium"
-          priority: "medium"
-          status: "draft"
-      priority: "high"
-      status: "draft"
-  priority: "critical"
-  status: "draft"
+            category: non-functional
+            complexity: medium
+          priority: medium
+          status: draft
+      priority: high
+      status: draft
+  priority: critical
+  status: draft
+schema:
+  customFields:
+    - name: category
+      type: select
+      label: カテゴリ
+      options:
+        - functional
+        - non-functional
+        - quality
+        - constraint
+      required: true
+      description: 要件の分類
+    - name: userRole
+      type: string
+      label: 対象ユーザー
+      description: この要件の対象となるユーザー役割
+    - name: businessValue
+      type: string
+      label: ビジネス価値
+      description: この要件が提供するビジネス価値
+    - name: complexity
+      type: select
+      label: 複雑度
+      options:
+        - low
+        - medium
+        - high
+        - very-high
+      description: 実装の複雑度レベル
+    - name: dependencies
+      type: string
+      label: 依存関係
+      description: 他の要件との依存関係
