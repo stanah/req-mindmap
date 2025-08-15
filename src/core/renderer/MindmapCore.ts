@@ -923,13 +923,28 @@ export class MindmapCore {
       stackTrace: new Error().stack?.split('\n').slice(1, 4).join('\n')
     });
     
+    // 全ノードの選択状態を解除
     this.container.selectAll('.mindmap-node')
       .classed('selected', false);
 
     if (nodeId) {
-      this.container.selectAll('.mindmap-node')
+      // 指定されたノードを選択状態にする
+      const selectedNode = this.container.selectAll('.mindmap-node')
         .filter((d: D3Node) => d.data.id === nodeId)
         .classed('selected', true);
+      
+      console.log('✅ ノードが選択されました:', {
+        nodeId,
+        selectedCount: selectedNode.size(),
+        hasSelectedClass: !selectedNode.empty()
+      });
+      
+      // 選択されたノードが見つからない場合の警告
+      if (selectedNode.empty()) {
+        console.warn('⚠️ 選択対象のノードが見つかりません:', nodeId);
+      }
+    } else {
+      console.log('🚫 ノード選択が解除されました');
     }
   }
 

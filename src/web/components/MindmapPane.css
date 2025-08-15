@@ -135,9 +135,21 @@
 
 .mindmap-node.selected .mindmap-node-rect {
   stroke: var(--primary-color, #2563eb);
-  stroke-width: 3px;
-  filter: brightness(0.98);
-  box-shadow: 0 0 8px rgba(37, 99, 235, 0.3);
+  stroke-width: 4px;
+  filter: brightness(1.05);
+  box-shadow: 0 0 16px rgba(37, 99, 235, 0.4);
+  animation: selected-pulse 2s infinite ease-in-out;
+}
+
+@keyframes selected-pulse {
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(37, 99, 235, 0.4);
+    stroke-width: 4px;
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(37, 99, 235, 0.6);
+    stroke-width: 5px;
+  }
 }
 
 .mindmap-node.cursor-highlight .mindmap-node-rect {

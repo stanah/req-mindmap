@@ -113,3 +113,46 @@
 [data-theme="dark"] .empty-state-content h3 {
   color: #ffffff;
 }
+
+/* VSCode環境でのマインドマップノード選択スタイル */
+.mindmap-node.selected .mindmap-node-rect {
+  stroke: var(--vscode-focusBorder, #0078d4);
+  stroke-width: 4px;
+  filter: brightness(1.05);
+  box-shadow: 0 0 16px rgba(0, 120, 212, 0.4);
+  animation: vscode-selected-pulse 2s infinite ease-in-out;
+}
+
+@keyframes vscode-selected-pulse {
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(0, 120, 212, 0.4);
+    stroke-width: 4px;
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(0, 120, 212, 0.6);
+    stroke-width: 5px;
+  }
+}
+
+/* ダークテーマでの選択スタイル */
+[data-vscode-theme-kind="vscode-dark"] .mindmap-node.selected .mindmap-node-rect,
+[data-theme="dark"] .mindmap-node.selected .mindmap-node-rect {
+  stroke: var(--vscode-focusBorder, #007acc);
+  box-shadow: 0 0 16px rgba(0, 122, 204, 0.5);
+}
+
+[data-vscode-theme-kind="vscode-dark"] .mindmap-node.selected .mindmap-node-rect,
+[data-theme="dark"] .mindmap-node.selected .mindmap-node-rect {
+  animation: vscode-selected-pulse-dark 2s infinite ease-in-out;
+}
+
+@keyframes vscode-selected-pulse-dark {
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(0, 122, 204, 0.5);
+    stroke-width: 4px;
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(0, 122, 204, 0.7);
+    stroke-width: 5px;
+  }
+}
