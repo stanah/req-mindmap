@@ -27,12 +27,20 @@ export const MindmapPane: React.FC = () => {
   const [performanceMode, setPerformanceMode] = useState<'auto' | 'performance' | 'quality'>('auto');
   const [showPerformancePanel, setShowPerformancePanel] = useState(false);
   const [nodeCount, setNodeCount] = useState(0);
+  
+  // ノード詳細パネルの表示状態
+  const [isPanelVisible, setIsPanelVisible] = useState(false);
 
   // イベントハンドラーの定義
   const eventHandlers: RendererEventHandlers = useMemo(() => ({
     onNodeClick: (nodeId: string, event: MouseEvent) => {
       console.log('ノードクリック:', nodeId);
       selectNode(nodeId);
+      
+      // ノードが選択されたらパネルを自動で表示
+      if (nodeId && !isPanelVisible) {
+        setIsPanelVisible(true);
+      }
       
       // ダブルクリックでフォーカス
       if (event.detail === 2 && rendererRef.current) {
@@ -56,8 +64,9 @@ export const MindmapPane: React.FC = () => {
     onBackgroundClick: () => {
       // 背景クリック時の処理
       selectNode(null);
+      setIsPanelVisible(false);
     },
-  }), [selectNode]);
+  }), [selectNode, isPanelVisible]);
 
   // レンダラーの初期化（初回のみ）
   useEffect(() => {
@@ -125,6 +134,19 @@ export const MindmapPane: React.FC = () => {
       rendererRef.current.highlightCursorNode(cursorCorrespondingNodeId);
     }
   }, [cursorCorrespondingNodeId]);
+
+  // パネル表示状態変更時のレンダリング領域調整
+  useEffect(() => {
+    if (rendererRef.current) {
+      // パネル表示状態が変わったときに再描画を実行
+      setTimeout(() => {
+        if (rendererRef.current && parsedData) {
+          rendererRef.current.render(parsedData);
+          rendererRef.current.resetView();
+        }
+      }, 350); // CSSのtransition時間(0.3s)より少し長めに設定
+    }
+  }, [isPanelVisible, parsedData]);
 
   // キーボードショートカット
   useEffect(() => {
@@ -236,7 +258,7 @@ export const MindmapPane: React.FC = () => {
   };
 
   return (
-    <div className="mindmap-pane">
+    <div className={`mindmap-pane ${isPanelVisible ? 'panel-visible' : ''}`}>
       <div className="mindmap-toolbar">
         <div className="zoom-controls">
           <button 
@@ -351,17 +373,15 @@ export const MindmapPane: React.FC = () => {
       )}
       
       {selectedNodeId && parsedData && (
-        <div className="node-details-panel">
-          <NodeDetailsPanel 
-            nodeId={selectedNodeId}
-            data={parsedData}
-            isVisible={true}
-            onToggle={() => selectNode(null)}
-            onClose={() => selectNode(null)}
-            mode="web"
-            position="sidebar"
-          />
-        </div>
+        <NodeDetailsPanel 
+          nodeId={selectedNodeId}
+          data={parsedData}
+          isVisible={isPanelVisible}
+          onToggle={() => setIsPanelVisible(!isPanelVisible)}
+          onClose={() => setIsPanelVisible(false)}
+          mode="web"
+          position="bottom"
+        />
       )}
 
       {/* パフォーマンスパネル（デバッグモード時のみ） */}
