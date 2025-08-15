@@ -10,15 +10,15 @@ import { MindmapCore } from '../../core';
 import type { RendererEventHandlers } from '../../core';
 import type { MindmapData } from '../../types';
 
-import { ThemeToggle } from '../../web/components/ui/ThemeToggle';
 import { PlatformAdapterFactory } from '../../platform';
 import { VSCodeEditorAdapter } from '../../platform/vscode/VSCodeEditorAdapter';
 import { NodeDetailsPanel } from '../../components/shared/NodeDetailsPanel';
-import { NodeActionButtons } from './NodeActionButtons';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
+import { Toolbar } from './Toolbar';
 import { createNewNode, addChildNode, addSiblingNode, removeNode, findNodeById } from '../../utils/nodeHelpers';
 import './MindmapViewer.css';
 import './NodeActionButtons.css';
+import './Toolbar.css';
 import '../../styles/NodeDetailsPanel.css';
 
 // VSCode APIの型定義（将来使用予定）
@@ -36,6 +36,9 @@ export const MindmapViewer: React.FC = () => {
   // 削除確認ダイアログの状態
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [nodeToDelete, setNodeToDelete] = useState<string | null>(null);
+  
+  // ズームレベルの状態管理
+  const [zoomLevel, setZoomLevel] = useState(100);
   
   // Zustandストアからの状態取得
   const parsedData = useAppStore(state => state.parse.parsedData);
@@ -396,20 +399,44 @@ export const MindmapViewer: React.FC = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!rendererRef.current) return;
 
+      // Ctrl/Cmd + Shift + 0: 全体表示
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === '0') {
+        event.preventDefault();
+        rendererRef.current.fitToView();
+        setZoomLevel(100);
+      }
       // Ctrl/Cmd + 0: ビューをリセット
-      if ((event.ctrlKey || event.metaKey) && event.key === '0') {
+      else if ((event.ctrlKey || event.metaKey) && event.key === '0') {
         event.preventDefault();
         rendererRef.current.resetView();
+        setZoomLevel(100);
       }
       // Ctrl/Cmd + +: ズームイン
       else if ((event.ctrlKey || event.metaKey) && (event.key === '+' || event.key === '=')) {
         event.preventDefault();
         rendererRef.current.zoomIn();
+        setZoomLevel(prev => Math.min(prev + 25, 500));
       }
       // Ctrl/Cmd + -: ズームアウト
       else if ((event.ctrlKey || event.metaKey) && event.key === '-') {
         event.preventDefault();
         rendererRef.current.zoomOut();
+        setZoomLevel(prev => Math.max(prev - 25, 25));
+      }
+      // Ctrl/Cmd + E: 全て展開
+      else if ((event.ctrlKey || event.metaKey) && event.key === 'e' && !event.shiftKey) {
+        event.preventDefault();
+        rendererRef.current.expandAll();
+      }
+      // Ctrl/Cmd + Shift + E: 全て折りたたみ
+      else if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'E' || event.key === 'e')) {
+        event.preventDefault();
+        rendererRef.current.collapseAll();
+      }
+      // F: 選択ノードにフォーカス
+      else if (event.key === 'f' && selectedNodeId && !event.ctrlKey && !event.metaKey) {
+        event.preventDefault();
+        rendererRef.current.focusNode(selectedNodeId);
       }
       // スペースキー: 選択ノードの折りたたみ切り替え
       else if (event.key === ' ' && selectedNodeId) {
@@ -427,7 +454,7 @@ export const MindmapViewer: React.FC = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedNodeId, isPanelVisible]);
+  }, [selectedNodeId, isPanelVisible, zoomLevel]);
 
   // VSCodeメッセージハンドラー
   useEffect(() => {
@@ -460,19 +487,18 @@ export const MindmapViewer: React.FC = () => {
   return (
     <div className="mindmap-viewer">
       {/* VSCode用のツールバー */}
-      <div className="vscode-toolbar">
-        <ThemeToggle className="vscode-theme-toggle" />
-        
-        {/* ノード追加ボタン */}
-        <NodeActionButtons
-          selectedNodeId={selectedNodeId}
-          data={parsedData?.root || null}
-          onAddChild={handleAddChild}
-          onAddSibling={handleAddSibling}
-          onDeleteNode={handleDeleteNode}
-          className="vscode-node-actions"
-        />
-      </div>
+      <Toolbar
+        selectedNodeId={selectedNodeId}
+        data={parsedData as MindmapData}
+        rendererRef={rendererRef}
+        onAddChild={handleAddChild}
+        onAddSibling={handleAddSibling}
+        onDeleteNode={handleDeleteNode}
+        onTogglePanel={() => setIsPanelVisible(!isPanelVisible)}
+        isPanelVisible={isPanelVisible}
+        zoomLevel={zoomLevel}
+        onZoomChange={setZoomLevel}
+      />
       
       <div className="mindmap-container">
         <svg

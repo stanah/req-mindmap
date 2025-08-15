@@ -221,6 +221,32 @@ export class MindmapRenderer {
   }
 
   /**
+   * ビューを全体に合わせる
+   */
+  public fitToView(): void {
+    if (!this.root) return;
+    
+    const bounds = this.container.node()?.getBBox();
+    const svgRect = this.svg.node()?.getBoundingClientRect();
+    
+    if (!bounds || !svgRect || bounds.width === 0 || bounds.height === 0) return;
+    
+    const padding = 40;
+    const scale = Math.min(
+      (svgRect.width - padding * 2) / bounds.width,
+      (svgRect.height - padding * 2) / bounds.height,
+      3 // 最大スケール
+    );
+    
+    const x = svgRect.width / 2 - (bounds.x + bounds.width / 2) * scale;
+    const y = svgRect.height / 2 - (bounds.y + bounds.height / 2) * scale;
+    
+    this.svg.transition()
+      .duration(500)
+      .call(this.zoom.transform, d3.zoomIdentity.translate(x, y).scale(scale));
+  }
+
+  /**
    * 破棄処理
    */
   public destroy(): void {

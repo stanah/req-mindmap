@@ -543,6 +543,46 @@ export class MindmapCoreLogic implements ICoreLogic {
     return this.collapsedNodes.has(nodeId);
   }
 
+  /**
+   * 全てのノードを展開
+   */
+  expandAll(): void {
+    this.checkNotDestroyed();
+    
+    if (this.collapsedNodes.size === 0) {
+      return;
+    }
+    
+    this.collapsedNodes.clear();
+    this.emit('dataChanged');
+  }
+
+  /**
+   * 全てのノードを折りたたみ
+   */
+  collapseAll(): void {
+    this.checkNotDestroyed();
+    
+    if (!this.data?.root) {
+      return;
+    }
+    
+    // 子ノードを持つ全てのノードを折りたたみ
+    this.collapseNodeRecursive(this.data.root);
+    this.emit('dataChanged');
+  }
+
+  private collapseNodeRecursive(node: MindmapNode): void {
+    if (node.children && node.children.length > 0) {
+      this.collapsedNodes.add(node.id);
+      
+      // 子ノードも再帰的に処理
+      for (const child of node.children) {
+        this.collapseNodeRecursive(child);
+      }
+    }
+  }
+
   // ==========================================
   // Undo/Redo機能
   // ==========================================

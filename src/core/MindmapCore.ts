@@ -308,6 +308,30 @@ export class MindmapCore {
     this.renderer.focusNode(nodeId);
   }
 
+  /**
+   * ビューを全体に合わせる
+   */
+  public fitToView(): void {
+    this.checkNotDestroyed();
+    this.renderer.fitToView();
+  }
+
+  /**
+   * 全てのノードを展開
+   */
+  public expandAll(): void {
+    this.checkNotDestroyed();
+    this.coreLogic.expandAll();
+  }
+
+  /**
+   * 全てのノードを折りたたみ
+   */
+  public collapseAll(): void {
+    this.checkNotDestroyed();
+    this.coreLogic.collapseAll();
+  }
+
   // ==========================================
   // 公開API - イベント系（MindmapCoreLogicに委譲）
   // ==========================================

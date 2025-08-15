@@ -1,0 +1,217 @@
+/**
+ * VSCode拡張用ツールバーUIのスタイル
+ */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--vscode-editor-background);
+  border-bottom: 1px solid var(--vscode-panel-border);
+  height: 40px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 8px;
+}
+
+.toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toolbar-left {
+  flex: 1;
+  justify-content: flex-start;
+}
+
+.toolbar-center {
+  flex: 0 0 auto;
+  justify-content: center;
+}
+
+.toolbar-right {
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.toolbar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+  min-width: 32px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--vscode-foreground);
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.15s ease-in-out;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.toolbar-button:hover {
+  background: var(--vscode-toolbar-hoverBackground);
+  border-color: var(--vscode-toolbar-hoverOutline);
+}
+
+.toolbar-button:active {
+  background: var(--vscode-toolbar-activeBackground);
+  transform: translateY(1px);
+}
+
+.toolbar-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+.toolbar-button.active {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+}
+
+.toolbar-button.active:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+/* ズームレベル表示 */
+.toolbar-button.zoom-level {
+  min-width: 50px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* セパレーター */
+.toolbar-separator {
+  width: 1px;
+  height: 20px;
+  background: var(--vscode-panel-border);
+  margin: 0 4px;
+}
+
+/* ノードアクションボタンのスタイル調整 */
+.toolbar-node-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.toolbar-node-actions .node-action-button {
+  padding: 6px 8px;
+  min-width: 32px;
+  height: 28px;
+  font-size: 14px;
+}
+
+/* テーマトグルのスタイル調整 */
+.toolbar-theme-toggle {
+  margin: 0;
+}
+
+.toolbar-theme-toggle button {
+  padding: 6px 8px;
+  min-width: 32px;
+  height: 28px;
+}
+
+/* Codiconアイコンのスタイル */
+.toolbar-button .codicon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .toolbar {
+    padding: 6px 8px;
+    height: 36px;
+  }
+  
+  .toolbar-button {
+    padding: 4px 6px;
+    min-width: 28px;
+    height: 24px;
+  }
+  
+  .toolbar-button .codicon {
+    font-size: 14px;
+  }
+  
+  .toolbar-separator {
+    height: 16px;
+  }
+  
+  /* モバイルでは中央のズーム操作を非表示 */
+  .toolbar-center {
+    display: none;
+  }
+}
+
+/* ダークテーマの微調整 */
+.vscode-dark .toolbar {
+  border-bottom-color: var(--vscode-panel-border, #2d2d30);
+}
+
+.vscode-dark .toolbar-separator {
+  background: var(--vscode-panel-border, #2d2d30);
+}
+
+/* ハイコントラストテーマの対応 */
+.vscode-high-contrast .toolbar {
+  border-bottom: 2px solid var(--vscode-contrastBorder);
+}
+
+.vscode-high-contrast .toolbar-button {
+  border: 1px solid var(--vscode-contrastBorder);
+}
+
+.vscode-high-contrast .toolbar-button:hover {
+  border: 2px solid var(--vscode-contrastActiveBorder);
+}
+
+/* フォーカス表示の改善 */
+.toolbar-button:focus-visible {
+  outline: 2px solid var(--vscode-focusBorder);
+  outline-offset: -2px;
+}
+
+/* アニメーション */
+@keyframes toolbar-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toolbar {
+  animation: toolbar-fade-in 0.2s ease-out;
+}
+
+/* ツールチップスタイル（将来的な拡張用） */
+.toolbar-button[title] {
+  position: relative;
+}
+
+/* 追加のユーティリティクラス */
+.toolbar-compact .toolbar-button {
+  padding: 4px 6px;
+  min-width: 28px;
+  height: 24px;
+}
+
+.toolbar-large .toolbar-button {
+  padding: 8px 10px;
+  min-width: 36px;
+  height: 32px;
+}
