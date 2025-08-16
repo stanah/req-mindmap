@@ -18,9 +18,9 @@ npm run compile
 cd ..
 
 # 3. スキーマファイルのコピー
-echo "3. スキーマファイルをコピー中..."
-mkdir -p extension/schemas
-cp src/schemas/*.json extension/schemas/
+# echo "3. スキーマファイルをコピー中..."
+# mkdir -p extension/schemas
+# cp src/schemas/*.json extension/schemas/
 
 # 4. Webviewファイルのコピー
 echo "4. Webviewファイルをコピー中..."
