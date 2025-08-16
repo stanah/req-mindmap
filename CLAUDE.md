@@ -28,11 +28,23 @@ pnpm build:vscode-package
 # ESLint実行
 pnpm lint
 
-# テスト実行（watch mode）
+# Webアプリテスト実行（watch mode）
 pnpm test
 
-# テスト一回実行
+# Webアプリテスト一回実行
 pnpm test:run
+
+# VSCode拡張テスト実行（watch mode）
+pnpm test:vscode
+
+# VSCode拡張テスト一回実行
+pnpm test:vscode:run
+
+# VSCode拡張テスト（UI mode）
+pnpm test:vscode:ui
+
+# 全テスト実行（Web + VSCode拡張）
+pnpm test:all
 
 # プレビュー（ビルド後確認）
 pnpm preview
@@ -62,7 +74,7 @@ pnpm dev
 pnpm build:vscode
 
 # 4. テスト実行
-pnpm test:run
+pnpm test:all
 
 # 5. 品質チェック
 pnpm lint
