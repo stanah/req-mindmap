@@ -4,7 +4,7 @@ import type { VSCodeApi } from './VSCodeApiSingleton';
 
 /**
  * VSCode拡張環境での設定管理実装
- * 将来実装予定のスケルトン
+ * VSCode Extension API との実際の統合を提供
  */
 export class VSCodeSettingsAdapter implements SettingsAdapter {
   private vscode: VSCodeApi | null = null;
@@ -12,12 +12,15 @@ export class VSCodeSettingsAdapter implements SettingsAdapter {
   private settingsCache = new Map<string, unknown>();
   private changeCallbacks = new Set<(key: string, value: unknown) => void>();
   private requestId = 0;
+  private initialized = false;
 
   constructor() {
     this.initialize();
   }
 
   private initialize(): void {
+    if (this.initialized) return;
+
     const vscode = VSCodePlatformAdapter.getVSCodeApi();
     if (vscode && 'postMessage' in vscode) {
       this.vscode = vscode;
@@ -38,10 +41,18 @@ export class VSCodeSettingsAdapter implements SettingsAdapter {
         this.handleSettingsEvent(message);
       });
 
+      // VSCode拡張に初期化完了を通知
+      this.vscode.postMessage({
+        command: 'settingsAdapterReady'
+      });
+
       // 初期設定を要求
-      this.vscode?.postMessage({
+      this.vscode.postMessage({
         command: 'getInitialConfiguration'
       });
+
+      this.initialized = true;
+      console.log('VSCodeSettingsAdapter初期化完了');
     }
   }
 
@@ -110,45 +121,126 @@ export class VSCodeSettingsAdapter implements SettingsAdapter {
 
   async set<T>(key: string, value: T): Promise<void> {
     if (!this.vscode) {
-      // Webviewでない環境では警告を出力
       console.warn(`設定の保存ができません: ${key} = ${value}`);
       return;
     }
 
+    // VSCode拡張に設定更新を要求
     await this.sendMessage<void>('updateConfiguration', { key, value });
     
-    throw new Error('VSCode拡張環境はまだ実装されていません');
+    // キャッシュも更新
+    this.settingsCache.set(key, value);
   }
 
-  onDidChange(_callback: (key: string, value: unknown) => void): void {
-    // VSCode API を使用して設定変更イベントを監視
-    // const vscode = acquireVsCodeApi();
-    // vscode.postMessage({
-    //   command: 'onDidChangeConfiguration',
-    //   callback: callback
-    // });
+  onDidChange(callback: (key: string, value: unknown) => void): void {
+    this.changeCallbacks.add(callback);
     
-    throw new Error('VSCode拡張環境はまだ実装されていません');
+    // VSCode拡張に設定変更通知の購読を要求
+    if (this.vscode) {
+      this.vscode.postMessage({
+        command: 'subscribeToConfigurationChanges'
+      });
+    }
   }
 
   getAll(): Record<string, unknown> {
-    // VSCode API を使用してすべての設定を取得
-    // const vscode = acquireVsCodeApi();
-    // return vscode.postMessage({
-    //   command: 'getAllConfiguration'
-    // });
-    
-    throw new Error('VSCode拡張環境はまだ実装されていません');
+    // キャッシュされた設定をすべて返す
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of this.settingsCache.entries()) {
+      result[key] = value;
+    }
+    return result;
   }
 
-  async reset(_key: string): Promise<void> {
-    // VSCode API を使用して設定をリセット
-    // const vscode = acquireVsCodeApi();
-    // await vscode.postMessage({
-    //   command: 'resetConfiguration',
-    //   key: key
-    // });
+  async reset(key: string): Promise<void> {
+    if (!this.vscode) {
+      console.warn(`設定のリセットができません: ${key}`);
+      return;
+    }
+
+    // VSCode拡張に設定リセットを要求
+    await this.sendMessage<void>('resetConfiguration', { key });
     
-    throw new Error('VSCode拡張環境はまだ実装されていません');
+    // キャッシュからも削除
+    this.settingsCache.delete(key);
+  }
+
+  /**
+   * 指定されたセクションの設定を取得
+   */
+  async getSection(section: string): Promise<Record<string, unknown>> {
+    if (!this.vscode) {
+      // キャッシュから該当セクションの設定を検索
+      const result: Record<string, unknown> = {};
+      for (const [key, value] of this.settingsCache.entries()) {
+        if (key.startsWith(`${section}.`)) {
+          const subKey = key.substring(section.length + 1);
+          result[subKey] = value;
+        }
+      }
+      return result;
+    }
+
+    return this.sendMessage<Record<string, unknown>>('getConfigurationSection', { section });
+  }
+
+  /**
+   * 指定されたセクションの設定を一括更新
+   */
+  async updateSection(section: string, values: Record<string, unknown>): Promise<void> {
+    if (!this.vscode) {
+      console.warn(`設定セクションの更新ができません: ${section}`);
+      return;
+    }
+
+    await this.sendMessage<void>('updateConfigurationSection', { section, values });
+    
+    // キャッシュも更新
+    for (const [key, value] of Object.entries(values)) {
+      this.settingsCache.set(`${section}.${key}`, value);
+    }
+  }
+
+  /**
+   * 設定のデフォルト値を取得
+   */
+  async getDefaultValue<T>(key: string): Promise<T | undefined> {
+    if (!this.vscode) {
+      return undefined;
+    }
+
+    return this.sendMessage<T | undefined>('getDefaultConfigurationValue', { key });
+  }
+
+  /**
+   * 設定が変更されているかチェック
+   */
+  async isModified(key: string): Promise<boolean> {
+    if (!this.vscode) {
+      return false;
+    }
+
+    return this.sendMessage<boolean>('isConfigurationModified', { key });
+  }
+
+  /**
+   * 設定の検証
+   */
+  async validateConfiguration(): Promise<{ isValid: boolean; errors: string[] }> {
+    if (!this.vscode) {
+      return { isValid: true, errors: [] };
+    }
+
+    return this.sendMessage<{ isValid: boolean; errors: string[] }>('validateConfiguration');
+  }
+
+  /**
+   * リソースを解放
+   */
+  dispose(): void {
+    this.messageHandlers.clear();
+    this.settingsCache.clear();
+    this.changeCallbacks.clear();
+    this.initialized = false;
   }
 }

@@ -4,7 +4,7 @@ import type { VSCodeApi } from './VSCodeApiSingleton';
 
 /**
  * VSCode拡張環境でのエディタ操作実装
- * 将来実装予定のスケルトン
+ * VSCode Extension API との実際の統合を提供
  */
 export class VSCodeEditorAdapter implements EditorAdapter {
   private vscode: VSCodeApi | null = null;
@@ -13,12 +13,16 @@ export class VSCodeEditorAdapter implements EditorAdapter {
   private cursorChangeCallbacks = new Set<(line: number, column: number) => void>();
   private requestId = 0;
   private currentContent = '';
+  private currentLanguage: 'json' | 'yaml' = 'json';
+  private initialized = false;
 
   constructor() {
     this.initialize();
   }
 
   private initialize(): void {
+    if (this.initialized) return;
+    
     const vscode = VSCodePlatformAdapter.getVSCodeApi();
     if (vscode && 'postMessage' in vscode) {
       this.vscode = vscode;
@@ -38,17 +42,50 @@ export class VSCodeEditorAdapter implements EditorAdapter {
         // エディタイベントの処理
         this.handleEditorEvent(message);
       });
+
+      // VSCode拡張に初期化完了を通知
+      this.vscode.postMessage({
+        command: 'editorAdapterReady'
+      });
+
+      this.initialized = true;
+      console.log('VSCodeEditorAdapter初期化完了');
     }
   }
 
-  private handleEditorEvent(message: { command: string; content?: string; line?: number; column?: number }): void {
+  private handleEditorEvent(message: { 
+    command: string; 
+    content?: string; 
+    language?: string;
+    line?: number; 
+    column?: number;
+    fileName?: string;
+    uri?: string;
+  }): void {
     switch (message.command) {
+      case 'updateContent':
       case 'contentChanged':
-        this.currentContent = message.content || '';
-        this.contentChangeCallbacks.forEach(callback => callback(message.content || ''));
+        if (message.content !== undefined) {
+          this.currentContent = message.content;
+          this.contentChangeCallbacks.forEach(callback => callback(message.content || ''));
+        }
+        if (message.language) {
+          this.currentLanguage = message.language === 'yaml' ? 'yaml' : 'json';
+        }
         break;
       case 'cursorPositionChanged':
         this.cursorChangeCallbacks.forEach(callback => callback(message.line || 0, message.column || 0));
+        break;
+      case 'documentChanged':
+        // ドキュメント全体の変更（ファイル切り替えなど）
+        if (message.content !== undefined) {
+          this.currentContent = message.content;
+          this.contentChangeCallbacks.forEach(callback => callback(message.content || ''));
+        }
+        break;
+      case 'activeEditorChanged':
+        // アクティブエディタの変更
+        console.log('アクティブエディタが変更されました:', message.fileName);
         break;
     }
   }
@@ -89,28 +126,51 @@ export class VSCodeEditorAdapter implements EditorAdapter {
   }
 
   getValue(): string {
-    // 現在のコンテンツを返す（VSCode拡張からのメッセージで更新される）
     return this.currentContent;
   }
 
-  setValue(_value: string): void {
-    // VSCode拡張では読み取り専用のため、設定は無効
-    console.warn('VSCode拡張モードでは setValue は無効です');
+  setValue(value: string): void {
+    // VSCode拡張に内容更新を要求
+    if (this.vscode) {
+      this.vscode.postMessage({
+        command: 'updateDocument',
+        content: value
+      });
+    } else {
+      console.warn('VSCode API が利用できません');
+    }
   }
 
-  setLanguage(_language: 'json' | 'yaml'): void {
-    // VSCode拡張では言語モードは自動判定されるため無効
-    console.warn('VSCode拡張モードでは setLanguage は無効です');
+  setLanguage(language: 'json' | 'yaml'): void {
+    this.currentLanguage = language;
+    // VSCode拡張に言語モード変更を要求
+    if (this.vscode) {
+      this.vscode.postMessage({
+        command: 'setLanguageMode',
+        language
+      });
+    }
   }
 
-  setTheme(_theme: string): void {
-    // VSCode拡張ではテーマはVSCode本体で管理されるため無効
-    console.warn('VSCode拡張モードでは setTheme は無効です');
+  setTheme(theme: string): void {
+    // VSCode拡張にテーマ変更要求を送信
+    if (this.vscode) {
+      this.vscode.postMessage({
+        command: 'requestThemeChange',
+        theme
+      });
+    }
   }
 
-  setCursor(_line: number, _column?: number): void {
-    // VSCode拡張では外部からカーソル制御は無効
-    console.warn('VSCode拡張モードでは setCursor は無効です');
+  setCursor(line: number, column?: number): void {
+    // VSCode拡張にカーソル位置設定を要求
+    if (this.vscode) {
+      this.vscode.postMessage({
+        command: 'setCursorPosition',
+        line,
+        column: column || 0
+      });
+    }
   }
 
   /**
@@ -127,21 +187,33 @@ export class VSCodeEditorAdapter implements EditorAdapter {
     }
   }
 
-  highlight(_startLine: number, _startColumn: number, _endLine: number, _endColumn: number): void {
-    // VSCode拡張では外部からハイライト制御は無効
-    console.warn('VSCode拡張モードでは highlight は無効です');
+  highlight(startLine: number, startColumn: number, endLine: number, endColumn: number): void {
+    // VSCode拡張にハイライト要求を送信
+    if (this.vscode) {
+      this.vscode.postMessage({
+        command: 'highlightRange',
+        startLine,
+        startColumn,
+        endLine,
+        endColumn
+      });
+    }
   }
 
-  setErrorMarkers(_errors: EditorError[]): void {
-    // VSCode拡張ではエラーマーカーはVSCode本体で管理されるため無効
-    console.warn('VSCode拡張モードでは setErrorMarkers は無効です');
+  setErrorMarkers(errors: EditorError[]): void {
+    // VSCode拡張にエラーマーカー設定を要求
+    if (this.vscode) {
+      this.vscode.postMessage({
+        command: 'setErrorMarkers',
+        errors
+      });
+    }
   }
 
   onDidChangeContent(callback: (content: string) => void): void {
-    // イベントリスナーをコールバック集合に追加
     this.contentChangeCallbacks.add(callback);
     
-    // VSCode拡張からの内容変更通知を受信する準備ができたことを通知
+    // VSCode拡張に内容変更通知の購読を要求
     if (this.vscode) {
       this.vscode.postMessage({
         command: 'subscribeToContentChanges'
@@ -150,14 +222,71 @@ export class VSCodeEditorAdapter implements EditorAdapter {
   }
 
   onDidChangeCursorPosition(callback: (line: number, column: number) => void): void {
-    // イベントリスナーをコールバック集合に追加
     this.cursorChangeCallbacks.add(callback);
     
-    // VSCode拡張からのカーソル変更通知を受信する準備ができたことを通知
+    // VSCode拡張にカーソル変更通知の購読を要求
     if (this.vscode) {
       this.vscode.postMessage({
         command: 'subscribeToCursorChanges'
       });
     }
+  }
+
+  /**
+   * 現在の言語モードを取得
+   */
+  getLanguage(): 'json' | 'yaml' {
+    return this.currentLanguage;
+  }
+
+  /**
+   * 現在のカーソル位置を取得
+   */
+  async getCurrentCursorPosition(): Promise<{ line: number; column: number }> {
+    return this.sendMessage<{ line: number; column: number }>('getCurrentCursorPosition');
+  }
+
+  /**
+   * 現在の選択範囲を取得
+   */
+  async getSelection(): Promise<{
+    startLine: number;
+    startColumn: number;
+    endLine: number;
+    endColumn: number;
+    text: string;
+  } | null> {
+    return this.sendMessage('getSelection');
+  }
+
+  /**
+   * テキストを選択範囲で置換
+   */
+  async replaceSelection(text: string): Promise<void> {
+    return this.sendMessage('replaceSelection', { text });
+  }
+
+  /**
+   * 指定位置にテキストを挿入
+   */
+  async insertTextAt(line: number, column: number, text: string): Promise<void> {
+    return this.sendMessage('insertTextAt', { line, column, text });
+  }
+
+  /**
+   * ファイル保存を要求
+   */
+  async saveFile(): Promise<void> {
+    return this.sendMessage('saveFile');
+  }
+
+  /**
+   * リソースを解放
+   */
+  dispose(): void {
+    this.messageHandlers.clear();
+    this.contentChangeCallbacks.clear();
+    this.cursorChangeCallbacks.clear();
+    this.initialized = false;
   }
 }
