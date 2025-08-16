@@ -53,6 +53,7 @@ export function activate(context: vscode.ExtensionContext) {
                         // マインドマップデータかどうかをチェック
                         let data: unknown;
                         if (ext === '.yaml' || ext === '.yml') {
+                            // eslint-disable-next-line @typescript-eslint/no-require-imports
                             const yaml = require('js-yaml');
                             data = yaml.load(content);
                         } else {
@@ -283,12 +284,12 @@ export function activate(context: vscode.ExtensionContext) {
                 return;
             }
 
-            const nodeDescription = await vscode.window.showInputBox({
+            const _nodeDescription = await vscode.window.showInputBox({
                 prompt: 'ノードの説明を入力してください（オプション）',
                 placeHolder: '説明'
             });
 
-            const newNodeId = `node_${Date.now()}`;
+            const _newNodeId = `node_${Date.now()}`;
             
             // 兄弟ノード追加は親ノードに追加することと同じ
             // 実際の実装では親ノードのIDを取得する必要がある

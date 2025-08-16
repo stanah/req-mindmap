@@ -952,6 +952,26 @@ export const useAppStore = create<AppStore>()(
             
             // パース処理を実行
             const result = await parserService.parse(content);
+            
+            // パース結果のnullチェック
+            if (!result) {
+              console.error('Parse error: パーサーサービスがnullを返しました');
+              set((state) => ({
+                parse: {
+                  ...state.parse,
+                  parseErrors: [{
+                    line: 1,
+                    column: 1,
+                    message: 'パーサーサービスの内部エラー',
+                    severity: 'error',
+                    code: 'PARSER_SERVICE_ERROR'
+                  }],
+                  isProcessing: false
+                }
+              }));
+              return;
+            }
+            
             console.log('パース結果:', {
               success: result.success,
               hasData: !!result.data,

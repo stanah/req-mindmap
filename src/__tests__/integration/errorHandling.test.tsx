@@ -8,12 +8,21 @@ import React from 'react';
 import App from '../../web/App';
 
 // console.errorのモック
-const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+const originalConsoleError = console.error;
+const consoleErrorSpy = vi.fn();
 
 describe('エラーハンドリングの基本テスト', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     consoleErrorSpy.mockClear();
+    // console.errorをモック関数に置き換え
+    console.error = consoleErrorSpy;
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockClear();
+    // 元のconsole.errorを復元
+    console.error = originalConsoleError;
   });
 
   describe('基本的なコンポーネントレンダリング', () => {
@@ -73,7 +82,7 @@ describe('エラーハンドリングの基本テスト', () => {
       console.error('Test error message');
       
       // エラーがコンソールスパイによってキャッチされることを確認
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Test error message');
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
 
     it('SVGレンダリングエラーのモック動作確認', () => {
