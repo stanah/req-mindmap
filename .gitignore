@@ -43,3 +43,4 @@ extension/pnpm-lock.yaml
 *.vsix
 
 .serena/cache
+/coverage/
