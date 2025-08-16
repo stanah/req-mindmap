@@ -416,7 +416,7 @@ describe('MindmapWebviewProvider', () => {
         data.root.circular = data;
         
         privateProvider.handleContentChanged(yamlDocument, { data });
-      } catch (error) {
+      } catch {
         // エラーが発生することを期待
       }
 

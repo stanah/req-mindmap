@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { mockVSCode } from './setup';
 
 // プラットフォームアダプターのテスト用にwebviewアダプターのパスを調整
@@ -7,6 +8,7 @@ import { mockVSCode } from './setup';
 describe('VSCode Platform Adapters', () => {
   describe('Integration Tests', () => {
     let mockWebview: any;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let mockDocument: any;
 
     beforeEach(() => {

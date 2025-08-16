@@ -289,7 +289,7 @@ export class MindmapEditorProvider implements vscode.CustomTextEditorProvider {
                     }
                     break;
 
-                case 'getCurrentCursorPosition':
+                case 'getCurrentCursorPosition': {
                     // 現在のカーソル位置取得
                     const editor = vscode.window.visibleTextEditors.find(
                         e => e.document.uri.toString() === document.uri.toString()
@@ -301,6 +301,7 @@ export class MindmapEditorProvider implements vscode.CustomTextEditorProvider {
                         result = { line: 0, column: 0 };
                     }
                     break;
+                }
 
                 case 'saveFile':
                     // ファイル保存

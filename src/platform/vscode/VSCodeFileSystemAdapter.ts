@@ -60,7 +60,7 @@ export class VSCodeFileSystemAdapter implements FileSystemAdapter {
       case 'fileChanged':
         if (message.watcherId && message.content !== undefined) {
           // ウォッチャーIDに対応するコールバックを実行
-          for (const [path, watcher] of this.fileWatchers.entries()) {
+          for (const [_path, watcher] of this.fileWatchers.entries()) {
             if (watcher.watcherId === message.watcherId) {
               watcher.callback(message.content);
               break;

@@ -164,7 +164,7 @@ console.warn = (...args: unknown[]) => {
 };
 
 // React Testing Library の act 警告も抑制
-// @ts-ignore
+// @ts-expect-error global環境でのReact Act設定
 global.IS_REACT_ACT_ENVIRONMENT = true;
 
 // React DevTools のメッセージも抑制
