@@ -13,10 +13,15 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:vscode": "cd extension && pnpm test",
     "test:vscode:run": "cd extension && pnpm test:run",
+    "test:vscode:coverage": "cd extension && pnpm test:run --coverage",
     "test:vscode:ui": "cd extension && pnpm test:ui",
-    "test:all": "pnpm test:run && pnpm test:vscode:run"
+    "test:all": "pnpm test:run && pnpm test:vscode:run",
+    "coverage": "vitest run --coverage",
+    "coverage:vscode": "cd extension && pnpm coverage",
+    "coverage:all": "echo '=== Web App Coverage ===' && pnpm coverage && echo '\n=== VSCode Extension Coverage ===' && pnpm coverage:vscode"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

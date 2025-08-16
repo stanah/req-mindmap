@@ -27,6 +27,7 @@ const mockVSCode = {
     showInputBox: vi.fn(),
     showSaveDialog: vi.fn(),
     showOpenDialog: vi.fn(),
+    showTextDocument: vi.fn(),
     setStatusBarMessage: vi.fn(),
     activeTextEditor: null,
     visibleTextEditors: [],
@@ -58,6 +59,11 @@ const mockVSCode = {
   WorkspaceEdit: vi.fn(() => ({
     replace: vi.fn()
   })),
+  TextEditorRevealType: {
+    InCenter: 1,
+    InCenterIfOutsideViewport: 2,
+    AtTop: 3
+  },
   TreeItem: class TreeItem {
     constructor(label: string, collapsibleState?: number) {
       this.label = label;
