@@ -1,12 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mockVSCode } from './setup';
 import { MindmapEditorProvider } from '../MindmapEditorProvider';
+import type { MockExtensionContext, MockTextDocument, MockWebviewPanel } from './types';
+import * as vscode from 'vscode';
 
 describe('MindmapEditorProvider', () => {
   let provider: MindmapEditorProvider;
-  let mockContext: any;
-  let mockDocument: any;
-  let mockWebviewPanel: any;
+  let mockContext: MockExtensionContext;
+  let mockDocument: MockTextDocument;
+  let mockWebviewPanel: MockWebviewPanel;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -49,9 +51,9 @@ describe('MindmapEditorProvider', () => {
 
   describe('resolveCustomTextEditor', () => {
     it('should initialize webview panel correctly', async () => {
-      const mockToken = { isCancellationRequested: false };
+      const mockToken: vscode.CancellationToken = { isCancellationRequested: false, onCancellationRequested: vi.fn() };
 
-      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken as any);
+      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken);
 
       // Webviewのオプションが設定されていることを確認
       expect(mockWebviewPanel.webview.options).toEqual({
@@ -68,18 +70,18 @@ describe('MindmapEditorProvider', () => {
     });
 
     it('should set up message handling', async () => {
-      const mockToken = { isCancellationRequested: false };
+      const mockToken: vscode.CancellationToken = { isCancellationRequested: false, onCancellationRequested: vi.fn() };
 
-      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken as any);
+      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken);
 
       // メッセージハンドラーが設定されていることを確認
       expect(mockWebviewPanel.webview.onDidReceiveMessage).toHaveBeenCalled();
     });
 
     it('should set up document change monitoring', async () => {
-      const mockToken = { isCancellationRequested: false };
+      const mockToken: vscode.CancellationToken = { isCancellationRequested: false, onCancellationRequested: vi.fn() };
 
-      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken as any);
+      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken);
 
       // ドキュメント変更の監視が設定されていることを確認
       expect(mockVSCode.workspace.onDidChangeTextDocument).toHaveBeenCalled();
@@ -89,9 +91,9 @@ describe('MindmapEditorProvider', () => {
 
     it('should send initial content and configuration', async () => {
       vi.useFakeTimers();
-      const mockToken = { isCancellationRequested: false };
+      const mockToken: vscode.CancellationToken = { isCancellationRequested: false, onCancellationRequested: vi.fn() };
 
-      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken as any);
+      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken);
 
       // setTimeout をトリガー
       vi.advanceTimersByTime(100);
@@ -364,7 +366,7 @@ describe('MindmapEditorProvider', () => {
         selection: undefined,
         revealRange: vi.fn()
       };
-      (mockVSCode.window as any).visibleTextEditors = [mockEditor];
+      (mockVSCode.window as typeof vscode.window).visibleTextEditors = [mockEditor];
       mockVSCode.Position.mockImplementation((line, character) => ({ line, character }));
       mockVSCode.Selection.mockImplementation((start, end) => ({ start, end }));
       mockVSCode.Range.mockImplementation((start, end) => ({ start, end }));
@@ -397,7 +399,7 @@ describe('MindmapEditorProvider', () => {
         selection: undefined,
         revealRange: vi.fn()
       };
-      (mockVSCode.window as any).visibleTextEditors = [mockEditor];
+      (mockVSCode.window as typeof vscode.window).visibleTextEditors = [mockEditor];
 
       await messageHandler({
         command: 'highlightRange',

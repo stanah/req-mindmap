@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mockVSCode } from './setup';
 import { MindmapTreeDataProvider, MindmapTreeItem } from '../MindmapTreeDataProvider';
+import type { MockTextDocument } from './types';
 
 describe('MindmapTreeDataProvider', () => {
   let provider: MindmapTreeDataProvider;
-  let mockDocument: any;
+  let mockDocument: MockTextDocument;
 
   beforeEach(() => {
     vi.clearAllMocks();
