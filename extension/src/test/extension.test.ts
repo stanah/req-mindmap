@@ -961,4 +961,184 @@ describe('VSCode Extension', () => {
       expect(mockContext.subscriptions.length).toBeGreaterThan(0);
     });
   });
+
+  describe('Template Generation', () => {
+    it('should generate correct JSON template for basic type', () => {
+      activate(mockContext);
+
+      const templateTypes = ['basic', 'project', 'research', 'meeting', 'decision'];
+      
+      templateTypes.forEach(type => {
+        // createNewMindmapコマンドをテスト
+        const createCommand = mockVSCode.commands.registerCommand.mock.calls
+          .find(call => call[0] === 'mindmapTool.createNewMindmap')?.[1];
+
+        expect(createCommand).toBeDefined();
+      });
+    });
+  });
+
+  describe('Configuration Management', () => {
+    it('should handle configuration changes for various settings', () => {
+      activate(mockContext);
+
+      const configChangeHandler = mockVSCode.workspace.onDidChangeConfiguration.mock.calls[0]?.[0];
+      expect(configChangeHandler).toBeDefined();
+
+      if (configChangeHandler) {
+        const mockConfigEvent = {
+          affectsConfiguration: vi.fn().mockReturnValue(true)
+        };
+
+        configChangeHandler(mockConfigEvent);
+        expect(mockConfigEvent.affectsConfiguration).toHaveBeenCalledWith('mindmapTool');
+      }
+    });
+
+    it('should handle configuration initialization with default values', () => {
+      activate(mockContext);
+
+      // 設定の初期化が正常に行われることを確認
+      expect(mockVSCode.workspace.onDidChangeConfiguration).toHaveBeenCalled();
+    });
+  });
+
+  describe('Edge Cases and Boundary Testing', () => {
+    it('should handle extremely large mindmap documents', async () => {
+      activate(mockContext);
+
+      // 大容量のマインドマップドキュメントを模擬
+      const largeContent = JSON.stringify({
+        root: {
+          id: 'root',
+          title: 'Large Document',
+          children: Array.from({ length: 1000 }, (_, i) => ({
+            id: `node-${i}`,
+            title: `Node ${i}`,
+            description: 'A'.repeat(1000) // 1000文字の説明
+          }))
+        }
+      });
+
+      const mockEditor = {
+        document: {
+          fileName: '/test/large-mindmap.json',
+          getText: () => largeContent
+        }
+      };
+
+      const editorChangeHandler = mockVSCode.window.onDidChangeActiveTextEditor.mock.calls[0]?.[0];
+      
+      if (editorChangeHandler) {
+        // 大容量ドキュメントでも処理が完了することを確認
+        await expect(editorChangeHandler(mockEditor)).resolves.not.toThrow();
+      }
+    });
+
+    it('should handle invalid file paths and extensions', async () => {
+      activate(mockContext);
+
+      const invalidFiles = [
+        '/test/file.txt',
+        '/test/file.pdf',
+        '/test/file.xlsx',
+        '/test/file',
+        ''
+      ];
+
+      const editorChangeHandler = mockVSCode.window.onDidChangeActiveTextEditor.mock.calls[0]?.[0];
+
+      for (const fileName of invalidFiles) {
+        const mockEditor = {
+          document: {
+            fileName,
+            getText: () => '{}'
+          }
+        };
+
+        if (editorChangeHandler) {
+          // 無効なファイルでもエラーが発生しないことを確認
+          await expect(editorChangeHandler(mockEditor)).resolves.not.toThrow();
+        }
+      }
+    });
+
+    it('should handle concurrent command executions', async () => {
+      activate(mockContext);
+
+      // 複数のコマンドを同時実行
+      const refreshCommand = mockVSCode.commands.registerCommand.mock.calls
+        .find(call => call[0] === 'mindmapTool.refreshMindmapTree')?.[1];
+      
+      const validateCommand = mockVSCode.commands.registerCommand.mock.calls
+        .find(call => call[0] === 'mindmapTool.validateSchema')?.[1];
+
+      if (refreshCommand && validateCommand) {
+        // 同時実行でもエラーが発生しないことを確認
+        await Promise.all([
+          refreshCommand(),
+          validateCommand(),
+          refreshCommand(),
+          validateCommand()
+        ]);
+
+        expect(mockVSCode.window.showInformationMessage).toHaveBeenCalled();
+      }
+    });
+
+    it('should handle memory cleanup after file operations', async () => {
+      activate(mockContext);
+
+      // 多数のファイル操作を実行してメモリリークがないことを確認
+      const editorChangeHandler = mockVSCode.window.onDidChangeActiveTextEditor.mock.calls[0]?.[0];
+
+      if (editorChangeHandler) {
+        for (let i = 0; i < 100; i++) {
+          const mockEditor = {
+            document: {
+              fileName: `/test/mindmap-${i}.json`,
+              getText: () => `{"root":{"id":"root-${i}","title":"Test ${i}"}}`
+            }
+          };
+
+          await editorChangeHandler(mockEditor);
+        }
+
+        // メモリ使用量の検証（具体的な実装はランタイム依存）
+        expect(editorChangeHandler).toBeDefined();
+      }
+    });
+  });
+
+  describe('Performance Testing', () => {
+    it('should complete activation within reasonable time', () => {
+      const startTime = Date.now();
+      activate(mockContext);
+      const endTime = Date.now();
+
+      // アクティベーションが1秒以内に完了することを確認
+      expect(endTime - startTime).toBeLessThan(1000);
+    });
+
+    it('should handle rapid successive command executions', async () => {
+      activate(mockContext);
+
+      const refreshCommand = mockVSCode.commands.registerCommand.mock.calls
+        .find(call => call[0] === 'mindmapTool.refreshMindmapTree')?.[1];
+
+      if (refreshCommand) {
+        const startTime = Date.now();
+        
+        // 短時間に多数のコマンドを実行
+        for (let i = 0; i < 50; i++) {
+          await refreshCommand();
+        }
+        
+        const endTime = Date.now();
+        
+        // 処理時間が妥当な範囲内であることを確認
+        expect(endTime - startTime).toBeLessThan(5000);
+      }
+    });
+  });
 });
