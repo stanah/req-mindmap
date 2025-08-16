@@ -819,5 +819,160 @@ describe('MindmapWebviewProvider', () => {
       // HTMLコンテンツが適切にエスケープされることを確認
       expect(() => provider.createWebview(mockPanel, documentWithHTML)).not.toThrow();
     });
+
+    it('should handle empty document content', async () => {
+      const emptyDocument = {
+        ...mockDocument,
+        getText: vi.fn().mockReturnValue('')
+      };
+
+      expect(() => provider.createWebview(mockPanel, emptyDocument)).not.toThrow();
+      expect(mockPanel.webview.html).toContain('initialContent: ""');
+    });
+
+    it('should handle invalid JSON structure', async () => {
+      const invalidJsonDocument = {
+        ...mockDocument,
+        getText: vi.fn().mockReturnValue('{"root": "not an object"}')
+      };
+
+      expect(() => provider.createWebview(mockPanel, invalidJsonDocument)).not.toThrow();
+    });
+
+    it('should handle missing webview options', () => {
+      const panelWithoutOptions = {
+        ...mockPanel,
+        webview: {
+          ...mockPanel.webview,
+          options: undefined
+        }
+      };
+
+      // options が undefined でもエラーが発生しないことを確認
+      expect(() => provider.createWebview(panelWithoutOptions, mockDocument)).not.toThrow();
+    });
+
+    it('should handle undefined extension URI', () => {
+      const providerWithUndefinedUri = new MindmapWebviewProvider(undefined as any);
+      
+      // extension URI が undefined でもエラーが発生しないことを確認
+      expect(() => providerWithUndefinedUri.createWebview(mockPanel, mockDocument)).not.toThrow();
+    });
+
+    it('should handle documents with null/undefined properties', async () => {
+      const dataWithNullProps = {
+        root: {
+          id: null,
+          title: undefined,
+          children: null
+        }
+      };
+
+      const documentWithNullProps = {
+        ...mockDocument,
+        getText: vi.fn().mockReturnValue(JSON.stringify(dataWithNullProps))
+      };
+
+      expect(() => provider.createWebview(mockPanel, documentWithNullProps)).not.toThrow();
+    });
+
+    it('should handle deeply nested mindmap structures', async () => {
+      // 深いネスト構造を作成
+      let deepData: any = { root: { id: 'root', title: 'Root', children: [] } };
+      let current = deepData.root;
+      
+      for (let i = 0; i < 100; i++) {
+        const child = { id: `node-${i}`, title: `Node ${i}`, children: [] };
+        current.children.push(child);
+        current = child;
+      }
+
+      const deepDocument = {
+        ...mockDocument,
+        getText: vi.fn().mockReturnValue(JSON.stringify(deepData))
+      };
+
+      expect(() => provider.createWebview(mockPanel, deepDocument)).not.toThrow();
+    });
+
+    it('should handle webview with missing onDidReceiveMessage', () => {
+      const panelWithoutMessageHandler = {
+        ...mockPanel,
+        webview: {
+          ...mockPanel.webview,
+          onDidReceiveMessage: undefined
+        }
+      };
+
+      // onDidReceiveMessage が undefined でもエラーが発生しないことを確認
+      expect(() => provider.createWebview(panelWithoutMessageHandler, mockDocument)).not.toThrow();
+    });
+
+    it('should handle panel title setting with various content types', () => {
+      const testCases = [
+        { fileName: '/test/simple.json', expectedTitle: 'Mindmap Tool - simple.json' },
+        { fileName: '/very/long/path/to/file.yaml', expectedTitle: 'Mindmap Tool - file.yaml' },
+        { fileName: 'file-without-extension', expectedTitle: 'Mindmap Tool - file-without-extension' },
+        { fileName: '', expectedTitle: 'Mindmap Tool - ' }
+      ];
+
+      testCases.forEach(testCase => {
+        const testDocument = {
+          ...mockDocument,
+          fileName: testCase.fileName
+        };
+
+        provider.createWebview(mockPanel, testDocument);
+        expect(mockPanel.title).toBe(testCase.expectedTitle);
+      });
+    });
+  });
+
+  describe('Advanced Error Scenarios', () => {
+    it('should handle CSP violations gracefully', () => {
+      // CSPに違反するような内容でもHTML生成が完了することを確認
+      provider.createWebview(mockPanel, mockDocument);
+      
+      const html = mockPanel.webview.html;
+      expect(html).toContain('Content-Security-Policy');
+      expect(html).toContain("script-src 'nonce-");
+    });
+
+    it('should handle resource loading failures', () => {
+      // リソース読み込みに失敗した場合でもWebviewが作成されることを確認
+      const mockExtensionUri = {
+        fsPath: '/nonexistent/path',
+        scheme: 'file',
+        authority: '',
+        path: '/nonexistent/path',
+        query: '',
+        fragment: '',
+        toString: () => 'file:///nonexistent/path',
+        toJSON: () => ({})
+      } as any;
+
+      const providerWithInvalidUri = new MindmapWebviewProvider(mockExtensionUri);
+      expect(() => providerWithInvalidUri.createWebview(mockPanel, mockDocument)).not.toThrow();
+    });
+
+    it('should handle concurrent message processing', async () => {
+      provider.createWebview(mockPanel, mockDocument);
+      
+      const messageHandler = mockPanel.webview.onDidReceiveMessage.mock.calls[0]?.[0];
+      expect(messageHandler).toBeDefined();
+
+      if (messageHandler) {
+        // 複数のメッセージを同時に処理
+        const messages = [
+          { command: 'contentChanged', content: '{"root": {"id": "1", "title": "Test1"}}' },
+          { command: 'contentChanged', content: '{"root": {"id": "2", "title": "Test2"}}' },
+          { command: 'saveFile', data: { root: { id: '3', title: 'Test3' } } },
+          { command: 'requestThemeChange' }
+        ];
+
+        const promises = messages.map(msg => messageHandler(msg));
+        await expect(Promise.all(promises)).resolves.not.toThrow();
+      }
+    });
   });
 });

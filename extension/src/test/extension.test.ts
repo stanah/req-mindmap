@@ -917,6 +917,132 @@ describe('VSCode Extension', () => {
       mockVSCode.commands.registerCommand = originalRegisterCommand;
       mockVSCode.window.createTreeView = originalCreateTreeView;
     });
+
+    it('should handle workspace file system errors', async () => {
+      // ファイルシステムエラーをシミュレート
+      mockVSCode.workspace.fs.writeFile.mockRejectedValue(new Error('Disk full'));
+      mockVSCode.window.showQuickPick.mockResolvedValue({ label: 'JSON' });
+      mockVSCode.window.showSaveDialog.mockResolvedValue({ fsPath: '/test/file.json' });
+
+      await activate(mockContext);
+      
+      const createCommand = mockVSCode.commands.registerCommand.mock.calls
+        .find(call => call[0] === 'mindmapTool.createNewMindmap')?.[1];
+
+      if (createCommand) {
+        await createCommand();
+        expect(mockVSCode.window.showErrorMessage).toHaveBeenCalledWith(
+          expect.stringContaining('ファイルの作成中にエラーが発生しました')
+        );
+      }
+    });
+
+    it('should handle invalid URI schemes', async () => {
+      activate(mockContext);
+
+      const mockEditor = {
+        document: {
+          fileName: 'unknown-scheme://test/file.json',
+          getText: () => '{"root": {"id": "1", "title": "Test"}}'
+        }
+      };
+
+      const editorChangeHandler = mockVSCode.window.onDidChangeActiveTextEditor.mock.calls[0]?.[0];
+      
+      if (editorChangeHandler) {
+        // 無効なURIスキームでもエラーが発生しないことを確認
+        await expect(editorChangeHandler(mockEditor)).resolves.not.toThrow();
+      }
+    });
+
+    it('should handle network timeout scenarios', async () => {
+      // ネットワークタイムアウトをシミュレート（ファイル読み込み時など）
+      const slowOperation = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Network timeout')), 100);
+      });
+
+      mockVSCode.workspace.fs.readFile.mockReturnValue(slowOperation);
+      
+      await activate(mockContext);
+      
+      // タイムアウトエラーが適切にハンドリングされることを確認
+      const openCommand = mockVSCode.commands.registerCommand.mock.calls
+        .find(call => call[0] === 'mindmapTool.openMindmap')?.[1];
+
+      if (openCommand) {
+        mockVSCode.window.showOpenDialog.mockResolvedValue([{ fsPath: '/test/remote-file.json' }]);
+        await expect(openCommand()).resolves.not.toThrow();
+      }
+    });
+
+    it('should handle circular reference in mindmap data', async () => {
+      activate(mockContext);
+
+      // 循環参照を含むJSONデータを作成
+      const circularData: any = { root: { id: 'root', title: 'Root' } };
+      circularData.root.parent = circularData.root; // 循環参照
+
+      const mockEditor = {
+        document: {
+          fileName: '/test/circular.json',
+          getText: () => {
+            try {
+              return JSON.stringify(circularData);
+            } catch {
+              return '{"error": "circular reference"}';
+            }
+          }
+        }
+      };
+
+      const editorChangeHandler = mockVSCode.window.onDidChangeActiveTextEditor.mock.calls[0]?.[0];
+      
+      if (editorChangeHandler) {
+        // 循環参照データでもエラーが発生しないことを確認
+        await expect(editorChangeHandler(mockEditor)).resolves.not.toThrow();
+      }
+    });
+
+    it('should handle malformed YAML with various syntax errors', async () => {
+      activate(mockContext);
+
+      const malformedYamlCases = [
+        'root:\n  - invalid: yaml: syntax',
+        'root:\n\tinvalid_tabs: true',
+        'root: [unclosed array',
+        'root: {unclosed: object',
+        'root:\n  invalid\n    indentation: true'
+      ];
+
+      const editorChangeHandler = mockVSCode.window.onDidChangeActiveTextEditor.mock.calls[0]?.[0];
+
+      for (const yamlContent of malformedYamlCases) {
+        const mockEditor = {
+          document: {
+            fileName: '/test/malformed.yaml',
+            getText: () => yamlContent
+          }
+        };
+
+        if (editorChangeHandler) {
+          // 様々な不正なYAMLでもエラーが発生しないことを確認
+          await expect(editorChangeHandler(mockEditor)).resolves.not.toThrow();
+        }
+      }
+    });
+
+    it('should handle extension context corruption', () => {
+      // 拡張コンテキストが破損した場合をシミュレート
+      const corruptedContext = {
+        subscriptions: null, // 本来は配列であるべき
+        extensionUri: undefined,
+        workspaceState: null,
+        globalState: null
+      } as any;
+
+      // 破損したコンテキストでもエラーが適切にハンドリングされることを確認
+      expect(() => activate(corruptedContext)).toThrow();
+    });
   });
 
   describe('Resource Cleanup', () => {
