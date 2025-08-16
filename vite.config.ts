@@ -15,6 +15,14 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    // extensionディレクトリを除外（独自のvitest設定を持つため）
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/extension/**',
+      '**/.vscode/**'
+    ]
   },
   resolve: {
     alias: {

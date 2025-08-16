@@ -12,7 +12,12 @@ describe('MindmapEditorProvider', () => {
     vi.clearAllMocks();
 
     mockContext = {
-      extensionUri: { fsPath: '/test/extension', toString: () => '/test/extension' },
+      extensionUri: { 
+        fsPath: '/test/extension', 
+        toString: () => '/test/extension',
+        scheme: 'file',
+        path: '/test/extension'
+      },
       subscriptions: []
     };
 
@@ -52,8 +57,12 @@ describe('MindmapEditorProvider', () => {
       expect(mockWebviewPanel.webview.options).toEqual({
         enableScripts: true,
         localResourceRoots: [
-          mockContext.extensionUri,
-          expect.any(Object) // vscode.Uri.joinPath の結果
+          expect.objectContaining({
+            fsPath: expect.stringContaining('/test/extension')
+          }),
+          expect.objectContaining({
+            fsPath: expect.stringContaining('/test/extension')
+          })
         ]
       });
     });
@@ -116,11 +125,20 @@ describe('MindmapEditorProvider', () => {
     it('should handle webviewReady message', async () => {
       const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
 
+      // postMessageのcallsをクリア
+      mockWebviewPanel.webview.postMessage.mockClear();
+
       await messageHandler({ command: 'webviewReady' });
 
+      // webviewReadyメッセージは updateWebviewContent と updateWebviewConfiguration を呼び出す
       expect(mockWebviewPanel.webview.postMessage).toHaveBeenCalledWith(
         expect.objectContaining({
           command: 'updateContent'
+        })
+      );
+      expect(mockWebviewPanel.webview.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          command: 'configurationChanged'
         })
       );
     });
@@ -173,6 +191,9 @@ describe('MindmapEditorProvider', () => {
     it('should handle editor adapter messages', async () => {
       const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
 
+      // postMessageのcallsをクリア
+      mockWebviewPanel.webview.postMessage.mockClear();
+
       await messageHandler({
         command: 'getCurrentCursorPosition',
         requestId: 'test-123'
@@ -192,6 +213,8 @@ describe('MindmapEditorProvider', () => {
     it('should handle file system adapter messages', async () => {
       const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
 
+      // postMessageのcallsをクリア
+      mockWebviewPanel.webview.postMessage.mockClear();
       mockVSCode.workspace.fs.readFile.mockResolvedValue(Buffer.from('test content'));
 
       await messageHandler({
@@ -225,6 +248,9 @@ describe('MindmapEditorProvider', () => {
 
     it('should handle settings adapter messages', async () => {
       const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+
+      // postMessageのcallsをクリア
+      mockWebviewPanel.webview.postMessage.mockClear();
 
       const mockConfig = {
         update: vi.fn()
@@ -274,10 +300,18 @@ describe('MindmapEditorProvider', () => {
       mockVSCode.workspace.getConfiguration.mockReturnValue(mockConfig);
 
       const mockToken = { isCancellationRequested: false };
+      
+      // getConfiguration呼び出しをクリア
+      mockVSCode.workspace.getConfiguration.mockClear();
+      
       await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken as any);
 
-      // getConfiguration の内部実装をテストするために、プライベートメソッドをアクセス
-      // 実際の設定構造を確認
+      // setTimeout内で設定が呼ばれるのを待つ
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      // getConfiguration が呼ばれたことを確認
+      expect(mockVSCode.workspace.getConfiguration).toHaveBeenCalledWith('mindmapTool');
+      // 設定値が取得されたことを確認
       expect(mockConfig.get).toHaveBeenCalledWith('editor.theme', 'vs-dark');
       expect(mockConfig.get).toHaveBeenCalledWith('mindmap.layout', 'tree');
     });

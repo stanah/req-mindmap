@@ -37,7 +37,9 @@ export class MindmapWebviewProvider {
         webview.html = this.getWebviewContent(webview, document);
 
         // メッセージハンドラーを設定
-        this.setupMessageHandlers(webview, document);
+        // 注意: MindmapEditorProviderでメッセージハンドラーを設定するため、
+        // ここでは設定しない（重複を避けるため）
+        // this.setupMessageHandlers(webview, document);
     }
 
     /**
