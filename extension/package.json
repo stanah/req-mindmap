@@ -374,7 +374,9 @@
     "lint": "eslint src --ext ts",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
+    "coverage": "vitest run --coverage",
     "test:vscode": "node ./out/test/runTest.js",
     "build-webview": "vite build --config vite.config.vscode.ts",
     "package": "vsce package"

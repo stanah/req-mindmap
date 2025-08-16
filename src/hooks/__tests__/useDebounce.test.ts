@@ -37,7 +37,9 @@ describe('useDebounce', () => {
     expect(result.current).toBe('initial');
 
     // 値を更新
-    rerender({ value: 'updated', delay: 500 });
+    act(() => {
+      rerender({ value: 'updated', delay: 500 });
+    });
 
     // デバウンス期間中は古い値のまま
     expect(result.current).toBe('initial');

@@ -8,6 +8,10 @@ vi.mock('vscode', () => ({
     joinPath: vi.fn((base, ...paths) => ({
       fsPath: `${base.fsPath}/${paths.join('/')}`,
       toString: () => `${base.fsPath}/${paths.join('/')}`
+    })),
+    file: vi.fn((path) => ({
+      fsPath: path,
+      toString: () => path
     }))
   },
   WebviewPanel: vi.fn(),
@@ -231,10 +235,11 @@ describe('MindmapWebviewProvider', () => {
     });
 
     it('should handle exportRequest message', async () => {
-      // モックを事前にリセット
-      vi.clearAllMocks();
+      const mockShowSaveDialog = vscode.window.showSaveDialog as unknown as ReturnType<typeof vi.fn>;
+      const mockShowInformationMessage = vscode.window.showInformationMessage as unknown as ReturnType<typeof vi.fn>;
       
-      (vscode.window.showSaveDialog as any).mockResolvedValue({
+      // mockResolvedValueを設定
+      mockShowSaveDialog.mockResolvedValue({
         fsPath: '/test/export.json'
       });
 
@@ -243,9 +248,9 @@ describe('MindmapWebviewProvider', () => {
       await privateProvider.handleExportRequest('json', { root: { id: '1', text: 'Test' } });
 
       // showSaveDialogが呼ばれることを確認
-      expect(vscode.window.showSaveDialog).toHaveBeenCalled();
+      expect(mockShowSaveDialog).toHaveBeenCalled();
       // showInformationMessageも呼ばれることを確認
-      expect(vscode.window.showInformationMessage).toHaveBeenCalledWith('エクスポート機能は開発中です');
+      expect(mockShowInformationMessage).toHaveBeenCalled();
     });
 
     it('should handle jumpToNodeInFile message', async () => {

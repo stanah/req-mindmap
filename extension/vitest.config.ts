@@ -17,13 +17,19 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      include: ['src/**/*'],
       exclude: [
-        'node_modules/',
-        'out/',
-        'test/',
+        '**/node_modules/**',
+        '**/out/**',
+        '**/test/**',
+        '**/__tests__/**',
+        '**/*.test.*',
+        '**/*.spec.*',
         '**/*.d.ts',
         '**/*.config.*',
-        '**/coverage/**'
+        '**/coverage/**',
+        '**/dist/**',
+        '**/build/**'
       ]
     },
     // VSCode拡張固有の設定

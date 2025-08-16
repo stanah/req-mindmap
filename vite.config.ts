@@ -22,7 +22,29 @@ export default defineConfig({
       '**/build/**',
       '**/extension/**',
       '**/.vscode/**'
-    ]
+    ],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'clover'],
+      include: ['src/**/*'],
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/build/**',
+        '**/extension/**',
+        '**/mcp-server/**',
+        '**/.vscode/**',
+        '**/test/**',
+        '**/__tests__/**',
+        '**/coverage/**',
+        '**/*.test.*',
+        '**/*.spec.*',
+        '**/*.d.ts',
+        '**/vite.config.*',
+        '**/vitest.config.*',
+        '**/eslint.config.*'
+      ]
+    }
   },
   resolve: {
     alias: {
