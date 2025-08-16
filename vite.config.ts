@@ -16,7 +16,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     // 成功テストのログを削減
-    reporter: 'verbose',
+    reporters: 'verbose',
     silent: false,
     logHeapUsage: false,
     // React act警告を含むテストログを削減

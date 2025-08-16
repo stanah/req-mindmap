@@ -20,6 +20,15 @@ export interface MindmapTreeItem {
 }
 
 /**
+ * マインドマップノードの型定義（再帰的）
+ */
+export interface MindmapNode {
+  id: string;
+  title: string;
+  children?: MindmapNode[];
+}
+
+/**
  * VSCode拡張のエクスプローラービューでマインドマップツリーを表示するプロバイダー
  * VSCode Extension API の TreeDataProvider と統合
  */
@@ -153,15 +162,7 @@ export class VSCodeTreeDataProvider {
    */
   generateTreeFromMindmapData(mindmapData: {
     title?: string;
-    root?: {
-      id: string;
-      title: string;
-      children?: Array<{
-        id: string;
-        title: string;
-        children?: unknown[];
-      }>;
-    };
+    root?: MindmapNode;
   }): MindmapTreeItem[] {
     const treeItems: MindmapTreeItem[] = [];
 
@@ -175,15 +176,7 @@ export class VSCodeTreeDataProvider {
     return treeItems;
   }
 
-  private createTreeItemFromNode(node: {
-    id: string;
-    title: string;
-    children?: Array<{
-      id: string;
-      title: string;
-      children?: unknown[];
-    }>;
-  }, isRoot = false): MindmapTreeItem {
+  private createTreeItemFromNode(node: MindmapNode, isRoot = false): MindmapTreeItem {
     const hasChildren = node.children && node.children.length > 0;
     
     const treeItem: MindmapTreeItem = {
