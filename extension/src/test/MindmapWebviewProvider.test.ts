@@ -300,7 +300,7 @@ describe('MindmapWebviewProvider', () => {
       const privateProvider = provider as any;
       let messageHandler: any;
       
-      mockWebview.onDidReceiveMessage.mockImplementation((handler) => {
+      mockWebview.onDidReceiveMessage.mockImplementation((handler: any) => {
         messageHandler = handler;
       });
       
@@ -320,7 +320,7 @@ describe('MindmapWebviewProvider', () => {
       const privateProvider = provider as any;
       let messageHandler: any;
       
-      mockWebview.onDidReceiveMessage.mockImplementation((handler) => {
+      mockWebview.onDidReceiveMessage.mockImplementation((handler: any) => {
         messageHandler = handler;
       });
       
@@ -340,7 +340,7 @@ describe('MindmapWebviewProvider', () => {
       const privateProvider = provider as any;
       let messageHandler: any;
       
-      mockWebview.onDidReceiveMessage.mockImplementation((handler) => {
+      mockWebview.onDidReceiveMessage.mockImplementation((handler: any) => {
         messageHandler = handler;
       });
       
@@ -362,7 +362,7 @@ describe('MindmapWebviewProvider', () => {
       const privateProvider = provider as any;
       let messageHandler: any;
       
-      mockWebview.onDidReceiveMessage.mockImplementation((handler) => {
+      mockWebview.onDidReceiveMessage.mockImplementation((handler: any) => {
         messageHandler = handler;
       });
       
@@ -406,13 +406,13 @@ describe('MindmapWebviewProvider', () => {
               id: '1', 
               text: 'Test',
               // 循環参照を作成してYAMLエラーを発生させる
-              circular: null
+              circular: null as any
             }
           }
         });
         
         // 循環参照を設定
-        const data = { root: { id: '1', text: 'Test', circular: null } };
+        const data = { root: { id: '1', text: 'Test', circular: null as any } };
         data.root.circular = data;
         
         privateProvider.handleContentChanged(yamlDocument, { data });
@@ -468,6 +468,148 @@ describe('MindmapWebviewProvider', () => {
       expect(consoleSpy).toHaveBeenCalledWith('saveFile要求にデータが含まれていません');
       
       consoleSpy.mockRestore();
+    });
+
+    it('should handle saveFile errors gracefully', async () => {
+      // document.saveでエラーを発生させる
+      mockDocument.save.mockRejectedValue(new Error('Save failed'));
+
+      const privateProvider = provider as any;
+      
+      await privateProvider.handleSaveFile(mockWebview, mockDocument, {
+        data: { root: { id: '1', text: 'Test' } }
+      });
+
+      expect(mockWebview.postMessage).toHaveBeenCalledWith({
+        command: 'saveComplete',
+        success: false,
+        error: 'Save failed'
+      });
+
+      expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
+        expect.stringContaining('ファイル保存に失敗しました: Save failed')
+      );
+    });
+
+    it('should handle saveFile with string data', async () => {
+      const privateProvider = provider as any;
+      
+      await privateProvider.handleSaveFile(mockWebview, mockDocument, {
+        data: '{"root": {"id": "1", "text": "Test"}}'
+      });
+
+      expect(mockDocument.save).toHaveBeenCalled();
+      expect(mockWebview.postMessage).toHaveBeenCalledWith({
+        command: 'saveComplete',
+        success: true
+      });
+    });
+
+    it('should handle saveFile with YAML document', async () => {
+      const yamlDocument = {
+        ...mockDocument,
+        fileName: '/test/mindmap.yaml',
+        uri: { fsPath: '/test/mindmap.yaml' }
+      };
+
+      const privateProvider = provider as any;
+      
+      await privateProvider.handleSaveFile(mockWebview, yamlDocument, {
+        data: { root: { id: '1', text: 'Test' } }
+      });
+
+      expect(yamlDocument.save).toHaveBeenCalled();
+      expect(mockWebview.postMessage).toHaveBeenCalledWith({
+        command: 'saveComplete',
+        success: true
+      });
+    });
+
+    it('should handle exportRequest with no save dialog selection', async () => {
+      const mockShowSaveDialog = vscode.window.showSaveDialog as unknown as ReturnType<typeof vi.fn>;
+      
+      // ユーザーがキャンセルした場合
+      mockShowSaveDialog.mockResolvedValue(undefined);
+
+      const privateProvider = provider as any;
+      
+      await privateProvider.handleExportRequest('json', { root: { id: '1', text: 'Test' } });
+
+      expect(mockShowSaveDialog).toHaveBeenCalled();
+      // キャンセル時は何もしない
+      expect(vscode.window.showInformationMessage).not.toHaveBeenCalled();
+    });
+
+    it('should handle exportRequest errors', async () => {
+      const mockShowSaveDialog = vscode.window.showSaveDialog as unknown as ReturnType<typeof vi.fn>;
+      
+      mockShowSaveDialog.mockRejectedValue(new Error('Dialog failed'));
+
+      const privateProvider = provider as any;
+      
+      await privateProvider.handleExportRequest('json', { root: { id: '1', text: 'Test' } });
+
+      expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
+        expect.stringContaining('エクスポートに失敗しました: Error: Dialog failed')
+      );
+    });
+
+    it('should handle themeChangeRequest errors', () => {
+      const mockExecuteCommand = vscode.commands.executeCommand as unknown as ReturnType<typeof vi.fn>;
+      
+      mockExecuteCommand.mockImplementation(() => {
+        throw new Error('Command failed');
+      });
+
+      const privateProvider = provider as any;
+      
+      privateProvider.handleThemeChangeRequest(mockWebview, { theme: 'dark' });
+
+      expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
+        expect.stringContaining('テーマ変更画面を開けませんでした: Command failed')
+      );
+    });
+
+    it('should handle contentChanged with missing content and data', () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const privateProvider = provider as any;
+      
+      privateProvider.handleContentChanged(mockDocument, {
+        command: 'contentChanged'
+        // contentもdataも含まれていない
+      });
+
+      expect(consoleSpy).toHaveBeenCalledWith('contentChanged要求にcontentまたはdataが含まれていません');
+      
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle jumpToNodeInFile with existing visible editor', async () => {
+      mockDocument.getText.mockReturnValue('{"id": "test-node", "text": "Test Node"}');
+      
+      const mockEditor = {
+        document: { uri: { toString: () => '/test/mindmap.json' } },
+        viewColumn: vscode.ViewColumn.One,
+        selection: {},
+        revealRange: vi.fn()
+      };
+
+      (vscode.window.visibleTextEditors as any) = [mockEditor];
+      (vscode.window.showTextDocument as any).mockResolvedValue(mockEditor);
+
+      const privateProvider = provider as any;
+      
+      await privateProvider.handleJumpToNodeInFile(mockWebview, mockDocument, {
+        nodeId: 'test-node',
+        requestId: 'req-123'
+      });
+
+      expect(vscode.window.showTextDocument).toHaveBeenCalledWith(
+        mockDocument, 
+        vscode.ViewColumn.One, 
+        false
+      );
     });
   });
 });

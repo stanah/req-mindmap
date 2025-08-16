@@ -25,7 +25,7 @@ describe('VSCode Platform Adapters', () => {
       };
 
       // グローバルVSCode APIのセットアップ
-      global.acquireVsCodeApi = vi.fn(() => mockWebview);
+      (global as any).acquireVsCodeApi = vi.fn(() => mockWebview);
     });
 
     describe('VSCodeEditorAdapter Integration', () => {
@@ -168,7 +168,7 @@ describe('VSCode Platform Adapters', () => {
         onDidReceiveMessage: vi.fn()
       };
 
-      global.acquireVsCodeApi = vi.fn(() => mockWebview);
+      (global as any).acquireVsCodeApi = vi.fn(() => mockWebview);
     });
 
     it('should handle communication errors gracefully', async () => {
@@ -188,11 +188,11 @@ describe('VSCode Platform Adapters', () => {
     });
 
     it('should handle missing VSCode API gracefully', () => {
-      global.acquireVsCodeApi = undefined as any;
+      (global as any).acquireVsCodeApi = undefined as any;
 
       // VSCode APIが利用できない場合の処理をテスト
       expect(() => {
-        const api = global.acquireVsCodeApi?.();
+        const api = (global as any).acquireVsCodeApi?.();
         if (!api) {
           console.warn('VSCode API not available');
         }

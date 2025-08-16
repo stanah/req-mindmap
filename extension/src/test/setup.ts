@@ -115,18 +115,18 @@ global.console = {
 };
 
 // テスト失敗時のみコンソールログを復元
-global.addEventListener?.('error', () => {
-  global.console = originalConsole;
+(global as any).addEventListener?.('error', () => {
+  (global as any).console = originalConsole;
 });
 
 // vitest の afterEach で失敗時のログ復元
-if (typeof afterEach !== 'undefined') {
-  afterEach(() => {
-    // テスト失敗時はコンソールログを復元
-    if (global.expect?.getState?.()?.testPath) {
-      global.console = originalConsole;
-    }
-  });
-}
+import { afterEach } from 'vitest';
+
+afterEach(() => {
+  // テスト失敗時はコンソールログを復元
+  if ((global as any).expect?.getState?.()?.testPath) {
+    (global as any).console = originalConsole;
+  }
+});
 
 export { mockVSCode };

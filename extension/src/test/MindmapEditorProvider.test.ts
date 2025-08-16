@@ -180,6 +180,83 @@ describe('MindmapEditorProvider', () => {
 
       expect(mockDocument.save).toHaveBeenCalled();
     });
+
+    it('should handle showWarning message', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+
+      await messageHandler({
+        command: 'showWarning',
+        message: 'Test warning message'
+      });
+
+      expect(mockVSCode.window.showWarningMessage).toHaveBeenCalledWith('Test warning message');
+    });
+
+    it('should handle showInformation message', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+
+      await messageHandler({
+        command: 'showInformation',
+        message: 'Test info message'
+      });
+
+      expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledWith('Test info message');
+    });
+
+    it('should handle getInitialConfiguration message', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+
+      // postMessageのcallsをクリア
+      mockWebviewPanel.webview.postMessage.mockClear();
+
+      await messageHandler({ command: 'getInitialConfiguration' });
+
+      expect(mockWebviewPanel.webview.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          command: 'configurationChanged'
+        })
+      );
+    });
+
+    it('should handle exportMindmap message', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+
+      await messageHandler({
+        command: 'exportMindmap',
+        format: 'png'
+      });
+
+      expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledWith('エクスポート機能は準備中です');
+    });
+
+    it('should handle unknown command', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      await messageHandler({
+        command: 'unknownCommand',
+        data: 'test'
+      });
+
+      expect(consoleSpy).toHaveBeenCalledWith('未知のWebviewメッセージ:', expect.objectContaining({
+        command: 'unknownCommand'
+      }));
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle message processing errors', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+      
+      // mockDocumentのsaveメソッドがエラーを投げるようにモック
+      mockDocument.save.mockRejectedValue(new Error('Save failed'));
+
+      await messageHandler({ command: 'saveDocument' });
+
+      expect(mockVSCode.window.showErrorMessage).toHaveBeenCalledWith(
+        expect.stringContaining('メッセージ処理エラー: Save failed')
+      );
+    });
   });
 
   describe('Adapter Message Handling', () => {
@@ -253,6 +330,7 @@ describe('MindmapEditorProvider', () => {
       mockWebviewPanel.webview.postMessage.mockClear();
 
       const mockConfig = {
+        get: vi.fn(),
         update: vi.fn()
       };
       mockVSCode.workspace.getConfiguration.mockReturnValue(mockConfig);
@@ -277,6 +355,196 @@ describe('MindmapEditorProvider', () => {
         })
       );
     });
+
+    it('should handle setCursorPosition message', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+      
+      const mockEditor = {
+        document: { uri: { toString: () => mockDocument.uri.toString() } },
+        selection: undefined,
+        revealRange: vi.fn()
+      };
+      (mockVSCode.window as any).visibleTextEditors = [mockEditor];
+      mockVSCode.Position.mockImplementation((line, character) => ({ line, character }));
+      mockVSCode.Selection.mockImplementation((start, end) => ({ start, end }));
+      mockVSCode.Range.mockImplementation((start, end) => ({ start, end }));
+
+      // postMessageのcallsをクリア
+      mockWebviewPanel.webview.postMessage.mockClear();
+
+      await messageHandler({
+        command: 'setCursorPosition',
+        requestId: 'test-cursor',
+        line: 5,
+        column: 10
+      });
+
+      expect(mockVSCode.Position).toHaveBeenCalledWith(5, 10);
+      expect(mockEditor.revealRange).toHaveBeenCalled();
+      expect(mockWebviewPanel.webview.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: 'test-cursor',
+          result: { success: true }
+        })
+      );
+    });
+
+    it('should handle highlightRange message', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+      
+      const mockEditor = {
+        document: { uri: { toString: () => mockDocument.uri.toString() } },
+        selection: undefined,
+        revealRange: vi.fn()
+      };
+      (mockVSCode.window as any).visibleTextEditors = [mockEditor];
+
+      await messageHandler({
+        command: 'highlightRange',
+        requestId: 'test-highlight',
+        startLine: 1,
+        endLine: 3,
+        startColumn: 0,
+        endColumn: 5
+      });
+
+      expect(mockVSCode.Position).toHaveBeenCalledWith(1, 0);
+      expect(mockVSCode.Position).toHaveBeenCalledWith(3, 5);
+      expect(mockEditor.revealRange).toHaveBeenCalled();
+    });
+
+    it('should handle writeFile message', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+      
+      mockVSCode.workspace.fs.writeFile.mockResolvedValue(undefined);
+      mockVSCode.Uri.file.mockReturnValue({ scheme: 'file', path: '/test/file.txt', fsPath: '/test/file.txt', toString: () => '/test/file.txt' });
+
+      await messageHandler({
+        command: 'writeFile',
+        requestId: 'test-write',
+        path: '/test/file.txt',
+        content: 'test content'
+      });
+
+      expect(mockVSCode.workspace.fs.writeFile).toHaveBeenCalled();
+      expect(mockWebviewPanel.webview.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: 'test-write',
+          result: { success: true }
+        })
+      );
+    });
+
+    it('should handle exists message', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+      
+      mockVSCode.workspace.fs.stat.mockResolvedValue({});
+      mockVSCode.Uri.file.mockReturnValue({ scheme: 'file', path: '/test/file.txt', fsPath: '/test/file.txt', toString: () => '/test/file.txt' });
+
+      await messageHandler({
+        command: 'exists',
+        requestId: 'test-exists',
+        path: '/test/file.txt'
+      });
+
+      expect(mockVSCode.workspace.fs.stat).toHaveBeenCalled();
+      expect(mockWebviewPanel.webview.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: 'test-exists',
+          result: true
+        })
+      );
+    });
+
+    it('should handle showConfirmDialog message', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+      
+      mockVSCode.window.showQuickPick.mockResolvedValue('Yes');
+
+      await messageHandler({
+        command: 'showConfirmDialog',
+        requestId: 'test-confirm',
+        message: 'Are you sure?',
+        options: ['Yes', 'No']
+      });
+
+      expect(mockVSCode.window.showQuickPick).toHaveBeenCalledWith(
+        ['Yes', 'No'],
+        { placeHolder: 'Are you sure?' }
+      );
+      expect(mockWebviewPanel.webview.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: 'test-confirm',
+          result: 'Yes'
+        })
+      );
+    });
+
+    it('should handle showStatusBarMessage message', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+
+      await messageHandler({
+        command: 'showStatusBarMessage',
+        message: 'Status message',
+        timeout: 5000
+      });
+
+      expect(mockVSCode.window.setStatusBarMessage).toHaveBeenCalledWith('Status message', 5000);
+    });
+
+    it('should handle adapter ready messages', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      await messageHandler({ command: 'editorAdapterReady' });
+      await messageHandler({ command: 'fileSystemAdapterReady' });
+      await messageHandler({ command: 'uiAdapterReady' });
+      await messageHandler({ command: 'treeDataProviderReady' });
+
+      expect(consoleSpy).toHaveBeenCalledWith('EditorAdapter初期化完了');
+      expect(consoleSpy).toHaveBeenCalledWith('FileSystemAdapter初期化完了');
+      expect(consoleSpy).toHaveBeenCalledWith('UIAdapter初期化完了');
+      expect(consoleSpy).toHaveBeenCalledWith('TreeDataProvider初期化完了');
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle settingsAdapterReady message', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+      
+      // postMessageのcallsをクリア
+      mockWebviewPanel.webview.postMessage.mockClear();
+
+      await messageHandler({ command: 'settingsAdapterReady' });
+
+      // settingsAdapterReadyはhandleAdapterMessagesで処理されるため、適切なメッセージが送信されることを確認
+      expect(mockWebviewPanel.webview.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          command: 'initialConfiguration'
+        })
+      );
+    });
+
+    it('should handle adapter message errors', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+      
+      // readFileでエラーを発生させる
+      mockVSCode.workspace.fs.readFile.mockRejectedValue(new Error('File not found'));
+      mockVSCode.Uri.file.mockReturnValue({ scheme: 'file', path: '/test/missing.txt', fsPath: '/test/missing.txt', toString: () => '/test/missing.txt' });
+
+      await messageHandler({
+        command: 'readFile',
+        requestId: 'test-error',
+        path: '/test/missing.txt'
+      });
+
+      expect(mockWebviewPanel.webview.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: 'test-error',
+          error: expect.stringContaining('ファイル読み込みエラー')
+        })
+      );
+    });
   });
 
   describe('Configuration Management', () => {
@@ -294,7 +562,8 @@ describe('MindmapEditorProvider', () => {
             'autoSave.delay': 1000
           };
           return configs[key] || defaultValue;
-        })
+        }),
+        update: vi.fn()
       };
 
       mockVSCode.workspace.getConfiguration.mockReturnValue(mockConfig);
