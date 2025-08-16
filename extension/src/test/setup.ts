@@ -103,4 +103,30 @@ const mockVSCode = {
 // VSCode APIを全域でモック
 vi.mock('vscode', () => mockVSCode);
 
+// テスト中のコンソールログを制御（成功テストでは非表示にする）
+const originalConsole = { ...console };
+global.console = {
+  ...console,
+  log: vi.fn(),
+  debug: vi.fn(),
+  info: vi.fn(),
+  warn: console.warn, // 警告は表示
+  error: console.error, // エラーは表示
+};
+
+// テスト失敗時のみコンソールログを復元
+global.addEventListener?.('error', () => {
+  global.console = originalConsole;
+});
+
+// vitest の afterEach で失敗時のログ復元
+if (typeof afterEach !== 'undefined') {
+  afterEach(() => {
+    // テスト失敗時はコンソールログを復元
+    if (global.expect?.getState?.()?.testPath) {
+      global.console = originalConsole;
+    }
+  });
+}
+
 export { mockVSCode };

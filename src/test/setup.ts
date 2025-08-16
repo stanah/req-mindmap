@@ -104,6 +104,32 @@ Object.defineProperty(global, 'localStorage', { value: localStorageMock });
 (global as unknown as { localStorageMock: typeof localStorageMock }).localStorageMock = localStorageMock;
 Object.defineProperty(global, 'localStorage', { value: localStorageMock });
 
+// テスト中のコンソールログを制御（成功テストでは非表示にする）
+const originalConsole = { ...console };
+global.console = {
+  ...console,
+  log: vi.fn(),
+  debug: vi.fn(),
+  info: vi.fn(),
+  warn: console.warn, // 警告は表示
+  error: console.error, // エラーは表示
+};
+
+// テスト失敗時のみコンソールログを復元
+global.addEventListener?.('error', () => {
+  global.console = originalConsole;
+});
+
+// vitest の afterEach で失敗時のログ復元
+if (typeof afterEach !== 'undefined') {
+  afterEach(() => {
+    // テスト失敗時はコンソールログを復元
+    if (global.expect?.getState?.()?.testPath) {
+      global.console = originalConsole;
+    }
+  });
+}
+
 // SVGのモック
 Object.defineProperty(global.SVGElement.prototype, 'getBBox', {
   value: vi.fn().mockReturnValue({ x: 0, y: 0, width: 100, height: 50 }),

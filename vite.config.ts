@@ -15,6 +15,10 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    // 成功テストのログを削減
+    reporter: 'verbose',
+    silent: false,
+    logHeapUsage: false,
     // extensionディレクトリを除外（独自のvitest設定を持つため）
     exclude: [
       '**/node_modules/**',

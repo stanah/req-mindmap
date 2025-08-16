@@ -6,6 +6,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    // 成功テストのログを削減
+    reporter: 'verbose',
+    silent: false,
+    logHeapUsage: false,
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     exclude: [
       '**/node_modules/**',
