@@ -1,0 +1,285 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { mockVSCode } from './setup';
+import { MindmapEditorProvider } from '../MindmapEditorProvider';
+
+describe('MindmapEditorProvider', () => {
+  let provider: MindmapEditorProvider;
+  let mockContext: any;
+  let mockDocument: any;
+  let mockWebviewPanel: any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    mockContext = {
+      extensionUri: { fsPath: '/test/extension', toString: () => '/test/extension' },
+      subscriptions: []
+    };
+
+    mockDocument = {
+      uri: { toString: () => '/test/mindmap.json' },
+      fileName: '/test/mindmap.json',
+      getText: vi.fn(() => '{"root":{"id":"root","title":"Test"}}'),
+      save: vi.fn(),
+      positionAt: vi.fn((pos) => ({ line: 0, character: pos }))
+    };
+
+    mockWebviewPanel = {
+      webview: {
+        options: {},
+        postMessage: vi.fn(),
+        onDidReceiveMessage: vi.fn(),
+        asWebviewUri: vi.fn((uri) => ({ 
+          toString: () => `vscode-webview://webview/${uri?.toString?.() || uri}`,
+          fsPath: `vscode-webview://webview/${uri?.toString?.() || uri}`,
+          scheme: 'vscode-webview'
+        })),
+        html: ''
+      },
+      onDidDispose: vi.fn()
+    };
+
+    provider = new MindmapEditorProvider(mockContext);
+  });
+
+  describe('resolveCustomTextEditor', () => {
+    it('should initialize webview panel correctly', async () => {
+      const mockToken = { isCancellationRequested: false };
+
+      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken as any);
+
+      // Webviewのオプションが設定されていることを確認
+      expect(mockWebviewPanel.webview.options).toEqual({
+        enableScripts: true,
+        localResourceRoots: [
+          mockContext.extensionUri,
+          expect.any(Object) // vscode.Uri.joinPath の結果
+        ]
+      });
+    });
+
+    it('should set up message handling', async () => {
+      const mockToken = { isCancellationRequested: false };
+
+      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken as any);
+
+      // メッセージハンドラーが設定されていることを確認
+      expect(mockWebviewPanel.webview.onDidReceiveMessage).toHaveBeenCalled();
+    });
+
+    it('should set up document change monitoring', async () => {
+      const mockToken = { isCancellationRequested: false };
+
+      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken as any);
+
+      // ドキュメント変更の監視が設定されていることを確認
+      expect(mockVSCode.workspace.onDidChangeTextDocument).toHaveBeenCalled();
+      expect(mockVSCode.workspace.onDidChangeConfiguration).toHaveBeenCalled();
+      expect(mockVSCode.window.onDidChangeActiveColorTheme).toHaveBeenCalled();
+    });
+
+    it('should send initial content and configuration', async () => {
+      vi.useFakeTimers();
+      const mockToken = { isCancellationRequested: false };
+
+      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken as any);
+
+      // setTimeout をトリガー
+      vi.advanceTimersByTime(100);
+
+      expect(mockWebviewPanel.webview.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          command: 'updateContent',
+          content: expect.any(String),
+          fileName: mockDocument.fileName,
+          uri: mockDocument.uri.toString()
+        })
+      );
+
+      expect(mockWebviewPanel.webview.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          command: 'configurationChanged',
+          configuration: expect.any(Object)
+        })
+      );
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe('Message Handling', () => {
+    beforeEach(async () => {
+      const mockToken = { isCancellationRequested: false };
+      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken as any);
+    });
+
+    it('should handle webviewReady message', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+
+      await messageHandler({ command: 'webviewReady' });
+
+      expect(mockWebviewPanel.webview.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          command: 'updateContent'
+        })
+      );
+    });
+
+    it('should handle updateDocument message', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+      
+      // WorkspaceEditのモック
+      const mockEdit = {
+        replace: vi.fn()
+      };
+      mockVSCode.WorkspaceEdit.mockReturnValue(mockEdit);
+      mockVSCode.Range.mockReturnValue({});
+      mockVSCode.workspace.applyEdit.mockResolvedValue(true);
+
+      await messageHandler({
+        command: 'updateDocument',
+        content: '{"root":{"id":"root","title":"Updated"}}'
+      });
+
+      expect(mockVSCode.workspace.applyEdit).toHaveBeenCalled();
+    });
+
+    it('should handle showError message', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+
+      await messageHandler({
+        command: 'showError',
+        message: 'Test error message'
+      });
+
+      expect(mockVSCode.window.showErrorMessage).toHaveBeenCalledWith('Test error message');
+    });
+
+    it('should handle saveDocument message', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+
+      await messageHandler({ command: 'saveDocument' });
+
+      expect(mockDocument.save).toHaveBeenCalled();
+    });
+  });
+
+  describe('Adapter Message Handling', () => {
+    beforeEach(async () => {
+      const mockToken = { isCancellationRequested: false };
+      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken as any);
+    });
+
+    it('should handle editor adapter messages', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+
+      await messageHandler({
+        command: 'getCurrentCursorPosition',
+        requestId: 'test-123'
+      });
+
+      expect(mockWebviewPanel.webview.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: 'test-123',
+          result: expect.objectContaining({
+            line: expect.any(Number),
+            column: expect.any(Number)
+          })
+        })
+      );
+    });
+
+    it('should handle file system adapter messages', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+
+      mockVSCode.workspace.fs.readFile.mockResolvedValue(Buffer.from('test content'));
+
+      await messageHandler({
+        command: 'readFile',
+        requestId: 'test-456',
+        path: '/test/file.txt'
+      });
+
+      expect(mockVSCode.workspace.fs.readFile).toHaveBeenCalledWith(
+        expect.anything() // vscode.Uri.file の結果
+      );
+
+      expect(mockWebviewPanel.webview.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: 'test-456',
+          result: 'test content'
+        })
+      );
+    });
+
+    it('should handle UI adapter messages', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+
+      await messageHandler({
+        command: 'showInformationMessage',
+        message: 'Test info message'
+      });
+
+      expect(mockVSCode.window.showInformationMessage).toHaveBeenCalledWith('Test info message');
+    });
+
+    it('should handle settings adapter messages', async () => {
+      const messageHandler = mockWebviewPanel.webview.onDidReceiveMessage.mock.calls[0][0];
+
+      const mockConfig = {
+        update: vi.fn()
+      };
+      mockVSCode.workspace.getConfiguration.mockReturnValue(mockConfig);
+
+      await messageHandler({
+        command: 'updateConfiguration',
+        requestId: 'test-789',
+        key: 'editor.theme',
+        value: 'dark'
+      });
+
+      expect(mockConfig.update).toHaveBeenCalledWith(
+        'editor.theme',
+        'dark',
+        mockVSCode.ConfigurationTarget.Global
+      );
+
+      expect(mockWebviewPanel.webview.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: 'test-789',
+          result: { success: true }
+        })
+      );
+    });
+  });
+
+  describe('Configuration Management', () => {
+    it('should return correct configuration structure', async () => {
+      const mockConfig = {
+        get: vi.fn((key, defaultValue) => {
+          const configs: Record<string, any> = {
+            'editor.theme': 'vs-dark',
+            'editor.fontSize': 14,
+            'mindmap.layout': 'tree',
+            'mindmap.theme': 'auto',
+            'validation.enabled': true,
+            'validation.showWarnings': true,
+            'autoSave.enabled': true,
+            'autoSave.delay': 1000
+          };
+          return configs[key] || defaultValue;
+        })
+      };
+
+      mockVSCode.workspace.getConfiguration.mockReturnValue(mockConfig);
+
+      const mockToken = { isCancellationRequested: false };
+      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken as any);
+
+      // getConfiguration の内部実装をテストするために、プライベートメソッドをアクセス
+      // 実際の設定構造を確認
+      expect(mockConfig.get).toHaveBeenCalledWith('editor.theme', 'vs-dark');
+      expect(mockConfig.get).toHaveBeenCalledWith('mindmap.layout', 'tree');
+    });
+  });
+});

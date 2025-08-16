@@ -22,7 +22,10 @@
     "onLanguage:json",
     "onLanguage:yaml",
     "onCommand:mindmapTool.openMindmap",
-    "onCommand:mindmapTool.createNewMindmap"
+    "onCommand:mindmapTool.createNewMindmap",
+    "onView:mindmapTree",
+    "workspaceContains:**/*.mindmap.{json,yaml,yml}",
+    "workspaceContains:**/*.{json,yaml,yml}"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -58,6 +61,53 @@
         "command": "mindmapTool.validateSchema",
         "title": "スキーマを検証",
         "category": "Mindmap Tool"
+      },
+      {
+        "command": "mindmapTool.refreshMindmapTree",
+        "title": "マインドマップツリーを更新",
+        "category": "Mindmap Tool",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "mindmapTool.selectNode",
+        "title": "ノードを選択",
+        "category": "Mindmap Tool"
+      },
+      {
+        "command": "mindmapTool.addChildNode",
+        "title": "子ノードを追加",
+        "category": "Mindmap Tool",
+        "icon": "$(add)"
+      },
+      {
+        "command": "mindmapTool.addSiblingNode",
+        "title": "兄弟ノードを追加",
+        "category": "Mindmap Tool",
+        "icon": "$(add)"
+      },
+      {
+        "command": "mindmapTool.deleteNode",
+        "title": "ノードを削除",
+        "category": "Mindmap Tool",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "mindmapTool.editNode",
+        "title": "ノードを編集",
+        "category": "Mindmap Tool",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "mindmapTool.collapseAll",
+        "title": "すべて折りたたみ",
+        "category": "Mindmap Tool",
+        "icon": "$(collapse-all)"
+      },
+      {
+        "command": "mindmapTool.expandAll",
+        "title": "すべて展開",
+        "category": "Mindmap Tool",
+        "icon": "$(expand-all)"
       }
     ],
     "menus": {
@@ -95,6 +145,75 @@
         {
           "command": "mindmapTool.openPreviewToSide",
           "when": "resourceExtname == .json || resourceExtname == .yaml || resourceExtname == .yml"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "mindmapTool.refreshMindmapTree",
+          "when": "view == mindmapTree",
+          "group": "navigation"
+        },
+        {
+          "command": "mindmapTool.collapseAll",
+          "when": "view == mindmapTree",
+          "group": "navigation"
+        },
+        {
+          "command": "mindmapTool.expandAll",
+          "when": "view == mindmapTree",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "mindmapTool.addChildNode",
+          "when": "view == mindmapTree && viewItem == mindmapRoot",
+          "group": "inline"
+        },
+        {
+          "command": "mindmapTool.addChildNode",
+          "when": "view == mindmapTree && viewItem == mindmapNode",
+          "group": "inline"
+        },
+        {
+          "command": "mindmapTool.addSiblingNode",
+          "when": "view == mindmapTree && viewItem == mindmapNode",
+          "group": "inline"
+        },
+        {
+          "command": "mindmapTool.editNode",
+          "when": "view == mindmapTree && (viewItem == mindmapRoot || viewItem == mindmapNode)",
+          "group": "inline"
+        },
+        {
+          "command": "mindmapTool.deleteNode",
+          "when": "view == mindmapTree && viewItem == mindmapNode",
+          "group": "inline"
+        },
+        {
+          "command": "mindmapTool.addChildNode",
+          "when": "view == mindmapTree && viewItem == mindmapRoot",
+          "group": "1_add"
+        },
+        {
+          "command": "mindmapTool.addChildNode",
+          "when": "view == mindmapTree && viewItem == mindmapNode",
+          "group": "1_add"
+        },
+        {
+          "command": "mindmapTool.addSiblingNode",
+          "when": "view == mindmapTree && viewItem == mindmapNode",
+          "group": "1_add"
+        },
+        {
+          "command": "mindmapTool.editNode",
+          "when": "view == mindmapTree && (viewItem == mindmapRoot || viewItem == mindmapNode)",
+          "group": "2_edit"
+        },
+        {
+          "command": "mindmapTool.deleteNode",
+          "when": "view == mindmapTree && viewItem == mindmapNode",
+          "group": "3_delete"
         }
       ]
     },
@@ -200,6 +319,25 @@
         "url": "./schemas/mindmap-data.schema.json"
       }
     ],
+    "views": {
+      "mindmapExplorer": [
+        {
+          "id": "mindmapTree",
+          "name": "マインドマップツリー",
+          "when": "workspaceHasMinMindmapFiles || mindmapTool.isActive",
+          "contextualTitle": "マインドマップツリー"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mindmapExplorer",
+          "title": "Mindmap Tool",
+          "icon": "$(graph)"
+        }
+      ]
+    },
     "customEditors": [
       {
         "viewType": "mindmapTool.mindmapEditor",
@@ -234,22 +372,28 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
+    "test:vscode": "node ./out/test/runTest.js",
     "build-webview": "vite build --config vite.config.vscode.ts",
     "package": "vsce package"
   },
   "devDependencies": {
-    "@types/vscode": "^1.74.0",
     "@types/node": "16.x",
+    "@types/vscode": "^1.74.0",
     "@typescript-eslint/eslint-plugin": "^5.45.0",
     "@typescript-eslint/parser": "^5.45.0",
+    "@vitest/ui": "^3.2.4",
+    "@vscode/test-electron": "^2.5.2",
     "eslint": "^8.28.0",
     "typescript": "^4.9.4",
+    "vitest": "^3.2.4",
     "vsce": "^2.15.0"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0",
-    "ajv": "^8.17.1"
+    "ajv": "^8.17.1",
+    "js-yaml": "^4.1.0"
   },
   "repository": {
     "type": "git",

@@ -39,6 +39,9 @@ export class MindmapEditorProvider implements vscode.CustomTextEditorProvider {
         // Webviewを作成
         this.webviewProvider.createWebview(webviewPanel, document);
 
+        // Webviewからのメッセージハンドリングを設定
+        this.setupWebviewMessageHandling(webviewPanel, document);
+
         // ドキュメント変更の監視
         const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
             if (e.document.uri.toString() === document.uri.toString()) {
@@ -196,6 +199,248 @@ export class MindmapEditorProvider implements vscode.CustomTextEditorProvider {
         } catch (error) {
             console.error('エクスポート処理でエラーが発生:', error);
             vscode.window.showErrorMessage(`エクスポートエラー: ${error instanceof Error ? error.message : String(error)}`);
+        }
+    }
+
+    /**
+     * Webviewからのメッセージハンドリングを設定
+     */
+    private setupWebviewMessageHandling(webviewPanel: vscode.WebviewPanel, document: vscode.TextDocument): void {
+        webviewPanel.webview.onDidReceiveMessage(
+            async (message) => {
+                try {
+                    // 既存のメッセージハンドリング
+                    await this.handleWebviewMessage(message, document, webviewPanel);
+                    
+                    // 新しいアダプターからのメッセージハンドリング
+                    await this.handleAdapterMessages(message, document, webviewPanel);
+                } catch (error) {
+                    console.error('Webviewメッセージの処理中にエラーが発生:', error);
+                    webviewPanel.webview.postMessage({
+                        requestId: message.requestId,
+                        error: error instanceof Error ? error.message : String(error)
+                    });
+                }
+            },
+            undefined
+        );
+    }
+
+    /**
+     * アダプターからのメッセージを処理
+     */
+    private async handleAdapterMessages(
+        message: { command: string; requestId?: string; [key: string]: unknown },
+        document: vscode.TextDocument,
+        webviewPanel: vscode.WebviewPanel
+    ): Promise<void> {
+        const { command, requestId } = message;
+
+        try {
+            let result: unknown = undefined;
+
+            switch (command) {
+                // エディターアダプター関連
+                case 'editorAdapterReady':
+                    console.log('EditorAdapter初期化完了');
+                    break;
+
+                case 'updateDocument':
+                    if (typeof message.content === 'string') {
+                        await this.updateDocument(document, message.content);
+                        result = { success: true };
+                    }
+                    break;
+
+                case 'setLanguageMode':
+                    // 言語モード変更（実際のVSCodeでは自動検出される）
+                    console.log('言語モード変更要求:', message.language);
+                    result = { success: true };
+                    break;
+
+                case 'setCursorPosition':
+                    // カーソル位置設定
+                    if (typeof message.line === 'number') {
+                        const editor = vscode.window.visibleTextEditors.find(
+                            e => e.document.uri.toString() === document.uri.toString()
+                        );
+                        if (editor) {
+                            const position = new vscode.Position(message.line, message.column as number || 0);
+                            editor.selection = new vscode.Selection(position, position);
+                            editor.revealRange(new vscode.Range(position, position));
+                        }
+                        result = { success: true };
+                    }
+                    break;
+
+                case 'highlightRange':
+                    // 範囲ハイライト
+                    if (typeof message.startLine === 'number' && typeof message.endLine === 'number') {
+                        const editor = vscode.window.visibleTextEditors.find(
+                            e => e.document.uri.toString() === document.uri.toString()
+                        );
+                        if (editor) {
+                            const startPos = new vscode.Position(message.startLine, message.startColumn as number || 0);
+                            const endPos = new vscode.Position(message.endLine, message.endColumn as number || 0);
+                            editor.selection = new vscode.Selection(startPos, endPos);
+                            editor.revealRange(new vscode.Range(startPos, endPos));
+                        }
+                        result = { success: true };
+                    }
+                    break;
+
+                case 'getCurrentCursorPosition':
+                    // 現在のカーソル位置取得
+                    const editor = vscode.window.visibleTextEditors.find(
+                        e => e.document.uri.toString() === document.uri.toString()
+                    );
+                    if (editor) {
+                        const position = editor.selection.active;
+                        result = { line: position.line, column: position.character };
+                    } else {
+                        result = { line: 0, column: 0 };
+                    }
+                    break;
+
+                case 'saveFile':
+                    // ファイル保存
+                    await document.save();
+                    result = { success: true };
+                    break;
+
+                // ファイルシステムアダプター関連
+                case 'fileSystemAdapterReady':
+                    console.log('FileSystemAdapter初期化完了');
+                    break;
+
+                case 'readFile':
+                    if (typeof message.path === 'string') {
+                        try {
+                            const uri = vscode.Uri.file(message.path);
+                            const content = await vscode.workspace.fs.readFile(uri);
+                            result = new TextDecoder().decode(content);
+                        } catch (error) {
+                            throw new Error(`ファイル読み込みエラー: ${error}`);
+                        }
+                    }
+                    break;
+
+                case 'writeFile':
+                    if (typeof message.path === 'string' && typeof message.content === 'string') {
+                        try {
+                            const uri = vscode.Uri.file(message.path);
+                            const content = new TextEncoder().encode(message.content);
+                            await vscode.workspace.fs.writeFile(uri, content);
+                            result = { success: true };
+                        } catch (error) {
+                            throw new Error(`ファイル書き込みエラー: ${error}`);
+                        }
+                    }
+                    break;
+
+                case 'exists':
+                    if (typeof message.path === 'string') {
+                        try {
+                            const uri = vscode.Uri.file(message.path);
+                            await vscode.workspace.fs.stat(uri);
+                            result = true;
+                        } catch {
+                            result = false;
+                        }
+                    }
+                    break;
+
+                // UIアダプター関連
+                case 'uiAdapterReady':
+                    console.log('UIAdapter初期化完了');
+                    break;
+
+                case 'showInformationMessage':
+                    if (typeof message.message === 'string') {
+                        vscode.window.showInformationMessage(message.message);
+                    }
+                    break;
+
+                case 'showWarningMessage':
+                    if (typeof message.message === 'string') {
+                        vscode.window.showWarningMessage(message.message);
+                    }
+                    break;
+
+                case 'showErrorMessage':
+                    if (typeof message.message === 'string') {
+                        vscode.window.showErrorMessage(message.message);
+                    }
+                    break;
+
+                case 'showConfirmDialog':
+                    if (typeof message.message === 'string' && Array.isArray(message.options)) {
+                        result = await vscode.window.showQuickPick(message.options as string[], {
+                            placeHolder: message.message
+                        });
+                    }
+                    break;
+
+                case 'showStatusBarMessage':
+                    if (typeof message.message === 'string') {
+                        vscode.window.setStatusBarMessage(
+                            message.message,
+                            message.timeout as number || 3000
+                        );
+                    }
+                    break;
+
+                // 設定アダプター関連
+                case 'settingsAdapterReady':
+                    console.log('SettingsAdapter初期化完了');
+                    // 初期設定を送信
+                    webviewPanel.webview.postMessage({
+                        command: 'initialConfiguration',
+                        settings: this.getConfiguration()
+                    });
+                    break;
+
+                case 'updateConfiguration':
+                    if (typeof message.key === 'string') {
+                        const config = vscode.workspace.getConfiguration('mindmapTool');
+                        await config.update(message.key, message.value, vscode.ConfigurationTarget.Global);
+                        result = { success: true };
+                    }
+                    break;
+
+                // ツリーデータプロバイダー関連
+                case 'treeDataProviderReady':
+                    console.log('TreeDataProvider初期化完了');
+                    break;
+
+                case 'updateTreeData':
+                    // ツリーデータ更新（実際のTreeDataProviderとの連携は将来実装）
+                    console.log('ツリーデータ更新:', message.data);
+                    result = { success: true };
+                    break;
+
+                default:
+                    // 未知のコマンドは無視
+                    break;
+            }
+
+            // レスポンスを送信
+            if (requestId) {
+                webviewPanel.webview.postMessage({
+                    requestId,
+                    result
+                });
+            }
+
+        } catch (error) {
+            console.error(`アダプターメッセージ処理エラー (${command}):`, error);
+            
+            if (requestId) {
+                webviewPanel.webview.postMessage({
+                    requestId,
+                    error: error instanceof Error ? error.message : String(error)
+                });
+            }
         }
     }
 

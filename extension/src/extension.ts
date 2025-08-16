@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { MindmapEditorProvider } from './MindmapEditorProvider';
 import { MindmapWebviewProvider } from './MindmapWebviewProvider';
+import { MindmapTreeDataProvider, MindmapTreeItem } from './MindmapTreeDataProvider';
 
 // アクティブなプレビューパネルを管理
 const previewPanels = new Map<string, vscode.WebviewPanel>();
@@ -28,6 +29,46 @@ export function activate(context: vscode.ExtensionContext) {
                 supportsMultipleEditorsPerDocument: false,
             }
         )
+    );
+
+    // ツリーデータプロバイダーの登録
+    const treeDataProvider = new MindmapTreeDataProvider();
+    const treeView = vscode.window.createTreeView('mindmapTree', {
+        treeDataProvider,
+        showCollapseAll: true
+    });
+    context.subscriptions.push(treeView);
+
+    // アクティブエディタの変更を監視してツリーを更新
+    context.subscriptions.push(
+        vscode.window.onDidChangeActiveTextEditor(async (editor) => {
+            if (editor) {
+                const fileName = editor.document.fileName;
+                const ext = path.extname(fileName).toLowerCase();
+                
+                // マインドマップファイルの場合のみツリーを更新
+                if (ext === '.json' || ext === '.yaml' || ext === '.yml') {
+                    try {
+                        const content = editor.document.getText();
+                        // マインドマップデータかどうかをチェック
+                        let data: unknown;
+                        if (ext === '.yaml' || ext === '.yml') {
+                            const yaml = require('js-yaml');
+                            data = yaml.load(content);
+                        } else {
+                            data = JSON.parse(content);
+                        }
+                        
+                        // rootプロパティがある場合のみマインドマップとして扱う
+                        if (data && typeof data === 'object' && 'root' in data) {
+                            await treeDataProvider.setCurrentDocument(editor.document);
+                        }
+                    } catch {
+                        // 解析エラーは無視
+                    }
+                }
+            }
+        })
     );
 
     // コマンドの登録
@@ -183,6 +224,126 @@ export function activate(context: vscode.ExtensionContext) {
                 
             } catch (error) {
                 vscode.window.showErrorMessage(`スキーマ検証に失敗しました: ${error}`);
+            }
+        }),
+
+        // ツリービュー関連コマンド
+        vscode.commands.registerCommand('mindmapTool.refreshMindmapTree', () => {
+            treeDataProvider.refresh();
+            vscode.window.showInformationMessage('マインドマップツリーを更新しました');
+        }),
+
+        vscode.commands.registerCommand('mindmapTool.selectNode', async (nodeId: string, nodeData?: unknown) => {
+            console.log('ノード選択:', nodeId, nodeData);
+            
+            // ノード選択時にエディタで該当箇所にジャンプ（将来実装）
+            if (nodeData) {
+                const nodeInfo = nodeData as { title: string; description?: string };
+                vscode.window.showInformationMessage(`ノード "${nodeInfo.title}" を選択しました`);
+            }
+        }),
+
+        vscode.commands.registerCommand('mindmapTool.addChildNode', async (treeItem: MindmapTreeItem) => {
+            const nodeTitle = await vscode.window.showInputBox({
+                prompt: 'ノードのタイトルを入力してください',
+                placeHolder: '新しいノード'
+            });
+
+            if (!nodeTitle) {
+                return;
+            }
+
+            const nodeDescription = await vscode.window.showInputBox({
+                prompt: 'ノードの説明を入力してください（オプション）',
+                placeHolder: '説明'
+            });
+
+            const newNodeId = `node_${Date.now()}`;
+            
+            try {
+                await treeDataProvider.addNode(treeItem.nodeId, {
+                    id: newNodeId,
+                    title: nodeTitle,
+                    description: nodeDescription || ''
+                });
+                
+                vscode.window.showInformationMessage(`子ノード "${nodeTitle}" を追加しました`);
+            } catch (error) {
+                vscode.window.showErrorMessage(`ノードの追加に失敗しました: ${error}`);
+            }
+        }),
+
+        vscode.commands.registerCommand('mindmapTool.addSiblingNode', async (treeItem: MindmapTreeItem) => {
+            const nodeTitle = await vscode.window.showInputBox({
+                prompt: 'ノードのタイトルを入力してください',
+                placeHolder: '新しいノード'
+            });
+
+            if (!nodeTitle) {
+                return;
+            }
+
+            const nodeDescription = await vscode.window.showInputBox({
+                prompt: 'ノードの説明を入力してください（オプション）',
+                placeHolder: '説明'
+            });
+
+            const newNodeId = `node_${Date.now()}`;
+            
+            // 兄弟ノード追加は親ノードに追加することと同じ
+            // 実際の実装では親ノードのIDを取得する必要がある
+            vscode.window.showInformationMessage('兄弟ノード追加機能は開発中です');
+        }),
+
+        vscode.commands.registerCommand('mindmapTool.editNode', async (treeItem: MindmapTreeItem) => {
+            if (!treeItem.nodeData) {
+                return;
+            }
+
+            const currentTitle = treeItem.nodeData.title;
+            const newTitle = await vscode.window.showInputBox({
+                prompt: 'ノードのタイトルを編集してください',
+                value: currentTitle
+            });
+
+            if (!newTitle || newTitle === currentTitle) {
+                return;
+            }
+
+            // ノード編集の実装（将来追加）
+            vscode.window.showInformationMessage('ノード編集機能は開発中です');
+        }),
+
+        vscode.commands.registerCommand('mindmapTool.deleteNode', async (treeItem: MindmapTreeItem) => {
+            const nodeTitle = treeItem.nodeData?.title || treeItem.label;
+            const confirmed = await vscode.window.showWarningMessage(
+                `ノード "${nodeTitle}" を削除しますか？`,
+                { modal: true },
+                '削除'
+            );
+
+            if (confirmed === '削除') {
+                try {
+                    await treeDataProvider.deleteNode(treeItem.nodeId);
+                    vscode.window.showInformationMessage(`ノード "${nodeTitle}" を削除しました`);
+                } catch (error) {
+                    vscode.window.showErrorMessage(`ノードの削除に失敗しました: ${error}`);
+                }
+            }
+        }),
+
+        vscode.commands.registerCommand('mindmapTool.collapseAll', () => {
+            treeDataProvider.collapseAll();
+            if (treeView.visible) {
+                // VSCode の TreeView の collapseAll は直接呼び出せない
+                vscode.window.showInformationMessage('すべてのノードを折りたたみました');
+            }
+        }),
+
+        vscode.commands.registerCommand('mindmapTool.expandAll', () => {
+            treeDataProvider.expandAll();
+            if (treeView.visible) {
+                vscode.window.showInformationMessage('すべてのノードを展開しました');
             }
         })
     ];
