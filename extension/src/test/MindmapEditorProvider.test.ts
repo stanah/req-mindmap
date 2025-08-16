@@ -587,4 +587,114 @@ describe('MindmapEditorProvider', () => {
       expect(mockConfig.get).toHaveBeenCalledWith('mindmap.layout', 'tree');
     });
   });
+
+  describe('Advanced Error Handling', () => {
+    it('should handle webview creation failures', async () => {
+      // Webview作成が失敗する場合をシミュレート
+      const failingWebviewPanel = {
+        ...mockWebviewPanel,
+        webview: {
+          ...mockWebviewPanel.webview,
+          options: null, // プロパティ設定が失敗する状況をシミュレート
+          postMessage: vi.fn().mockRejectedValue(new Error('Webview communication failed'))
+        }
+      };
+
+      const mockToken: vscode.CancellationToken = { isCancellationRequested: false, onCancellationRequested: vi.fn() };
+
+      // Webview設定失敗でもクラッシュしないことを確認
+      await expect(
+        provider.resolveCustomTextEditor(mockDocument, failingWebviewPanel, mockToken)
+      ).resolves.not.toThrow();
+    });
+
+    it('should handle document reading failures', async () => {
+      const failingDocument = {
+        ...mockDocument,
+        getText: vi.fn().mockImplementation(() => {
+          throw new Error('Document read failed');
+        })
+      };
+
+      const mockToken: vscode.CancellationToken = { isCancellationRequested: false, onCancellationRequested: vi.fn() };
+
+      // ドキュメント読み取り失敗ではエラーが発生する（実装では例外処理されていない）
+      await expect(
+        provider.resolveCustomTextEditor(failingDocument, mockWebviewPanel, mockToken)
+      ).rejects.toThrow('Document read failed');
+    });
+
+    it('should handle corrupted JSON documents', async () => {
+      const corruptedJsonDocument = {
+        ...mockDocument,
+        getText: vi.fn().mockReturnValue('{"malformed": json, "missing": quotes}')
+      };
+
+      const mockToken: vscode.CancellationToken = { isCancellationRequested: false, onCancellationRequested: vi.fn() };
+
+      // 破損したJSONでもクラッシュしないことを確認
+      await expect(
+        provider.resolveCustomTextEditor(corruptedJsonDocument, mockWebviewPanel, mockToken)
+      ).resolves.not.toThrow();
+    });
+  });
+
+  describe('Performance Testing', () => {
+    it('should handle document changes efficiently', async () => {
+      const mockToken: vscode.CancellationToken = { isCancellationRequested: false, onCancellationRequested: vi.fn() };
+      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken);
+
+      // ドキュメント変更イベントハンドラーを取得
+      const changeHandler = mockVSCode.workspace.onDidChangeTextDocument.mock.calls[0]?.[0];
+      expect(changeHandler).toBeDefined();
+
+      if (changeHandler) {
+        const mockChangeEvent = {
+          document: {
+            uri: mockDocument.uri,
+            getText: vi.fn().mockReturnValue('{"updated": "content"}')
+          }
+        };
+
+        const startTime = performance.now();
+        
+        // 大量の変更イベントを短時間で処理
+        for (let i = 0; i < 50; i++) {
+          changeHandler(mockChangeEvent);
+        }
+        
+        const endTime = performance.now();
+
+        // 50回の変更が100ms以内で処理されることを確認
+        expect(endTime - startTime).toBeLessThan(100);
+      }
+    });
+
+    it('should handle configuration changes efficiently', async () => {
+      const mockToken: vscode.CancellationToken = { isCancellationRequested: false, onCancellationRequested: vi.fn() };
+      await provider.resolveCustomTextEditor(mockDocument, mockWebviewPanel, mockToken);
+
+      // 設定変更イベントハンドラーを取得
+      const configHandler = mockVSCode.workspace.onDidChangeConfiguration.mock.calls[0]?.[0];
+      expect(configHandler).toBeDefined();
+
+      if (configHandler) {
+        const mockConfigEvent = {
+          affectsConfiguration: vi.fn().mockReturnValue(true)
+        };
+
+        const startTime = performance.now();
+        
+        // 大量の設定変更イベントを処理
+        for (let i = 0; i < 30; i++) {
+          configHandler(mockConfigEvent);
+        }
+        
+        const endTime = performance.now();
+
+        // 30回の設定変更が50ms以内で処理されることを確認
+        expect(endTime - startTime).toBeLessThan(50);
+      }
+    });
+  });
 });

@@ -93,10 +93,25 @@ const mockVSCode = {
     Workspace: 2,
     WorkspaceFolder: 3
   },
-  EventEmitter: vi.fn(() => ({
-    fire: vi.fn(),
-    event: vi.fn()
-  })),
+  EventEmitter: vi.fn(() => {
+    const listeners: Array<(...args: any[]) => void> = [];
+    return {
+      fire: vi.fn((...args: any[]) => {
+        listeners.forEach(listener => listener(...args));
+      }),
+      event: vi.fn((listener: (...args: any[]) => void) => {
+        listeners.push(listener);
+        return {
+          dispose: vi.fn(() => {
+            const index = listeners.indexOf(listener);
+            if (index >= 0) {
+              listeners.splice(index, 1);
+            }
+          })
+        };
+      })
+    };
+  }),
   Disposable: vi.fn()
 };
 

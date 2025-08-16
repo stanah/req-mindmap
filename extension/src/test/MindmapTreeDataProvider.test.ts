@@ -413,5 +413,151 @@ root:
     it('should call collapseAll without errors', () => {
       expect(() => provider.collapseAll()).not.toThrow();
     });
+
+    it('should trigger onDidChangeTreeData when refresh is called', () => {
+      const spy = vi.fn();
+      const disposable = provider.onDidChangeTreeData(spy);
+      
+      provider.refresh();
+      
+      // EventEmitterを直接呼び出すため、即座に呼ばれる
+      expect(spy).toHaveBeenCalledTimes(1);
+      disposable.dispose();
+    });
+  });
+
+  describe('edge cases and error handling', () => {
+    it('should handle getTreeItem with undefined element', () => {
+      // getTreeItemは単純にelementを返すだけなので、undefinedでも例外は投げない
+      expect(() => provider.getTreeItem(undefined as any)).not.toThrow();
+      const result = provider.getTreeItem(undefined as any);
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle getChildren with invalid parent', () => {
+      const result = provider.getChildren('invalid-id');
+      expect(result).toEqual([]);
+    });
+
+    it('should handle setCurrentDocument with null document', async () => {
+      // setCurrentDocumentはnullでも例外を投げない（loadTreeDataでundefinedチェックがある）
+      await expect(provider.setCurrentDocument(null as any)).resolves.not.toThrow();
+    });
+
+    it('should handle document with missing uri', async () => {
+      const invalidDocument = {
+        ...mockDocument,
+        uri: undefined
+      };
+
+      // URIがなくても例外は投げない（getText()が呼ばれるまで）
+      await expect(provider.setCurrentDocument(invalidDocument as any)).resolves.not.toThrow();
+    });
+
+    it('should handle empty YAML document', async () => {
+      const emptyYamlDocument = {
+        ...mockDocument,
+        fileName: '/test/empty.yml',
+        getText: vi.fn().mockReturnValue('')
+      };
+
+      await provider.setCurrentDocument(emptyYamlDocument);
+      
+      const children = provider.getChildren();
+      expect(children).toEqual([]);
+    });
+
+    it('should handle YAML document with only comments', async () => {
+      const commentOnlyYaml = `
+# This is a comment
+# Another comment
+`;
+      const commentDocument = {
+        ...mockDocument,
+        fileName: '/test/comments.yml',
+        getText: vi.fn().mockReturnValue(commentOnlyYaml)
+      };
+
+      await provider.setCurrentDocument(commentDocument);
+      
+      const children = provider.getChildren();
+      expect(children).toEqual([]);
+    });
+
+    it('should handle deeply nested JSON structure', async () => {
+      const deepNestedJson = {
+        root: {
+          id: 'root',
+          title: 'Root',
+          children: [
+            {
+              id: 'level1',
+              title: 'Level 1',
+              children: [
+                {
+                  id: 'level2',
+                  title: 'Level 2',
+                  children: [
+                    {
+                      id: 'level3',
+                      title: 'Level 3'
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      };
+
+      const deepDocument = {
+        ...mockDocument,
+        fileName: '/test/deep.json',
+        getText: vi.fn().mockReturnValue(JSON.stringify(deepNestedJson))
+      };
+
+      await provider.setCurrentDocument(deepDocument);
+      
+      const rootChildren = provider.getChildren();
+      expect(rootChildren).toHaveLength(1);
+      
+      const level1Children = provider.getChildren(rootChildren[0]);
+      expect(level1Children).toHaveLength(1);
+      
+      const level2Children = provider.getChildren(level1Children[0]);
+      expect(level2Children).toHaveLength(1);
+      
+      const level3Children = provider.getChildren(level2Children[0]);
+      expect(level3Children).toHaveLength(1);
+    });
+
+    it('should handle addNode with invalid parent ID', async () => {
+      await provider.setCurrentDocument(mockDocument);
+      
+      const invalidNodeData = { id: 'new-node', title: 'New Node' };
+      
+      // addNodeは存在しないparentIdでも例外を投げない（単に何もしない）
+      await expect(provider.addNode('invalid-parent', invalidNodeData)).resolves.not.toThrow();
+    });
+
+    it('should handle deleteNode with non-existent node', async () => {
+      await provider.setCurrentDocument(mockDocument);
+      
+      // deleteNodeは存在しないnodeIdでも例外を投げない（単に何もしない）
+      await expect(provider.deleteNode('non-existent')).resolves.not.toThrow();
+    });
+
+    it('should handle JSON with circular references gracefully', async () => {
+      // 循環参照を含む無効なJSONでエラーハンドリングをテスト
+      const documentWithCircularRef = {
+        ...mockDocument,
+        getText: vi.fn().mockReturnValue('{"root": {"id": "root", "children": [{"id": "child", "parent": {}}]}}')
+      };
+
+      await provider.setCurrentDocument(documentWithCircularRef);
+      
+      // エラーがあってもsetCurrentDocumentは完了する（loadTreeDataでcatchされる）
+      expect(documentWithCircularRef.getText).toHaveBeenCalled();
+    });
   });
 });
