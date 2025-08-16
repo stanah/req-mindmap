@@ -19,6 +19,18 @@ export default defineConfig({
     reporter: 'verbose',
     silent: false,
     logHeapUsage: false,
+    // React act警告を含むテストログを削減
+    onConsoleLog(log, type) {
+      if (
+        type === 'stderr' &&
+        (log.includes('Warning: An update to') ||
+         log.includes('act(...)') ||
+         log.includes('was not wrapped in act'))
+      ) {
+        return false; // ログを表示しない
+      }
+      return true; // その他のログは表示
+    },
     // extensionディレクトリを除外（独自のvitest設定を持つため）
     exclude: [
       '**/node_modules/**',

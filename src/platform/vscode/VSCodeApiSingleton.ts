@@ -65,14 +65,22 @@ class VSCodeApiSingleton {
     try {
       // 最初にHTMLで設定されたAPIインスタンスをチェック
       if (typeof window !== 'undefined' && window.vscodeApiInstance) {
-        console.log('[VSCodeApiSingleton] HTMLで設定済みのVSCode APIを使用');
+        if (process.env.NODE_ENV !== 'test') {
+          console.log('[VSCodeApiSingleton] HTMLで設定済みのVSCode APIを使用');
+        }
         this.vscodeApi = window.vscodeApiInstance;
       } else if (typeof window !== 'undefined' && window.acquireVsCodeApi) {
-        console.log('[VSCodeApiSingleton] VSCode API を取得中...');
+        if (process.env.NODE_ENV !== 'test') {
+          console.log('[VSCodeApiSingleton] VSCode API を取得中...');
+        }
         this.vscodeApi = window.acquireVsCodeApi();
-        console.log('[VSCodeApiSingleton] VSCode API を正常に取得しました');
+        if (process.env.NODE_ENV !== 'test') {
+          console.log('[VSCodeApiSingleton] VSCode API を正常に取得しました');
+        }
       } else {
-        console.log('[VSCodeApiSingleton] VSCode API が利用できません（ブラウザモード）');
+        if (process.env.NODE_ENV !== 'test') {
+          console.log('[VSCodeApiSingleton] VSCode API が利用できません（ブラウザモード）');
+        }
       }
     } catch (error) {
       console.error('[VSCodeApiSingleton] VSCode API の取得に失敗:', error);

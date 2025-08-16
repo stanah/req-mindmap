@@ -53,7 +53,9 @@ export class VSCodePlatformAdapter implements PlatformAdapter {
   }
 
   dispose(): void {
-    console.log('VSCodeプラットフォームアダプターを破棄しています...');
+    if (process.env.NODE_ENV !== 'test') {
+      console.log('VSCodeプラットフォームアダプターを破棄しています...');
+    }
     
     // 各アダプターの破棄
     // this.fileSystem.dispose();
@@ -61,6 +63,8 @@ export class VSCodePlatformAdapter implements PlatformAdapter {
     // this.ui.dispose();
     // this.settings.dispose();
     
-    console.log('VSCodeプラットフォームアダプターの破棄が完了しました');
+    if (process.env.NODE_ENV !== 'test') {
+      console.log('VSCodeプラットフォームアダプターの破棄が完了しました');
+    }
   }
 }

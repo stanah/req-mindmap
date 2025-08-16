@@ -130,6 +130,58 @@ if (typeof afterEach !== 'undefined') {
   });
 }
 
+// React act() 警告を抑制 - より包括的に対応
+const originalError = console.error;
+const originalWarn = console.warn;
+
+// console.error の置き換え
+console.error = (...args: unknown[]) => {
+  const message = String(args[0] || '');
+  if (
+    message.includes('Warning: An update to') ||
+    message.includes('act(...)') ||
+    message.includes('Warning: You called act(') ||
+    message.includes('was not wrapped in act') ||
+    message.includes('When testing, code that causes React state updates should be wrapped into act') ||
+    message.includes('This ensures that you\'re testing the behavior the user would see in the browser')
+  ) {
+    return; // React act 警告は無視
+  }
+  originalError.apply(console, args);
+};
+
+// console.warn の置き換え（念のため）
+console.warn = (...args: unknown[]) => {
+  const message = String(args[0] || '');
+  if (
+    message.includes('Warning: An update to') ||
+    message.includes('act(...)') ||
+    message.includes('was not wrapped in act')
+  ) {
+    return; // React act 警告は無視
+  }
+  originalWarn.apply(console, args);
+};
+
+// React Testing Library の act 警告も抑制
+// @ts-ignore
+global.IS_REACT_ACT_ENVIRONMENT = true;
+
+// React DevTools のメッセージも抑制
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, '__REACT_DEVTOOLS_GLOBAL_HOOK__', {
+    value: {
+      isDisabled: true,
+      supportsFiber: true,
+      inject: () => {},
+      onCommitFiberRoot: () => {},
+      onCommitFiberUnmount: () => {},
+    },
+    writable: false,
+    configurable: false,
+  });
+}
+
 // SVGのモック
 Object.defineProperty(global.SVGElement.prototype, 'getBBox', {
   value: vi.fn().mockReturnValue({ x: 0, y: 0, width: 100, height: 50 }),

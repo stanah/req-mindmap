@@ -24,12 +24,16 @@ export class PlatformAdapterFactory {
   private static createAdapter(): PlatformAdapter {
     // VSCode拡張環境の検出
     if (this.isVSCodeEnvironment()) {
-      console.log('[PlatformAdapterFactory] VSCode環境を検出、VSCodePlatformAdapterを作成');
+      if (process.env.NODE_ENV !== 'test') {
+        console.log('[PlatformAdapterFactory] VSCode環境を検出、VSCodePlatformAdapterを作成');
+      }
       return new VSCodePlatformAdapter();
     }
 
     // デフォルトはブラウザ環境
-    console.log('[PlatformAdapterFactory] ブラウザ環境、BrowserPlatformAdapterを作成');
+    if (process.env.NODE_ENV !== 'test') {
+      console.log('[PlatformAdapterFactory] ブラウザ環境、BrowserPlatformAdapterを作成');
+    }
     return new BrowserPlatformAdapter();
   }
 

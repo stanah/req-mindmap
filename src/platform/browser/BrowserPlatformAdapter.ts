@@ -26,19 +26,25 @@ export class BrowserPlatformAdapter implements PlatformAdapter {
 
   async initialize(): Promise<void> {
     // ブラウザ環境での初期化処理
-    console.log('ブラウザプラットフォームアダプターを初期化しています...');
+    if (process.env.NODE_ENV !== 'test') {
+      console.log('ブラウザプラットフォームアダプターを初期化しています...');
+    }
 
     // File System Access API の対応確認
     if ('showOpenFilePicker' in window) {
-      console.log('File System Access API が利用可能です');
+      if (process.env.NODE_ENV !== 'test') {
+        console.log('File System Access API が利用可能です');
+      }
     } else {
-      console.log('File System Access API が利用できません。フォールバック機能を使用します');
+      console.warn('File System Access API が利用できません。フォールバック機能を使用します');
     }
 
     // Monaco Editor の初期化確認
     try {
       await import('monaco-editor');
-      console.log('Monaco Editor が利用可能です');
+      if (process.env.NODE_ENV !== 'test') {
+        console.log('Monaco Editor が利用可能です');
+      }
     } catch {
       console.warn('Monaco Editor が読み込まれていません');
     }
@@ -48,7 +54,9 @@ export class BrowserPlatformAdapter implements PlatformAdapter {
       const testKey = 'mindmap-tool-test';
       localStorage.setItem(testKey, 'test');
       localStorage.removeItem(testKey);
-      console.log('ローカルストレージが利用可能です');
+      if (process.env.NODE_ENV !== 'test') {
+        console.log('ローカルストレージが利用可能です');
+      }
     } catch (error) {
       console.warn('ローカルストレージが利用できません:', error);
     }
@@ -56,17 +64,23 @@ export class BrowserPlatformAdapter implements PlatformAdapter {
     // デフォルト設定の初期化
     await this.initializeDefaultSettings();
 
-    console.log('ブラウザプラットフォームアダプターの初期化が完了しました');
+    if (process.env.NODE_ENV !== 'test') {
+      console.log('ブラウザプラットフォームアダプターの初期化が完了しました');
+    }
   }
 
   dispose(): void {
-    console.log('ブラウザプラットフォームアダプターを破棄しています...');
+    if (process.env.NODE_ENV !== 'test') {
+      console.log('ブラウザプラットフォームアダプターを破棄しています...');
+    }
     
     this.editor.dispose();
     this.ui.dispose();
     this.settings.dispose();
     
-    console.log('ブラウザプラットフォームアダプターの破棄が完了しました');
+    if (process.env.NODE_ENV !== 'test') {
+      console.log('ブラウザプラットフォームアダプターの破棄が完了しました');
+    }
   }
 
   /**
