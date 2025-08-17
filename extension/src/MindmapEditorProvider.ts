@@ -307,8 +307,7 @@ export class MindmapEditorProvider implements vscode.CustomTextEditorProvider {
                 case 'saveFile':
                     // ファイル保存 - MindmapWebviewProviderの処理を使用
                     console.log('saveFile要求を受信 (MindmapEditorProvider):', message);
-                    await this.webviewProvider.handleSaveFile(webviewPanel.webview, document, message);
-                    result = { success: true };
+                    result = await this.webviewProvider.handleSaveFile(webviewPanel.webview, document, message);
                     break;
 
                 // ファイルシステムアダプター関連
