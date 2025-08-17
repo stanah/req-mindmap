@@ -29,8 +29,11 @@ export class PlatformAdapterFactory {
       return new VSCodePlatformAdapter();
     }
 
-    // VSCode環境以外では例外を発生
-    throw new Error('Unsupported platform: Only VSCode environment is supported');
+    // VSCode環境以外でもVSCodePlatformAdapterを作成（スタンドアローンモード）
+    if (process.env.NODE_ENV !== 'test') {
+      console.log('[PlatformAdapterFactory] スタンドアローン環境を検出、VSCodePlatformAdapter（制限モード）を作成');
+    }
+    return new VSCodePlatformAdapter();
   }
 
   /**
@@ -104,8 +107,21 @@ export function isPlatformCapabilityAvailable(capability: string): boolean {
   
   // VSCodeアダプターのみサポート
   if (adapter instanceof VSCodePlatformAdapter) {
-    // VSCodeアダプターの機能チェックはここに実装
-    return false;
+    // VSCodeアダプターの機能チェック
+    switch (capability) {
+      case 'fileSystem':
+        return true; // ファイルシステムは常に利用可能
+      case 'editor':
+        return adapter.editor !== undefined;
+      case 'ui':
+        return adapter.ui !== undefined;
+      case 'settings':
+        return adapter.settings !== undefined;
+      case 'vscodeApi':
+        return adapter.getPlatformType() === 'vscode';
+      default:
+        return false;
+    }
   }
 
   return false;
@@ -129,12 +145,23 @@ export class PlatformError extends Error {
  * プラットフォーム固有のエラーを処理
  */
 export function handlePlatformError(error: Error): void {
-  const adapter = getPlatformAdapter();
-  
-  if (error instanceof PlatformError) {
-    adapter.ui.showErrorMessage(`プラットフォームエラー: ${error.message}`);
-  } else {
-    adapter.ui.showErrorMessage(`予期しないエラーが発生しました: ${error.message}`);
+  try {
+    const adapter = getPlatformAdapter();
+    
+    if (error instanceof PlatformError) {
+      adapter.ui.showErrorMessage(`プラットフォームエラー: ${error.message}`);
+    } else {
+      adapter.ui.showErrorMessage(`予期しないエラーが発生しました: ${error.message}`);
+    }
+  } catch (handlerError) {
+    // アダプター取得やUI表示に失敗した場合のフォールバック
+    console.error('プラットフォームエラーハンドラーでエラーが発生:', handlerError);
+    console.error('元のエラー:', error);
+    
+    // ブラウザのアラートでフォールバック表示
+    if (typeof window !== 'undefined' && window.alert) {
+      window.alert(`エラーが発生しました: ${error.message}`);
+    }
   }
   
   console.error('プラットフォームエラー:', error);

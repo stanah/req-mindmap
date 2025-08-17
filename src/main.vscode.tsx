@@ -1,7 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './vscode/VSCodeApp';
+import ErrorBoundary from './components/shared/ErrorBoundary';
 import './index.css';
+import './components/shared/ErrorBoundary.css';
 
 // VSCode拡張環境用のメインエントリーポイント
 import { PlatformAdapterFactory } from './platform';
@@ -37,7 +39,24 @@ async function initializeApp() {
     
     root.render(
       <React.StrictMode>
-        <App />
+        <ErrorBoundary
+          onError={(error, errorInfo) => {
+            // VSCode拡張にエラーを通知
+            const singleton = VSCodeApiSingleton.getInstance();
+            if (singleton.isAvailable()) {
+              singleton.postMessage({
+                command: 'applicationError',
+                error: {
+                  message: error.message,
+                  stack: error.stack,
+                  componentStack: errorInfo.componentStack,
+                }
+              });
+            }
+          }}
+        >
+          <App />
+        </ErrorBoundary>
       </React.StrictMode>
     );
     

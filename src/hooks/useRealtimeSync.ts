@@ -41,7 +41,7 @@ export function useRealtimeSync() {
     averageSyncTime: 0
   });
 
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastContentRef = useRef<string>('');
   const syncDelayRef = useRef(syncDelay);
 
