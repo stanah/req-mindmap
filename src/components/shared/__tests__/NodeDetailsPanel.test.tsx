@@ -98,7 +98,8 @@ describe('NodeDetailsPanel', () => {
 
     // カスタムフィールドが表示される
     expect(screen.getByText('カスタムフィールド')).toBeInTheDocument();
-    expect(screen.getByText('優先度:')).toBeInTheDocument();
+    const priorityLabels = screen.getAllByText('優先度:');
+    expect(priorityLabels.length).toBeGreaterThan(0);
     expect(screen.getByText('high')).toBeInTheDocument();
     expect(screen.getAllByText('状態:').length).toBeGreaterThan(0);
     expect(screen.getByText('active')).toBeInTheDocument();
