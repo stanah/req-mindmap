@@ -144,8 +144,6 @@ export const useAppStore = create<AppStore>()(
             settingsService.addRecentFile({
               path,
               name: fileName,
-              size: 0, // TODO: 実際のファイルサイズを取得
-              format: format as 'json' | 'yaml',
             });
             const updatedRecentFiles = settingsService.getRecentFiles().map(f => f.path);
             
