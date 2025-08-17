@@ -367,12 +367,12 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run webpack",
+    "vscode:prepublish": "pnpm run webpack",
     "compile": "tsc -p ./",
     "webpack": "webpack --mode production",
     "webpack:dev": "webpack --mode development",
     "watch": "webpack --mode development --watch",
-    "pretest": "npm run compile && npm run lint",
+    "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src",
     "test": "vitest",
     "test:run": "vitest run",
