@@ -5,7 +5,11 @@
       "component": "req-mindmap",
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
-        "extension/package.json"
+        {
+          "type": "json",
+          "path": "extension/package.json",
+          "jsonpath": "$.version"
+        }
       ]
     }
   },
