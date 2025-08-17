@@ -13,10 +13,22 @@ on:
 jobs:
   claude:
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+        (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      ) && (
+        github.event.comment.author_association == 'OWNER' ||
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'COLLABORATOR' ||
+        github.event.review.author_association == 'OWNER' ||
+        github.event.review.author_association == 'MEMBER' ||
+        github.event.review.author_association == 'COLLABORATOR' ||
+        github.event.issue.author_association == 'OWNER' ||
+        github.event.issue.author_association == 'MEMBER' ||
+        github.event.issue.author_association == 'COLLABORATOR'
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -25,6 +37,17 @@ jobs:
       id-token: write
       actions: read # Required for Claude to read CI results on PRs
     steps:
+      # オプション: セキュリティ強化（パブリックリポジトリ推奨）
+      # - name: Harden runner environment
+      #   uses: step-security/harden-runner@v2
+      #   with:
+      #     egress-policy: audit
+      #     allowed-endpoints: >
+      #       api.anthropic.com:443
+      #       api.github.com:443
+      #       github.com:443
+      #       registry.npmjs.org:443
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -50,13 +73,40 @@ jobs:
           # assignee_trigger: "claude-bot"
           
           # Optional: Allow Claude to run specific commands
-          # allowed_tools: "Bash(npm install),Bash(npm run build),Bash(npm run test:*),Bash(npm run lint:*)"
+          allowed_tools: |
+            Bash(pnpm *)
+            Bash(git *)
+            Bash(ls *)
+            Bash(cat *)
+            Bash(mkdir *)
+            Bash(cp *)
+            Bash(mv *)
+            Bash(rm *)
+            Bash(chmod *)
+            Bash(find *)
+            Bash(grep *)
+            Edit
+            Write
+            Read
+            Grep
+            Glob
+            LS
           
-          # Optional: Add custom instructions for Claude to customize its behavior for your project
-          # custom_instructions: |
-          #   Follow our coding standards
-          #   Ensure all new code has tests
-          #   Use TypeScript for new files
+          custom_instructions: |
+            ## セキュリティガイドライン
+            - 既存のCLAUDE.mdファイルに従って作業する
+            - 認証・認可に関わるコードは変更しない
+            - .envファイルやシークレットにアクセスしない
+            - 承認されていないパッケージをインストールしない
+            - 外部APIコールは事前承認なしに行わない
+            - プロジェクト範囲外のファイル削除・移動を行わない
+            
+            ## 開発ガイドライン  
+            - TypeScriptを使用する
+            - 新しいコードにはテストを追加する
+            - pnpmを使用する（npmではない）
+            - コーディング規約に従う
+            - TDDスタイル（レッド→グリーン→リファクタリング）で進める
           
           # Optional: Custom environment variables for Claude
           # claude_env: |
