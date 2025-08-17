@@ -3,7 +3,7 @@
   "private": false,
   "version": "0.2.1",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "author": "stanah",
@@ -11,7 +11,7 @@
   "exports": {
     ".": {
       "import": "./dist/index.esm.js",
-      "require": "./dist/index.js",
+      "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     }
   },
@@ -21,6 +21,7 @@
   "scripts": {
     "build": "pnpm run build:vscode",
     "build:lib": "vite build --config vite.config.lib.ts",
+    "prepublishOnly": "pnpm run build:lib",
     "build:vscode": "vite build --config vite.config.vscode.ts && rm -rf extension/webview && mkdir -p extension/webview && cp -r dist/webview/* extension/webview/ && cd extension && pnpm run compile",
     "build:vscode-package": "./scripts/build-vscode.sh",
     "lint": "eslint .",
