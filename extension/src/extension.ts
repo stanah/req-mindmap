@@ -582,7 +582,31 @@ async function openMindmapPreview(uri: vscode.Uri | undefined, viewColumn: vscod
 
         // Webviewプロバイダーを使ってコンテンツを設定
         const webviewProvider = new MindmapWebviewProvider(context.extensionUri);
-        await webviewProvider.createWebview(panel, document);
+        webviewProvider.createWebview(panel, document);
+        
+        // Webviewからのメッセージハンドリングを設定
+        panel.webview.onDidReceiveMessage(
+            async (message) => {
+                console.log('[WebviewPreview] メッセージ受信:', message?.command || 'unknown command', message);
+                try {
+                    switch (message.command) {
+                        case 'saveFile':
+                            // ファイル保存 - MindmapWebviewProviderの処理を使用
+                            console.log('saveFile要求を受信 (WebviewPreview):', message);
+                            await webviewProvider.handleSaveFile(panel!.webview, document, message);
+                            break;
+                        case 'webviewReady':
+                            console.log('Webviewの準備が完了しました');
+                            break;
+                        default:
+                            console.log('未処理のメッセージ:', message.command);
+                            break;
+                    }
+                } catch (error) {
+                    console.error('Webviewメッセージの処理中にエラーが発生:', error);
+                }
+            }
+        );
 
         // ドキュメント変更の監視
         const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {

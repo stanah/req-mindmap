@@ -370,7 +370,7 @@ export class MindmapWebviewProvider {
     /**
      * ファイル保存要求の処理
      */
-    private async handleSaveFile(webview: vscode.Webview, document: vscode.TextDocument, message: { data?: string | Record<string, unknown>; [key: string]: unknown }): Promise<void> {
+    public async handleSaveFile(webview: vscode.Webview, document: vscode.TextDocument, message: { data?: string | Record<string, unknown>; [key: string]: unknown }): Promise<void> {
         try {
             console.log('saveFile要求を受信:', message);
             
