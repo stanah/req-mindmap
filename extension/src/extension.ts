@@ -578,6 +578,7 @@ async function openMindmapPreview(uri: vscode.Uri | undefined, viewColumn: vscod
         // パネルが閉じられた時の処理
         panel.onDidDispose(() => {
             previewPanels.delete(panelKey);
+            webviewMsgSubscription?.dispose();
         });
 
         // Webviewプロバイダーを使ってコンテンツを設定
@@ -585,7 +586,7 @@ async function openMindmapPreview(uri: vscode.Uri | undefined, viewColumn: vscod
         webviewProvider.createWebview(panel, document);
         
         // Webviewからのメッセージハンドリングを設定
-        panel.webview.onDidReceiveMessage(
+        const webviewMsgSubscription = panel.webview.onDidReceiveMessage(
             async (message) => {
                 console.log('[WebviewPreview] メッセージ受信:', message?.command || 'unknown command', message);
                 try {
