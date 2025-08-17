@@ -405,11 +405,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/mindmap-tool.git"
+    "url": "https://github.com/stanah/mindmap-tool.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/mindmap-tool/issues"
+    "url": "https://github.com/stanah/mindmap-tool/issues"
   },
-  "homepage": "https://github.com/your-username/mindmap-tool#readme",
+  "homepage": "https://github.com/stanah/mindmap-tool#readme",
   "license": "MIT"
 }
