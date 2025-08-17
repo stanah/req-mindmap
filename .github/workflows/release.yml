@@ -30,30 +30,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 10.13.1
-          
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-          
+
       - name: Install dependencies
         run: pnpm install
-        
+
       - name: Build VSCode Extension Package
         run: pnpm build:vscode-package
-        
+
       - name: Upload VSIX to GitHub Release
         uses: softprops/action-gh-release@v2.3.2
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
           files: extension/*.vsix
-          
       # VS Marketplaceに公開（将来使用予定）
       # - name: Publish to Visual Studio Marketplace
       #   uses: HaaLeo/publish-vscode-extension@v2
