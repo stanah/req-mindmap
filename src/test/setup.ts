@@ -91,18 +91,7 @@ global.alert = vi.fn();
 global.showOpenFilePicker = vi.fn();
 global.showSaveFilePicker = vi.fn();
 
-// localStorageのモック
-const localStorageMock = {
-  getItem: vi.fn(() => null),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-};
-Object.defineProperty(global, 'localStorage', { value: localStorageMock });
-
-// localStorageMockをグローバルで利用可能にする
-(global as unknown as { localStorageMock: typeof localStorageMock }).localStorageMock = localStorageMock;
-Object.defineProperty(global, 'localStorage', { value: localStorageMock });
+// localStorageは削除済み（settingsServiceで直接デフォルト値を使用）
 
 // テスト中のコンソールログを制御（成功テストでは非表示にする）
 const originalConsole = { ...console };
