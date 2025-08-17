@@ -39,7 +39,7 @@ tsconfig.app.tsbuildinfo
 # VSCode Extension build artifacts
 extension/out/
 extension/webview/
-extension/pnpm-lock.yaml
+extension/package-lock.json
 *.vsix
 
 .serena/cache
