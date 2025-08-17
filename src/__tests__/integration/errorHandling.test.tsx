@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import React from 'react';
-import App from '../../web/App';
+import VSCodeApp from '../../vscode/VSCodeApp';
 
 // console.errorのモック
 const originalConsoleError = console.error;
@@ -26,8 +26,8 @@ describe('エラーハンドリングの基本テスト', () => {
   });
 
   describe('基本的なコンポーネントレンダリング', () => {
-    it('Appコンポーネントが正常にレンダリングされる', () => {
-      const { container } = render(<App />);
+    it('VSCodeAppコンポーネントが正常にレンダリングされる', () => {
+      const { container } = render(<VSCodeApp />);
       
       // アプリが正常にマウントされることを確認
       expect(container).toBeInTheDocument();

@@ -5,7 +5,8 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import App from '../../web/App';
+import React from 'react';
+import VSCodeApp from '../../vscode/VSCodeApp';
 import type { MindmapData, MindmapNode } from '../../types';
 import { useAppStore } from '../../stores';
 
@@ -246,7 +247,7 @@ describe('ファイル読み込みからマインドマップ表示までの統�
 
   describe('JSONファイルの読み込みと表示', () => {
     it.skip('JSONファイルを読み込んでマインドマップを表示する', async () => {
-      const { container: _container } = render(<App />);
+      const { container: _container } = render(<VSCodeApp />);
 
       // AppStoreに直接データを設定（実際のファイル読み込みをスキップ）
       const store = useAppStore.getState();
@@ -280,7 +281,7 @@ describe('ファイル読み込みからマインドマップ表示までの統�
     });
 
     it('カスタムフィールドが正しく表示される', async () => {
-      const { container: _container } = render(<App />);
+      const { container: _container } = render(<VSCodeApp />);
 
       // AppStoreに直接データを設定
       const store = useAppStore.getState();
@@ -341,7 +342,7 @@ settings:
         settings: { theme: "light", layout: "tree" }
       };
 
-      render(<App />);
+      render(<VSCodeApp />);
 
       await act(async () => {
         store.updateContent(JSON.stringify(yamlAsJson, null, 2));
@@ -368,7 +369,7 @@ settings:
       const invalidJson = '{ "version": "1.0", "title": }';
       const store = useAppStore.getState();
 
-      render(<App />);
+      render(<VSCodeApp />);
 
       // 無効なJSONを設定してパースエラーを引き起こす
       await act(async () => {
@@ -394,7 +395,7 @@ settings:
       };
       const store = useAppStore.getState();
 
-      render(<App />);
+      render(<VSCodeApp />);
 
       // 不完全なデータを設定
       await act(async () => {
@@ -416,7 +417,7 @@ settings:
 
     it('ファイル読み込みがキャンセルされた場合の処理', async () => {
       // キャンセル処理のテスト（File System Access APIの動作をシミュレート）
-      render(<App />);
+      render(<VSCodeApp />);
 
       // 初期状態で外部ファイルが読み込まれていないことを確認
       await waitFor(() => {
@@ -442,7 +443,7 @@ settings:
       const _user = userEvent.setup();
       const store = useAppStore.getState();
 
-      render(<App />);
+      render(<VSCodeApp />);
 
       // まずデータを設定
       await act(async () => {
@@ -492,7 +493,7 @@ settings:
       };
       const store = useAppStore.getState();
 
-      render(<App />);
+      render(<VSCodeApp />);
 
       // 設定を含むデータを設定
       await act(async () => {
@@ -544,7 +545,7 @@ settings:
       const store = useAppStore.getState();
       const startTime = performance.now();
 
-      render(<App />);
+      render(<VSCodeApp />);
 
       // データを設定
       await act(async () => {

@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render } from '@testing-library/react';
-import App from '../../web/App';
+import VSCodeApp from '../../vscode/VSCodeApp';
 import { ZodMindmapValidator } from '../../types';
 
 // タイマーのモック
@@ -17,7 +17,7 @@ describe('リアルタイム同期機能の基本テスト', () => {
 
   describe('基本的なコンポーネント動作', () => {
     it('Appコンポーネントが正常にレンダリングされる', () => {
-      const { container } = render(<App />);
+      const { container } = render(<VSCodeApp />);
       
       // アプリが正常にマウントされることを確認
       expect(container).toBeInTheDocument();
@@ -25,7 +25,7 @@ describe('リアルタイム同期機能の基本テスト', () => {
     });
 
     it('エディタペインとマインドマップペインが存在する', () => {
-      const { container } = render(<App />);
+      const { container } = render(<VSCodeApp />);
       
       // レイアウトコンポーネントが存在することを確認
       expect(container.querySelector('.layout, .app-layout, .editor-pane, .mindmap-pane')).not.toBeNull();

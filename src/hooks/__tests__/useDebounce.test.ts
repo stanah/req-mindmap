@@ -61,7 +61,9 @@ describe('useDebounce', () => {
     );
 
     // 値を更新
-    rerender({ value: 'updated', delay: 500 });
+    act(() => {
+      rerender({ value: 'updated', delay: 500 });
+    });
 
     // デバウンス期間完了
     act(() => {
@@ -80,9 +82,15 @@ describe('useDebounce', () => {
     );
 
     // 連続して値を更新
-    rerender({ value: 'update1', delay: 500 });
-    rerender({ value: 'update2', delay: 500 });
-    rerender({ value: 'update3', delay: 500 });
+    act(() => {
+      rerender({ value: 'update1', delay: 500 });
+    });
+    act(() => {
+      rerender({ value: 'update2', delay: 500 });
+    });
+    act(() => {
+      rerender({ value: 'update3', delay: 500 });
+    });
 
     // デバウンス期間中は初期値のまま
     expect(result.current).toBe('initial');
@@ -105,7 +113,9 @@ describe('useDebounce', () => {
     );
 
     // 値とデバウンス期間を更新
-    rerender({ value: 'updated', delay: 1000 });
+    act(() => {
+      rerender({ value: 'updated', delay: 1000 });
+    });
 
     // 元のデバウンス期間（500ms）経過
     act(() => {
@@ -132,7 +142,9 @@ describe('useDebounce', () => {
     );
 
     // 値を更新
-    rerender({ value: 'updated', delay: 500 });
+    act(() => {
+      rerender({ value: 'updated', delay: 500 });
+    });
 
     // コンポーネントをアンマウント
     unmount();
@@ -157,7 +169,9 @@ describe('useDebounce', () => {
     );
 
     // 値を更新
-    rerender({ value: 'updated', delay: 500 });
+    act(() => {
+      rerender({ value: 'updated', delay: 500 });
+    });
 
     // 半分の時間経過
     act(() => {
@@ -165,7 +179,9 @@ describe('useDebounce', () => {
     });
 
     // 同じ値で再更新（タイマーはリセットされない）
-    rerender({ value: 'updated', delay: 500 });
+    act(() => {
+      rerender({ value: 'updated', delay: 500 });
+    });
 
     // 残りの時間経過
     act(() => {
@@ -189,7 +205,9 @@ describe('useDebounce', () => {
     expect(result.current).toBe(initialObj);
 
     // オブジェクトを更新
-    rerender({ value: updatedObj, delay: 500 });
+    act(() => {
+      rerender({ value: updatedObj, delay: 500 });
+    });
 
     // デバウンス期間中は古いオブジェクト
     expect(result.current).toBe(initialObj);
@@ -216,7 +234,9 @@ describe('useDebounce', () => {
     expect(result.current).toBe(initialArray);
 
     // 配列を更新
-    rerender({ value: updatedArray, delay: 500 });
+    act(() => {
+      rerender({ value: updatedArray, delay: 500 });
+    });
 
     // デバウンス期間完了
     act(() => {
@@ -235,7 +255,9 @@ describe('useDebounce', () => {
     );
 
     // 値を更新
-    rerender({ value: 'updated', delay: 0 });
+    act(() => {
+      rerender({ value: 'updated', delay: 0 });
+    });
 
     // タイマーを進める必要がある（0でもsetTimeoutは使用される）
     act(() => {
