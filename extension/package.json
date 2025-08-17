@@ -45,7 +45,7 @@
         "command": "mindmapTool.openPreviewToSide",
         "title": "マインドマッププレビューを横に開く",
         "category": "Mindmap Tool",
-        "icon": "$(preview)"
+        "icon": "$(open-preview)"
       },
       {
         "command": "mindmapTool.createNewMindmap",
