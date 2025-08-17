@@ -353,7 +353,7 @@
         "dependencies": [
           5
         ],
-        "status": "deferred",
+        "status": "cancelled",
         "subtasks": [
           {
             "id": 1,
@@ -735,7 +735,7 @@
         "dependencies": [
           12
         ],
-        "status": "deferred",
+        "status": "cancelled",
         "subtasks": [
           {
             "id": 1,
@@ -1079,7 +1079,7 @@
         "dependencies": [
           17
         ],
-        "status": "deferred",
+        "status": "cancelled",
         "subtasks": [
           {
             "id": 1,
@@ -1149,7 +1149,7 @@
         "dependencies": [
           18
         ],
-        "status": "deferred",
+        "status": "cancelled",
         "subtasks": [
           {
             "id": 1,
@@ -1216,7 +1216,7 @@
         "dependencies": [
           19
         ],
-        "status": "deferred",
+        "status": "cancelled",
         "subtasks": [
           {
             "id": 1,
@@ -1280,7 +1280,7 @@
         "description": "ユーザーがJSON/YAMLフォーマットを選択し、ファイル読み込み時に自動変換する機能を実装する。js-yamlライブラリを使用し、変換エラーの詳細表示機能を含む。",
         "details": "1. フォーマットモード選択UIの実装\n   - ラジオボタンまたはトグルスイッチでJSON/YAMLモードを選択\n   - 選択状態をlocalStorageに保存\n   - リアルタイムプレビュー機能\n\n2. js-yamlライブラリの統合\n   ```typescript\n   import yaml from 'js-yaml';\n   import { z } from 'zod';\n\n   interface FormatConverterOptions {\n     preserveComments?: boolean;\n     indent?: number;\n     lineWidth?: number;\n   }\n\n   class FormatConverter {\n     static toYAML(data: any, options?: FormatConverterOptions): string {\n       try {\n         return yaml.dump(data, {\n           indent: options?.indent || 2,\n           lineWidth: options?.lineWidth || 80,\n           sortKeys: false,\n           noRefs: true\n         });\n       } catch (error) {\n         throw new ConversionError('YAML変換エラー', error);\n       }\n     }\n\n     static fromYAML(yamlString: string): any {\n       try {\n         return yaml.load(yamlString, {\n           schema: yaml.JSON_SCHEMA\n         });\n       } catch (error) {\n         throw new ConversionError('YAML解析エラー', error);\n       }\n     }\n\n     static validateConversion(data: any, targetFormat: 'json' | 'yaml'): ValidationResult {\n       const result = { valid: true, errors: [], warnings: [] };\n       \n       // 循環参照チェック\n       const seen = new WeakSet();\n       const checkCircular = (obj: any) => {\n         if (obj && typeof obj === 'object') {\n           if (seen.has(obj)) {\n             result.errors.push('循環参照が検出されました');\n             result.valid = false;\n             return;\n           }\n           seen.add(obj);\n           Object.values(obj).forEach(checkCircular);\n         }\n       };\n       checkCircular(data);\n\n       // YAML固有の制限チェック\n       if (targetFormat === 'yaml') {\n         // 特殊文字のチェック\n         const checkSpecialChars = (obj: any, path = '') => {\n           if (typeof obj === 'string' && /[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F]/.test(obj)) {\n             result.warnings.push(`制御文字が含まれています: ${path}`);\n           }\n         };\n         // 再帰的にチェック\n         JSON.stringify(data, (key, value) => {\n           checkSpecialChars(value, key);\n           return value;\n         });\n       }\n\n       return result;\n     }\n   }\n   ```\n\n3. ファイル読み込み時の自動変換機能\n   ```typescript\n   const fileLoader = {\n     async loadWithConversion(filePath: string, targetFormat: 'json' | 'yaml') {\n       const content = await fs.readFile(filePath, 'utf-8');\n       const extension = path.extname(filePath).toLowerCase();\n       let data;\n\n       // 元のフォーマットを検出\n       if (extension === '.json') {\n         data = JSON.parse(content);\n       } else if (['.yaml', '.yml'].includes(extension)) {\n         data = FormatConverter.fromYAML(content);\n       } else {\n         // 内容から推測\n         try {\n           data = JSON.parse(content);\n         } catch {\n           data = FormatConverter.fromYAML(content);\n         }\n       }\n\n       // バリデーション\n       const validation = FormatConverter.validateConversion(data, targetFormat);\n       if (!validation.valid) {\n         throw new ConversionError('変換前検証エラー', validation.errors);\n       }\n\n       // ターゲットフォーマットに変換\n       if (targetFormat === 'yaml') {\n         return {\n           data,\n           formatted: FormatConverter.toYAML(data),\n           warnings: validation.warnings\n         };\n       } else {\n         return {\n           data,\n           formatted: JSON.stringify(data, null, 2),\n           warnings: validation.warnings\n         };\n       }\n     }\n   };\n   ```\n\n4. エラーハンドリングとユーザーフィードバック\n   ```typescript\n   class ConversionError extends Error {\n     constructor(\n       message: string,\n       public details?: any,\n       public line?: number,\n       public column?: number\n     ) {\n       super(message);\n       this.name = 'ConversionError';\n     }\n\n     getDetailedMessage(): string {\n       let msg = this.message;\n       if (this.line) msg += `\\n行: ${this.line}`;\n       if (this.column) msg += `, 列: ${this.column}`;\n       if (this.details) {\n         if (this.details instanceof Error) {\n           msg += `\\n詳細: ${this.details.message}`;\n         } else {\n           msg += `\\n詳細: ${JSON.stringify(this.details, null, 2)}`;\n         }\n       }\n       return msg;\n     }\n   }\n\n   // UI通知システム\n   const notificationManager = {\n     showSuccess(message: string) {\n       toast.success(message, {\n         duration: 3000,\n         position: 'top-right'\n       });\n     },\n\n     showError(error: ConversionError) {\n       toast.error(error.getDetailedMessage(), {\n         duration: 5000,\n         position: 'top-right',\n         action: {\n           label: '詳細',\n           onClick: () => showErrorDialog(error)\n         }\n       });\n     },\n\n     showWarning(warnings: string[]) {\n       if (warnings.length > 0) {\n         toast.warning(`${warnings.length}件の警告があります`, {\n           duration: 4000,\n           description: warnings.join('\\n')\n         });\n       }\n     }\n   };\n   ```\n\n5. UIコンポーネントの実装\n   ```typescript\n   const FormatSelector: React.FC = () => {\n     const [format, setFormat] = useLocalStorage('mindmap-format', 'json');\n     const [isConverting, setIsConverting] = useState(false);\n\n     const handleFormatChange = async (newFormat: 'json' | 'yaml') => {\n       setIsConverting(true);\n       try {\n         // 現在のデータを新しいフォーマットに変換\n         const currentData = getCurrentMindmapData();\n         const result = await convertFormat(currentData, newFormat);\n         \n         // 警告を表示\n         if (result.warnings.length > 0) {\n           notificationManager.showWarning(result.warnings);\n         }\n\n         // フォーマットを更新\n         setFormat(newFormat);\n         updateEditorContent(result.formatted);\n         notificationManager.showSuccess(`${newFormat.toUpperCase()}形式に変換しました`);\n       } catch (error) {\n         notificationManager.showError(error);\n       } finally {\n         setIsConverting(false);\n       }\n     };\n\n     return (\n       <div className=\"format-selector\">\n         <label>\n           <input\n             type=\"radio\"\n             value=\"json\"\n             checked={format === 'json'}\n             onChange={() => handleFormatChange('json')}\n             disabled={isConverting}\n           />\n           JSON\n         </label>\n         <label>\n           <input\n             type=\"radio\"\n             value=\"yaml\"\n             checked={format === 'yaml'}\n             onChange={() => handleFormatChange('yaml')}\n             disabled={isConverting}\n           />\n           YAML\n         </label>\n         {isConverting && <Spinner size=\"sm\" />}\n       </div>\n     );\n   };\n   ```",
         "testStrategy": "1. フォーマット変換の正確性テスト\n   - JSON→YAML→JSONのラウンドトリップテスト\n   - 特殊文字（改行、タブ、Unicode）を含むデータの変換テスト\n   - ネストが深いオブジェクトの変換テスト\n   - 配列、null、boolean値の正確な変換\n\n2. エラーハンドリングのテスト\n   - 不正なJSON/YAMLの解析エラー表示\n   - 循環参照データの検出とエラー表示\n   - 大きすぎるファイルの変換エラー\n   - メモリ不足時の適切なエラーハンドリング\n\n3. UIインタラクションテスト\n   - フォーマット切り替え時の即座の反映\n   - localStorage への設定保存と復元\n   - 変換中のローディング表示\n   - エラー/警告通知の表示と操作\n\n4. パフォーマンステスト\n   - 1MB以上のファイルの変換速度\n   - 連続変換時のメモリリーク確認\n   - 非同期処理によるUIブロッキング回避\n\n5. 互換性テスト\n   - 様々なYAMLバージョンとの互換性\n   - エンコーディング（UTF-8、UTF-16）の処理\n   - 既存のマインドマップデータとの後方互換性",
-        "status": "pending",
+        "status": "cancelled",
         "dependencies": [
           15,
           16
@@ -1525,7 +1525,7 @@
     ],
     "metadata": {
       "created": "2025-08-03T03:13:21.292Z",
-      "updated": "2025-08-17T10:49:49.540Z",
+      "updated": "2025-08-17T10:53:40.657Z",
       "description": "Tasks for master context"
     }
   }
