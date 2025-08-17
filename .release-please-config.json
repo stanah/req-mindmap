@@ -1,0 +1,24 @@
+{
+  "release-type": "node",
+  "packages": {
+    ".": {
+      "component": "req-mindmap",
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        "extension/package.json"
+      ]
+    }
+  },
+  "changelog-sections": [
+    {"type": "feat", "section": "Features"},
+    {"type": "fix", "section": "Bug Fixes"},
+    {"type": "perf", "section": "Performance Improvements"},
+    {"type": "docs", "section": "Documentation"},
+    {"type": "style", "section": "Styles"},
+    {"type": "refactor", "section": "Code Refactoring"},
+    {"type": "test", "section": "Tests"},
+    {"type": "build", "section": "Build System"},
+    {"type": "ci", "section": "Continuous Integration"},
+    {"type": "chore", "section": "Chores", "hidden": true}
+  ]
+}
