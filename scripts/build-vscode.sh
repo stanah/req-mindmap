@@ -10,11 +10,11 @@ echo "VSCode拡張用のビルドを開始します..."
 echo "1. Webview用のビルドを実行中..."
 npm run build -- --config vite.config.vscode.ts
 
-# 2. 拡張機能のTypeScriptコンパイル
-echo "2. 拡張機能のTypeScriptコンパイルを実行中..."
+# 2. 拡張機能のWebpackビルド（依存関係をバンドル）
+echo "2. 拡張機能のWebpackビルドを実行中..."
 cd extension
-npm install
-npm run compile
+pnpm install
+pnpm run webpack
 cd ..
 
 # 3. スキーマファイルのコピー
