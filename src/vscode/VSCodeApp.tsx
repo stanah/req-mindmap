@@ -28,6 +28,12 @@ function VSCodeApp() {
   const handleVSCodeMessage = useCallback((event: MessageEvent) => {
     const message = event.data;
     
+    // メッセージが不正な場合は無視
+    if (!message || typeof message !== 'object' || !message.command) {
+      console.warn('[VSCodeApp] Invalid message received:', message);
+      return;
+    }
+    
     switch (message.command) {
       case 'updateContent':
         // VSCode側からのコンテンツ更新

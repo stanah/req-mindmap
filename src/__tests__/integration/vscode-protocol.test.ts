@@ -43,7 +43,6 @@ interface MockVSCodeApi {
 
 describe('VSCode Communication Protocol', () => {
   let mockVSCodeApi: MockVSCodeApi;
-  let messageListener: (event: MessageEvent) => void;
 
   beforeEach(() => {
     // VSCode API モックを作成
@@ -60,8 +59,6 @@ describe('VSCode Communication Protocol', () => {
       configurable: true
     });
 
-    // メッセージリスナーを保存
-    messageListener = vi.fn();
     
     // VSCodeApiSingleton をリセット
     (VSCodeApiSingleton as any).instance = null;

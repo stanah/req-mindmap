@@ -5,13 +5,10 @@
  */
 
 // D3の個別モジュールインポート（tree-shaking最適化）
-import { select, selectAll } from 'd3-selection';
+import { select } from 'd3-selection';
 import { zoom, zoomIdentity } from 'd3-zoom';
-import { tree, hierarchy } from 'd3-hierarchy';
-import { linkHorizontal } from 'd3-shape';
-import { scaleOrdinal } from 'd3-scale';
-import { interpolate } from 'd3-interpolate';
-import { schemeCategory10 } from 'd3-scale-chromatic';
+import { tree, hierarchy, cluster } from 'd3-hierarchy';
+import { linkHorizontal, linkRadial } from 'd3-shape';
 import type {
   MindmapData,
   MindmapNode,
@@ -123,7 +120,7 @@ export class MindmapRenderer {
     this.customSchema = data.schema || null;
 
     // D3.js階層データの作成（折りたたみ状態を考慮）
-    this.root = d3.hierarchy(data.root, (d: MindmapNode) => {
+    this.root = hierarchy(data.root, (d: MindmapNode) => {
       // 折りたたまれたノードの子は表示しない
       const isCollapsed = collapsedNodes?.has(d.id) || d.collapsed;
       return isCollapsed ? null : d.children;
@@ -205,7 +202,7 @@ export class MindmapRenderer {
 
     this.svg.transition()
       .duration(500)
-      .call(this.zoom.transform, d3.zoomIdentity.translate(x, y).scale(scale));
+      .call(this.zoom.transform, zoomIdentity.translate(x, y).scale(scale));
   }
 
   /**
@@ -257,7 +254,7 @@ export class MindmapRenderer {
     
     this.svg.transition()
       .duration(500)
-      .call(this.zoom.transform, d3.zoomIdentity.translate(x, y).scale(scale));
+      .call(this.zoom.transform, zoomIdentity.translate(x, y).scale(scale));
   }
 
   /**
@@ -298,7 +295,7 @@ export class MindmapRenderer {
     if (layout === 'tree') {
       const dynamicLevelSpacing = this.calculateDynamicLevelSpacing(this.root);
       
-      const treeLayout = d3.tree<MindmapNode>()
+      const treeLayout = tree<MindmapNode>()
         .nodeSize([this.NODE_SPACING, dynamicLevelSpacing])
         .separation((a, b) => {
           return this.calculateDynamicSeparation(a as D3Node, b as D3Node);
@@ -332,13 +329,13 @@ export class MindmapRenderer {
   private applyRadialLayout(): void {
     if (!this.root) return;
 
-    const cluster = d3.cluster<MindmapNode>()
+    const clusterLayout = cluster<MindmapNode>()
       .size([2 * Math.PI, 200])
       .separation((a, b) => {
         return this.calculateRadialSeparation(a as D3Node, b as D3Node);
       });
 
-    cluster(this.root);
+    clusterLayout(this.root);
 
     this.root.each((node: D3Node) => {
       const angle = node.x as number;
@@ -391,10 +388,10 @@ export class MindmapRenderer {
     const linkUpdate = linkEnter.merge(linkSelection);
 
     const linkPath = this.settings.layout === 'radial' 
-      ? d3.linkRadial<d3.HierarchyLink<MindmapNode>, d3.HierarchyPointNode<MindmapNode>>()
+      ? linkRadial<d3.HierarchyLink<MindmapNode>, d3.HierarchyPointNode<MindmapNode>>()
           .angle(d => d.x as number)
           .radius(d => d.y as number)
-      : d3.linkHorizontal<d3.HierarchyLink<MindmapNode>, d3.HierarchyPointNode<MindmapNode>>()
+      : linkHorizontal<d3.HierarchyLink<MindmapNode>, d3.HierarchyPointNode<MindmapNode>>()
           .x(d => d.y as number)
           .y(d => d.x as number);
 
@@ -496,7 +493,7 @@ export class MindmapRenderer {
 
     nodeUpdate.select('.mindmap-node-text')
       .each((d: D3Node, i, nodes) => {
-        const textElement = d3.select(nodes[i] as SVGTextElement);
+        const textElement = select(nodes[i] as SVGTextElement);
         
         const actualLines = this.countActualLines(d.data.title, d.width - this.NODE_PADDING * 2);
         const requiredHeight = actualLines * 16.8 + this.NODE_PADDING * 2;
@@ -608,7 +605,7 @@ export class MindmapRenderer {
       const badgeInfo = this.getPriorityBadgeInfo(d.data);
       if (!badgeInfo) return;
 
-      const nodeGroup = d3.select(nodes[i] as SVGGElement);
+      const nodeGroup = select(nodes[i] as SVGGElement);
       const badgeHeight = 16;
       const badgeWidth = badgeInfo.text.length * 6 + 8;
       const badgeX = d.width / 2 - badgeWidth - 4;
@@ -649,7 +646,7 @@ export class MindmapRenderer {
       const badgeInfo = this.getStatusBadgeInfo(d.data);
       if (!badgeInfo) return;
 
-      const nodeGroup = d3.select(nodes[i] as SVGGElement);
+      const nodeGroup = select(nodes[i] as SVGGElement);
       
       const priorityBadgeInfo = this.getPriorityBadgeInfo(d.data);
       const priorityBadgeWidth = priorityBadgeInfo ? priorityBadgeInfo.text.length * 6 + 8 : 0;

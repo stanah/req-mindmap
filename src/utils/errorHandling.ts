@@ -3,7 +3,7 @@
  * アプリケーション全体のエラー処理とリカバリー機能
  */
 
-import React, { Component, ReactNode } from 'react';
+import React, { Component } from 'react';
 import { useAppStore } from '../stores/appStore';
 import VSCodeApiSingleton from '../platform/vscode/VSCodeApiSingleton';
 

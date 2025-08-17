@@ -130,7 +130,7 @@ describe('VSCode ↔ Webview Communication', () => {
 
   describe('メッセージ受信', () => {
     it('updateContent メッセージを受信して処理できる', async () => {
-      const { container } = render(<VSCodeApp />);
+      render(<VSCodeApp />);
 
       const newContent = JSON.stringify({
         version: '1.0.0',

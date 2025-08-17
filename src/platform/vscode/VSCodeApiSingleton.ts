@@ -92,25 +92,35 @@ class VSCodeApiSingleton {
    * メッセージ送信の便利メソッド
    */
   postMessage(message: unknown): boolean {
-    const api = this.getApi();
-    if (api) {
-      api.postMessage(message);
-      return true;
+    try {
+      const api = this.getApi();
+      if (api) {
+        api.postMessage(message);
+        return true;
+      }
+      console.warn('[VSCodeApiSingleton] メッセージ送信に失敗: VSCode API が利用できません');
+      return false;
+    } catch (error) {
+      console.error('[VSCodeApiSingleton] メッセージ送信中にエラーが発生:', error);
+      return false;
     }
-    console.warn('[VSCodeApiSingleton] メッセージ送信に失敗: VSCode API が利用できません');
-    return false;
   }
 
   /**
    * 状態保存の便利メソッド
    */
   setState(state: unknown): boolean {
-    const api = this.getApi();
-    if (api) {
-      api.setState(state);
-      return true;
+    try {
+      const api = this.getApi();
+      if (api) {
+        api.setState(state);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('[VSCodeApiSingleton] 状態保存中にエラーが発生:', error);
+      return false;
     }
-    return false;
   }
 
   /**

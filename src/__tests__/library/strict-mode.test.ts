@@ -9,15 +9,10 @@ import { describe, it, expect } from 'vitest';
 import type { 
   MindmapData, 
   MindmapNode, 
-  MindmapSettings,
-  CustomSchema,
-  RendererEventHandlers,
-  RenderOptions
+  MindmapSettings
 } from '../../index';
 
 import { 
-  MindmapRenderer,
-  MindmapCore,
   MindmapParser,
   findNodeById,
   mapNodesToHierarchy

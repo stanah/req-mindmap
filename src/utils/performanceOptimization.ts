@@ -82,7 +82,7 @@ export function useStableSelector<T>(
   
   return useMemo(() => {
     return selector(store);
-  }, [store, selector, equalityFn]);
+  }, [store, selector]);
 }
 
 /**
@@ -110,8 +110,9 @@ export function useBatchedUpdates() {
   }, []);
   
   useEffect(() => {
+    const manager = timerManager.current;
     return () => {
-      timerManager.current.clearAll();
+      manager.clearAll();
     };
   }, []);
   
@@ -145,9 +146,10 @@ export function useDebouncedStoreUpdate<T>(
   }, [currentValue, debouncedUpdate]);
   
   useEffect(() => {
+    const manager = timerManager.current;
     return () => {
       debouncedUpdate.cancel();
-      timerManager.current.clearAll();
+      manager.clearAll();
     };
   }, [debouncedUpdate]);
 }
@@ -166,9 +168,10 @@ export function useThrottledEventHandler<T extends (...args: any[]) => void>(
   }, [handler, delay]);
   
   useEffect(() => {
+    const manager = timerManager.current;
     return () => {
       throttledHandler.cancel();
-      timerManager.current.clearAll();
+      manager.clearAll();
     };
   }, [throttledHandler]);
   

@@ -143,12 +143,13 @@ describe('Mindmap Library Exports', () => {
       expect(MindmapLibrary).not.toBeNull();
     });
 
-    it('循環依存がない', () => {
+    it('循環依存がない', async () => {
       // 循環依存があるとモジュールロードで問題が発生するため、
       // 正常にインポートできることで循環依存がないことを確認
-      expect(() => {
-        require('../../index');
-      }).not.toThrow();
+      await expect(async () => {
+        const module = await import('../../index');
+        return module;
+      }).not.toReject();
     });
   });
 });
