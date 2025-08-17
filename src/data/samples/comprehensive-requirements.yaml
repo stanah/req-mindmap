@@ -71,21 +71,21 @@ root:
                   customFields:
                     category: functional
                   priority: high
-                  status: draft
+                  status: done
                 - id: yaml-support
                   title: YAML形式サポート
                   description: YAML形式でマインドマップデータを読み書きできる
                   customFields:
                     category: functional
                   priority: high
-                  status: draft
+                  status: done
                 - id: format-validation
                   title: 形式検証機能
                   description: ファイル形式が不正な場合の適切なエラー表示
                   customFields:
                     category: quality
                   priority: medium
-                  status: draft
+                  status: in-progress
                 - id: format-conversion
                   title: JSON/YAML相互変換機能
                   description: JSON形式とYAML形式の相互変換とモード選択機能
@@ -172,7 +172,7 @@ root:
                 category: functional
                 complexity: medium
               priority: high
-              status: draft
+              status: done
             - id: shortcut-customization
               title: ショートカットキーカスタマイズ
               description: ユーザー定義のキーボードショートカット設定機能
@@ -254,7 +254,7 @@ root:
                 complexity: medium
                 dependencies: D3.js, SVG描画
               priority: high
-              status: draft
+              status: done
             - id: node-basic-info-display
               title: ノード基本情報簡易表示
               description: priorityやstatusなどの基本情報をノードに最低限の表現で表示する機能
@@ -273,7 +273,7 @@ root:
                     category: functional
                     complexity: low
                   priority: high
-                  status: draft
+                  status: done
                 - id: status-visual-indicator
                   title: ステータス視覚インジケーター
                   description: ノードにアイコンや背景色でステータスを表示
@@ -281,7 +281,7 @@ root:
                     category: functional
                     complexity: low
                   priority: high
-                  status: draft
+                  status: done
                 - id: minimal-text-overlay
                   title: 最小限テキストオーバーレイ
                   description: ホバーまたはクリック時に基本情報を小さくオーバーレイ表示
@@ -289,7 +289,7 @@ root:
                     category: functional
                     complexity: medium
                   priority: medium
-                  status: draft
+                  status: done
                 - id: color-legend
                   title: カラー凡例機能
                   description: 色やアイコンの意味を示す凡例をUI上に表示
@@ -297,9 +297,9 @@ root:
                     category: usability
                     complexity: low
                   priority: medium
-                  status: draft
+                  status: cancelled
               priority: high
-              status: draft
+              status: done
           priority: high
           status: draft
         - id: project-efficiency-need
