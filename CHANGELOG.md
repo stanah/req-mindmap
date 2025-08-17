@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1](https://github.com/stanah/req-mindmap/compare/req-mindmap-v0.2.0...req-mindmap-v0.2.1) (2025-08-17)
+
+
+### Bug Fixes
+
+* update package.json to use pnpm for script commands ([587f74a](https://github.com/stanah/req-mindmap/commit/587f74a1e6f8ea20af11ac5c2072689077050bd7))
+* VSCode拡張パッケージングエラーを修正 ([72d8533](https://github.com/stanah/req-mindmap/commit/72d8533e233af796c5841808f6d745416017a4a5))
+
 ## [0.2.0](https://github.com/stanah/req-mindmap/compare/req-mindmap-v0.1.0...req-mindmap-v0.2.0) (2025-08-17)
 
 
