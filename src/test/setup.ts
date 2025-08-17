@@ -12,7 +12,7 @@ declare global {
       toHaveValue(value: unknown): T;
       toBeDisabled(): T;
       toHaveBeenCalled(): T;
-      toHaveBeenCalledWith(...args: unknown): T;
+      toHaveBeenCalledWith(...args: unknown[]): T;
       toHaveBeenCalledTimes(times: number): T;
     }
   }
