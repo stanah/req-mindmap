@@ -4,7 +4,14 @@
  * MindmapCoreLogicと連携してデータ管理とレンダリングを分離
  */
 
-import * as d3 from 'd3';
+// D3の個別モジュールインポート（tree-shaking最適化）
+import { select, selectAll } from 'd3-selection';
+import { zoom, zoomIdentity } from 'd3-zoom';
+import { tree, hierarchy } from 'd3-hierarchy';
+import { linkHorizontal } from 'd3-shape';
+import { scaleOrdinal } from 'd3-scale';
+import { interpolate } from 'd3-interpolate';
+import { schemeCategory10 } from 'd3-scale-chromatic';
 import type {
   MindmapData,
   MindmapNode,
@@ -17,7 +24,7 @@ import type {
 /**
  * D3.js用の拡張ノードデータ
  */
-export interface D3Node extends d3.HierarchyPointNode<MindmapNode> {
+export interface D3Node extends ReturnType<typeof hierarchy<MindmapNode>> {
   width: number;
   height: number;
   _children?: D3Node[];
@@ -28,9 +35,9 @@ export interface D3Node extends d3.HierarchyPointNode<MindmapNode> {
  * データ管理機能を排除し、純粋な描画機能のみを提供
  */
 export class MindmapRenderer {
-  private svg!: d3.Selection<SVGSVGElement, unknown, null, undefined>;
-  private container!: d3.Selection<SVGGElement, unknown, null, undefined>;
-  private zoom!: d3.ZoomBehavior<SVGSVGElement, unknown>;
+  private svg!: ReturnType<typeof select<SVGSVGElement, unknown>>;
+  private container!: ReturnType<typeof select<SVGGElement, unknown>>;
+  private zoom!: ReturnType<typeof zoom<SVGSVGElement, unknown>>;
   private root: D3Node | null = null;
   private settings: MindmapSettings;
   private eventHandlers: RendererEventHandlers = {};
@@ -63,7 +70,7 @@ export class MindmapRenderer {
    * SVGの初期化
    */
   private initializeSVG(svgElement: SVGSVGElement): void {
-    this.svg = d3.select(svgElement);
+    this.svg = select(svgElement);
     
     // メインコンテナ
     this.container = this.svg
@@ -71,7 +78,7 @@ export class MindmapRenderer {
       .attr('class', 'mindmap-container');
 
     // ズーム機能
-    this.zoom = d3.zoom<SVGSVGElement, unknown>()
+    this.zoom = zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 3])
       .on('zoom', (event) => {
         this.container.attr('transform', event.transform);

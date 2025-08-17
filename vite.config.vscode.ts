@@ -29,7 +29,16 @@ export default defineConfig({
         entryFileNames: 'assets/[name].js',
         chunkFileNames: 'assets/[name].js',
         assetFileNames: 'assets/[name].[ext]',
-        inlineDynamicImports: true
+        inlineDynamicImports: true,
+        // tree-shaking最適化
+        manualChunks: undefined // IIFEモードでは無効
+      },
+      
+      // tree-shaking最適化設定
+      treeshake: {
+        moduleSideEffects: false,
+        propertyReadSideEffects: false,
+        annotations: true
       }
     },
 
@@ -47,11 +56,25 @@ export default defineConfig({
       'react',
       'react-dom',
       'monaco-editor',
-      'd3',
+      // D3を個別モジュールとして最適化
+      'd3-selection',
+      'd3-zoom',
+      'd3-hierarchy',
+      'd3-tree',
+      'd3-shape',
+      'd3-scale',
+      'd3-interpolate',
+      'd3-color',
       'js-yaml',
       'ajv',
       'zustand'
-    ]
+    ],
+    // 強制的に再バンドル
+    force: false,
+    // tree-shaking最適化
+    esbuildOptions: {
+      treeShaking: true
+    }
   },
   
   // 静的アセットの処理設定
