@@ -1,5 +1,4 @@
 import type { PlatformAdapter } from './interfaces';
-import { BrowserPlatformAdapter } from './browser';
 import { VSCodePlatformAdapter } from './vscode';
 
 /**
@@ -30,11 +29,8 @@ export class PlatformAdapterFactory {
       return new VSCodePlatformAdapter();
     }
 
-    // デフォルトはブラウザ環境
-    if (process.env.NODE_ENV !== 'test') {
-      console.log('[PlatformAdapterFactory] ブラウザ環境、BrowserPlatformAdapterを作成');
-    }
-    return new BrowserPlatformAdapter();
+    // VSCode環境以外では例外を発生
+    throw new Error('Unsupported platform: Only VSCode environment is supported');
   }
 
   /**
@@ -106,10 +102,10 @@ export function getPlatformType(): 'browser' | 'vscode' {
 export function isPlatformCapabilityAvailable(capability: string): boolean {
   const adapter = getPlatformAdapter();
   
-  // ブラウザアダプターの場合
-  if (adapter instanceof BrowserPlatformAdapter) {
-    const capabilities = adapter.getCapabilities();
-    return capabilities[capability as keyof typeof capabilities] || false;
+  // VSCodeアダプターのみサポート
+  if (adapter instanceof VSCodePlatformAdapter) {
+    // VSCodeアダプターの機能チェックはここに実装
+    return false;
   }
 
   return false;

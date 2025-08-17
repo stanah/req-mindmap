@@ -1,18 +1,29 @@
 {
   "name": "req-mindmap",
-  "private": true,
+  "private": false,
   "version": "0.2.1",
   "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
   "author": "stanah",
   "license": "MIT",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "pnpm run build:web",
-    "build:web": "tsc -b && vite build",
+    "build": "pnpm run build:vscode",
+    "build:lib": "vite build --config vite.config.lib.ts",
     "build:vscode": "vite build --config vite.config.vscode.ts && rm -rf extension/webview && mkdir -p extension/webview && cp -r dist/webview/* extension/webview/ && cd extension && pnpm run compile",
     "build:vscode-package": "./scripts/build-vscode.sh",
     "lint": "eslint .",
-    "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -22,11 +33,9 @@
     "test:vscode:ui": "cd extension && pnpm test:ui",
     "test:all": "pnpm test:run && pnpm test:vscode:run",
     "coverage": "vitest run --coverage",
-    "coverage:vscode": "cd extension && pnpm coverage",
-    "coverage:all": "echo '=== Web App Coverage ===' && pnpm coverage && echo '\n=== VSCode Extension Coverage ===' && pnpm coverage:vscode"
+    "coverage:vscode": "cd extension && pnpm coverage"
   },
   "dependencies": {
-    "@monaco-editor/react": "^4.7.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "d3": "^7.9.0",
@@ -64,6 +73,7 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
     "vite": "^7.0.4",
+    "vite-plugin-dts": "^4.5.4",
     "vitest": "^3.2.4"
   },
   "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748"

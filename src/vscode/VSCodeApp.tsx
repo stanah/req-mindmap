@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { MindmapViewer } from './components/MindmapViewer';
-import { AlertComponent } from '../web/components/ui/AlertComponent';
+import { AlertComponent } from '../components/shared/AlertComponent';
 import { useAppStore } from '../stores/appStore';
 import { PlatformAdapterFactory } from '../platform';
 import VSCodeApiSingleton from '../platform/vscode/VSCodeApiSingleton';
-import '../web/App.css';
+import '../index.css';
 
 /**
  * VSCode拡張用のアプリケーションコンポーネント
