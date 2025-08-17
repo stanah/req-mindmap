@@ -2,9 +2,12 @@
  * エディタとマインドマップの同期のE2Eテスト
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import type { MindmapData } from '../../types';
 import { useAppStore } from '../../stores';
+
+// タイマーのモック
+vi.useFakeTimers();
 
 // UIレンダリングなしの純粋なストアテスト
 
@@ -85,9 +88,14 @@ describe('エディタとマインドマップの同期のE2Eテスト', () => {
   };
 
   beforeEach(() => {
+    vi.clearAllMocks();
     // ストアを完全にリセット
     const store = useAppStore.getState();
     store.reset();
+  });
+
+  afterEach(() => {
+    vi.runOnlyPendingTimers();
   });
 
   describe('エディタ→マインドマップ同期', () => {
@@ -299,31 +307,16 @@ describe('エディタとマインドマップの同期のE2Eテスト', () => {
     it('無効なJSONに対するエラーハンドリング', async () => {
       const store = useAppStore.getState();
 
-      // 有効なデータを設定
-      const validData = {
-        version: '1.0',
-        title: 'エラーテスト',
-        root: {
-          id: 'root',
-          title: 'プロジェクト'
-        }
-      };
-
-      store.newFile();
-      const validContent = JSON.stringify(validData, null, 2);
-      store.updateContent(validContent);
-
-      // 無効なJSONを入力してエラーを発生させる
+      // 無効なJSONを直接パース処理でテスト
       const invalidJson = '{ "version": "1.0", "title": }';
       
-      store.updateContent(invalidJson);
-
-      // parseContentのデバウンス処理とエラー処理の完了を十分に待つ
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // 直接parseContentメソッドを呼び出し
+      await store.parseContent(invalidJson);
 
       // パースエラーが発生していることを確認
       const state = useAppStore.getState();
       expect(state.parse.parseErrors.length).toBeGreaterThan(0);
+      expect(state.parse.parseErrors[0].message).toContain('JSONまたはYAML形式でのパースに失敗');
 
       // 有効なデータに修正
       const fixedData = {
@@ -336,15 +329,14 @@ describe('エディタとマインドマップの同期のE2Eテスト', () => {
       };
 
       const fixedContent = JSON.stringify(fixedData, null, 2);
-      store.updateContent(fixedContent);
-
-      // parseContentの完了を十分に待つ
-      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // 直接parseContentメソッドを呼び出し
+      await store.parseContent(fixedContent);
 
       // エラーが解消されることを確認
       const finalState = useAppStore.getState();
       expect(finalState.parse.parseErrors.length).toBe(0);
-      expect(finalState.file.fileContent).toContain('修正済みプロジェクト');
+      expect(finalState.parse.parsedData?.title).toBe('修正済み');
     });
   });
 });

@@ -908,8 +908,8 @@ export const useAppStore = create<AppStore>()(
         reset: () => {
           set(initialState);
           
-          // settingsServiceを使ってローカルストレージをクリア
-          settingsService.clearAllData();
+          // settingsServiceにはclearAllDataメソッドがないので削除済み
+          // 必要に応じて将来的にVSCode設定APIでクリア処理を実装
         },
 
         // ===== 内部ヘルパーメソッド =====
