@@ -12,10 +12,39 @@ declare global {
       toHaveValue(value: unknown): T;
       toBeDisabled(): T;
       toHaveBeenCalled(): T;
-      toHaveBeenCalledWith(...args: unknown[]): T;
+      toHaveBeenCalledWith(...args: unknown): T;
       toHaveBeenCalledTimes(times: number): T;
     }
   }
+}
+
+// DOM環境の基本的な設定
+if (typeof document === 'undefined') {
+  // @ts-expect-error jsdom環境でのグローバル設定
+  global.document = {
+    createElement: vi.fn(() => ({})),
+    documentElement: {},
+    body: {},
+  };
+}
+
+if (typeof window === 'undefined') {
+  // @ts-expect-error jsdom環境でのグローバル設定
+  global.window = {
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    setTimeout: global.setTimeout,
+    clearTimeout: global.clearTimeout,
+    location: {
+      href: 'http://localhost:3000',
+      origin: 'http://localhost:3000',
+    },
+    navigator: {
+      userAgent: 'test',
+    },
+    showOpenFilePicker: undefined,
+    showSaveFilePicker: undefined,
+  };
 }
 import { vi } from 'vitest';
 import React from 'react';
