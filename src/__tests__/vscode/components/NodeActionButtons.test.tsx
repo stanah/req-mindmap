@@ -2,20 +2,21 @@
  * VSCode用NodeActionButtonsコンポーネントのテスト
  */
 
+import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { NodeActionButtons } from '../../../vscode/components/NodeActionButtons';
-// import type { MindmapNode } from "../../../types";
+import type { MindmapData } from "../../../types";
 
-const mockData = {
+const mockData: MindmapData = {
   version: '1.0',
   title: 'テストマインドマップ',
   root: {
     id: 'root',
     title: 'ルートノード',
     description: 'テスト用のルートノード',
-    status: 'draft',
-    priority: 'medium',
+    status: 'draft' as const,
+    priority: 'medium' as const,
     tags: [],
     customFields: {},
     createdAt: '2024-01-01T00:00:00Z',
@@ -25,8 +26,8 @@ const mockData = {
         id: 'child1',
         title: '子ノード1',
         description: 'テスト用の子ノード',
-        status: 'draft',
-        priority: 'medium',
+        status: 'draft' as const,
+        priority: 'medium' as const,
         tags: [],
         customFields: {},
         createdAt: '2024-01-01T00:00:00Z',
