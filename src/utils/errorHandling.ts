@@ -388,9 +388,29 @@ export class ErrorHandler {
   // リカバリーアクション
   private handleParseError = (): void => {
     console.log('[ErrorHandler] Attempting to recover from parse error');
-    // デフォルトデータにフォールバック
     const store = useAppStore.getState();
+    
+    // 現在の破損データをバックアップとして保存（将来の復旧用）
+    try {
+      const currentContent = store.file.fileContent;
+      if (currentContent && currentContent.trim()) {
+        localStorage.setItem('mindmap-backup-corrupted', currentContent);
+        console.log('[ErrorHandler] Corrupted data backed up to localStorage');
+      }
+    } catch (error) {
+      console.warn('[ErrorHandler] Failed to backup corrupted data:', error);
+    }
+    
+    // デフォルトデータにフォールバック
     store.updateContent('{"version":"1.0.0","title":"新規マインドマップ","root":{"id":"root","title":"ルートノード","children":[]}}');
+    
+    // ユーザーに通知
+    store.addNotification({
+      type: 'warning',
+      message: 'データの読み込みに失敗したため、新規マインドマップを作成しました。破損したデータはバックアップされています。',
+      autoHide: false,
+      duration: 0
+    });
   };
 
   private handleValidationError = (): void => {
@@ -483,7 +503,9 @@ export function withErrorHandling<P extends object>(
  * useErrorHandler フック
  */
 export function useErrorHandler(config?: Partial<ErrorHandlerConfig>) {
-  const handler = React.useMemo(() => ErrorHandler.getInstance(config), [config]);
+  // configの安定性を確保するため、JSON文字列で比較
+  const configKey = React.useMemo(() => config ? JSON.stringify(config) : null, [config]);
+  const handler = React.useMemo(() => ErrorHandler.getInstance(config), [configKey]);
 
   const handleError = React.useCallback((error: Error | ErrorInfo, context?: Record<string, any>) => {
     return handler.handleError(error, context);
