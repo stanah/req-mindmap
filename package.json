@@ -25,16 +25,12 @@
     "build:vscode": "vite build --config vite.config.vscode.ts && rm -rf extension/webview && mkdir -p extension/webview && cp -r dist/webview/* extension/webview/ && cd extension && pnpm run compile",
     "build:vscode-package": "./scripts/build-vscode.sh",
     "lint": "eslint .",
-    "test": "vitest",
+    "test": "pnpm test:run && pnpm test:vscode:run",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:vscode": "cd extension && pnpm test",
     "test:vscode:run": "cd extension && pnpm test:run",
-    "test:vscode:coverage": "cd extension && pnpm test:run --coverage",
-    "test:vscode:ui": "cd extension && pnpm test:ui",
-    "test:all": "pnpm test:run && pnpm test:vscode:run",
-    "coverage": "vitest run --coverage",
-    "coverage:vscode": "cd extension && pnpm coverage"
+    "test:vscode:ui": "cd extension && pnpm test:ui"
   },
   "dependencies": {
     "ajv": "^8.17.1",
