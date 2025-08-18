@@ -51,6 +51,7 @@ export interface RecoveryStrategy {
   type: 'retry' | 'fallback' | 'reset' | 'ignore';
   maxRetries?: number;
   delay?: number;
+  retryAction?: () => void | Promise<void>;
   fallbackAction?: () => void;
   resetAction?: () => void;
 }
@@ -366,10 +367,21 @@ export class ErrorHandler {
       return;
     }
 
-    setTimeout(() => {
+    setTimeout(async () => {
       errorReport.retryCount++;
       console.log(`[ErrorHandler] Retrying operation for error ${errorReport.id} (attempt ${errorReport.retryCount})`);
-      // 実際のリトライロジックは呼び出し元で実装
+      
+      // リトライアクションが定義されている場合は実行
+      try {
+        if (strategy.retryAction) {
+          await strategy.retryAction();
+          console.log(`[ErrorHandler] Retry successful for error ${errorReport.id}`);
+        }
+      } catch (retryError) {
+        console.warn(`[ErrorHandler] Retry failed for error ${errorReport.id}:`, retryError);
+        // 再帰的にリトライを継続
+        this.executeRetryStrategy(errorReport, strategy);
+      }
     }, strategy.delay || 1000);
   }
 

@@ -42,8 +42,8 @@ if (typeof window === 'undefined') {
     navigator: {
       userAgent: 'test',
     },
-    showOpenFilePicker: undefined,
-    showSaveFilePicker: undefined,
+    showOpenFilePicker: vi.fn(),
+    showSaveFilePicker: vi.fn(),
   };
 }
 import { vi } from 'vitest';

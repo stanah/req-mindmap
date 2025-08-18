@@ -36,7 +36,6 @@ vi.mock('../../stores/appStore', () => ({
 
 describe('ErrorHandler', () => {
   let errorHandler: ErrorHandler;
-  let consoleSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     // シングルトンリセット
@@ -44,7 +43,7 @@ describe('ErrorHandler', () => {
     errorHandler = ErrorHandler.getInstance();
     
     // console メソッドをモック
-    consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     vi.spyOn(console, 'log').mockImplementation(() => {});
   });
