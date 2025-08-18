@@ -8,9 +8,9 @@ import { useAppStore } from '../stores/appStore';
 import { createSafeDebounce, createSafeThrottle, TimerManager } from './memoryLeakPrevention';
 
 /**
- * 深い比較用のユーティリティ
+ * 深い比較用のユーティリティ（循環参照対応版）
  */
-export function deepEqual(a: any, b: any): boolean {
+export function deepEqual(a: any, b: any, seen = new WeakSet()): boolean {
   if (a === b) return true;
   
   if (a == null || b == null) return a === b;
@@ -19,15 +19,24 @@ export function deepEqual(a: any, b: any): boolean {
   
   if (typeof a !== 'object') return a === b;
   
+  // 循環参照のチェック
+  if (seen.has(a) || seen.has(b)) return false;
+  seen.add(a);
+  seen.add(b);
+  
   if (Array.isArray(a) !== Array.isArray(b)) return false;
   
   if (Array.isArray(a)) {
     if (a.length !== b.length) return false;
     for (let i = 0; i < a.length; i++) {
-      if (!deepEqual(a[i], b[i])) return false;
+      if (!deepEqual(a[i], b[i], seen)) return false;
     }
     return true;
   }
+  
+  // Date、RegExp等の特殊オブジェクトの処理
+  if (a instanceof Date && b instanceof Date) return a.getTime() === b.getTime();
+  if (a instanceof RegExp && b instanceof RegExp) return a.toString() === b.toString();
   
   const keysA = Object.keys(a);
   const keysB = Object.keys(b);
@@ -36,7 +45,7 @@ export function deepEqual(a: any, b: any): boolean {
   
   for (const key of keysA) {
     if (!keysB.includes(key)) return false;
-    if (!deepEqual(a[key], b[key])) return false;
+    if (!deepEqual(a[key], b[key], seen)) return false;
   }
   
   return true;
