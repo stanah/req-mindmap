@@ -7,7 +7,8 @@
 
 import type { 
   MindmapData, 
-  ParseError, 
+  ParseError,
+  NotificationType, 
   NodeSelection, 
   EditorSettings, 
   MindmapSettings,
@@ -133,7 +134,7 @@ export interface Notification {
   /** メッセージ */
   message: string;
   /** 通知タイプ */
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: NotificationType;
   /** 表示時刻 */
   timestamp: number;
   /** 自動で消えるかどうか */
