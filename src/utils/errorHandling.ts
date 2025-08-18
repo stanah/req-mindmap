@@ -75,6 +75,8 @@ export class ErrorHandler {
   private config: ErrorHandlerConfig;
   private errorCounts = new Map<ErrorType, number>();
   private sessionErrors: ErrorReport[] = [];
+  private currentOperations = new Map<string, () => Promise<void>>();
+  private retryQueue = new Map<string, ErrorReport>();
 
   private constructor(config: Partial<ErrorHandlerConfig> = {}) {
     this.config = {
@@ -244,7 +246,7 @@ export class ErrorHandler {
    * エラーID生成
    */
   private generateErrorId(): string {
-    return `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `error_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
   }
 
   /**
@@ -359,30 +361,198 @@ export class ErrorHandler {
   }
 
   /**
-   * リトライ戦略を実行
+   * リトライ戦略を実行（改良版）
    */
   private executeRetryStrategy(errorReport: ErrorReport, strategy: RecoveryStrategy): void {
-    if (errorReport.retryCount >= (strategy.maxRetries || 3)) {
-      console.warn(`[ErrorHandler] Max retries reached for error ${errorReport.id}`);
+    const maxRetries = strategy.maxRetries || 3;
+    
+    if (errorReport.retryCount >= maxRetries) {
+      console.warn(`[ErrorHandler] Max retries (${maxRetries}) reached for error ${errorReport.id}`);
+      this.handleMaxRetriesReached(errorReport);
       return;
     }
 
+    // リトライキューに追加
+    this.retryQueue.set(errorReport.id, errorReport);
+
+    const delay = this.calculateRetryDelay(errorReport.retryCount, strategy.delay || 1000);
+    
     setTimeout(async () => {
       errorReport.retryCount++;
-      console.log(`[ErrorHandler] Retrying operation for error ${errorReport.id} (attempt ${errorReport.retryCount})`);
+      console.log(`[ErrorHandler] Retrying operation for error ${errorReport.id} (attempt ${errorReport.retryCount}/${maxRetries})`);
       
-      // リトライアクションが定義されている場合は実行
       try {
-        if (strategy.retryAction) {
-          await strategy.retryAction();
+        // 現在のオペレーションを取得して実行
+        const operation = this.getCurrentOperation(errorReport);
+        
+        if (operation) {
+          await operation();
           console.log(`[ErrorHandler] Retry successful for error ${errorReport.id}`);
+          this.retryQueue.delete(errorReport.id);
+          this.onRetrySuccess(errorReport);
+        } else if (strategy.retryAction) {
+          await strategy.retryAction();
+          console.log(`[ErrorHandler] Fallback retry action successful for error ${errorReport.id}`);
+          this.retryQueue.delete(errorReport.id);
+          this.onRetrySuccess(errorReport);
+        } else {
+          throw new Error('No retry operation available');
         }
       } catch (retryError) {
         console.warn(`[ErrorHandler] Retry failed for error ${errorReport.id}:`, retryError);
-        // 再帰的にリトライを継続
+        
+        // エラーが変わった場合は新しいエラーとして処理
+        if (retryError instanceof Error && retryError.message !== errorReport.message) {
+          console.log(`[ErrorHandler] Different error occurred during retry, handling as new error`);
+          this.handleError(retryError, { 
+            originalErrorId: errorReport.id,
+            retryAttempt: errorReport.retryCount 
+          });
+          return;
+        }
+        
+        // 同じエラーの場合は再帰的にリトライを継続
         this.executeRetryStrategy(errorReport, strategy);
       }
-    }, strategy.delay || 1000);
+    }, delay);
+  }
+
+  /**
+   * 現在のオペレーションを取得
+   */
+  private getCurrentOperation(errorReport: ErrorReport): (() => Promise<void>) | null {
+    // エラーの種類に基づいて適切なオペレーションを特定
+    const operationKey = this.getOperationKeyForError(errorReport);
+    return operationKey ? this.currentOperations.get(operationKey) ?? null : null;
+  }
+
+  /**
+   * エラーに対応するオペレーションキーを取得
+   */
+  private getOperationKeyForError(errorReport: ErrorReport): string | null {
+    const context = errorReport.context || {};
+    
+    // コンテキストから操作を特定
+    if (context.operation) {
+      return context.operation;
+    }
+    
+    // エラータイプから推測
+    switch (errorReport.type) {
+      case ErrorType.NETWORK_ERROR:
+        return context.url || 'network-operation';
+      case ErrorType.FILE_ERROR:
+        return context.filepath || 'file-operation';
+      case ErrorType.PARSE_ERROR:
+        return 'parse-operation';
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * リトライ遅延時間を計算（指数バックオフ）
+   */
+  private calculateRetryDelay(retryCount: number, baseDelay: number): number {
+    // 指数バックオフ + ジッター
+    const exponentialDelay = baseDelay * Math.pow(2, retryCount - 1);
+    const jitter = Math.random() * 200; // 0-200msのランダムジッター
+    return Math.min(exponentialDelay + jitter, 30000); // 最大30秒
+  }
+
+  /**
+   * 最大リトライ回数に達した場合の処理
+   */
+  private handleMaxRetriesReached(errorReport: ErrorReport): void {
+    this.retryQueue.delete(errorReport.id);
+    
+    const store = useAppStore.getState();
+    store.addNotification({
+      type: 'error',
+      message: `操作の実行に複数回失敗しました (${errorReport.type}): ${this.getUserFriendlyMessage(errorReport)}`,
+      autoHide: false,
+      duration: 0,
+      actions: [{
+        label: '手動で再試行',
+        action: () => this.manualRetry(errorReport)
+      }]
+    });
+  }
+
+  /**
+   * リトライ成功時の処理
+   */
+  private onRetrySuccess(errorReport: ErrorReport): void {
+    const store = useAppStore.getState();
+    store.addNotification({
+      type: 'success',
+      message: `操作が正常に完了しました（${errorReport.retryCount}回目で成功）`,
+      autoHide: true,
+      duration: 3000
+    });
+  }
+
+  /**
+   * 手動リトライ
+   */
+  private manualRetry = (errorReport: ErrorReport): void => {
+    console.log(`[ErrorHandler] Manual retry triggered for error ${errorReport.id}`);
+    
+    // リトライカウントをリセット
+    errorReport.retryCount = 0;
+    
+    // 再度リトライ戦略を実行
+    const strategy = this.config.recoveryStrategies.get(errorReport.type);
+    if (strategy && strategy.type === 'retry') {
+      this.executeRetryStrategy(errorReport, strategy);
+    }
+  };
+
+  /**
+   * オペレーションを登録（リトライに使用）
+   */
+  public registerOperation(key: string, operation: () => Promise<void>): void {
+    this.currentOperations.set(key, operation);
+  }
+
+  /**
+   * オペレーションを削除
+   */
+  public unregisterOperation(key: string): void {
+    this.currentOperations.delete(key);
+  }
+
+  /**
+   * 進行中のリトライをキャンセル
+   */
+  public cancelRetries(errorId?: string): void {
+    if (errorId) {
+      this.retryQueue.delete(errorId);
+      console.log(`[ErrorHandler] Cancelled retry for error ${errorId}`);
+    } else {
+      const count = this.retryQueue.size;
+      this.retryQueue.clear();
+      console.log(`[ErrorHandler] Cancelled ${count} pending retries`);
+    }
+  }
+
+  /**
+   * リトライ統計情報を取得
+   */
+  public getRetryStatistics(): {
+    pendingRetries: number;
+    retryQueue: { errorId: string; retryCount: number; type: ErrorType }[];
+  } {
+    const retryQueue = Array.from(this.retryQueue.values()).map(error => ({
+      errorId: error.id,
+      retryCount: error.retryCount,
+      type: error.type
+    }));
+
+    return {
+      pendingRetries: this.retryQueue.size,
+      retryQueue
+    };
   }
 
   // リカバリーアクション
@@ -391,26 +561,161 @@ export class ErrorHandler {
     const store = useAppStore.getState();
     
     // 現在の破損データをバックアップとして保存（将来の復旧用）
+    let backupSaved = false;
     try {
       const currentContent = store.file.fileContent;
       if (currentContent && currentContent.trim()) {
-        localStorage.setItem('mindmap-backup-corrupted', currentContent);
-        console.log('[ErrorHandler] Corrupted data backed up to localStorage');
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const backupKey = `mindmap-backup-corrupted-${timestamp}`;
+        localStorage.setItem(backupKey, currentContent);
+        localStorage.setItem('mindmap-latest-corrupted-backup', backupKey);
+        console.log('[ErrorHandler] Corrupted data backed up to localStorage with key:', backupKey);
+        backupSaved = true;
       }
     } catch (error) {
       console.warn('[ErrorHandler] Failed to backup corrupted data:', error);
     }
     
-    // デフォルトデータにフォールバック
-    store.updateContent('{"version":"1.0.0","title":"新規マインドマップ","root":{"id":"root","title":"ルートノード","children":[]}}');
+    // ユーザーに復元オプションを含む確認ダイアログを表示
+    const hasBackup = Boolean(backupSaved || localStorage.getItem('mindmap-latest-corrupted-backup'));
+    const message = hasBackup 
+      ? 'データの読み込みに失敗しました。新規マインドマップを作成しますか？\n破損したデータはバックアップされており、後で復元を試行できます。'
+      : 'データの読み込みに失敗したため、新規マインドマップを作成します。';
     
-    // ユーザーに通知
-    store.addNotification({
-      type: 'warning',
-      message: 'データの読み込みに失敗したため、新規マインドマップを作成しました。破損したデータはバックアップされています。',
-      autoHide: false,
-      duration: 0
-    });
+    // VSCodeまたはブラウザ環境に応じた確認ダイアログ
+    const userConfirmed = this.showUserConfirmation(message, hasBackup);
+    
+    if (userConfirmed || !hasBackup) {
+      // デフォルトデータにフォールバック
+      store.updateContent('{"version":"1.0.0","title":"新規マインドマップ","root":{"id":"root","title":"ルートノード","children":[]}}');
+      
+      // ユーザーに通知（復元オプション付き）
+      store.addNotification({
+        type: 'warning',
+        message: hasBackup 
+          ? 'データの読み込みに失敗したため、新規マインドマップを作成しました。破損したデータはバックアップされています。設定から復元を試行できます。'
+          : 'データの読み込みに失敗したため、新規マインドマップを作成しました。',
+        autoHide: false,
+        duration: 0,
+        actions: hasBackup ? [{
+          label: '復元を試行',
+          action: () => this.attemptDataRestoration()
+        }] : undefined
+      });
+    }
+  };
+
+  /**
+   * ユーザー確認ダイアログを表示
+   */
+  private showUserConfirmation(message: string, showCancel: boolean = true): boolean {
+    try {
+      // VSCode環境の場合
+      const vscode = VSCodeApiSingleton.getInstance();
+      if (vscode.isAvailable()) {
+        vscode.postMessage({
+          command: 'showConfirmation',
+          message,
+          options: showCancel ? ['新規作成', 'キャンセル'] : ['OK']
+        });
+        // VSCodeからの応答は非同期なので、とりあえずtrueを返す
+        return true;
+      }
+    } catch (error) {
+      console.warn('[ErrorHandler] VSCode confirmation failed:', error);
+    }
+    
+    // ブラウザ環境の場合
+    if (typeof window !== 'undefined' && window.confirm) {
+      return showCancel ? window.confirm(message) : (window.alert(message), true);
+    }
+    
+    // フォールバック：常にtrue
+    return true;
+  }
+
+  /**
+   * データ復元を試行
+   */
+  private attemptDataRestoration = (): void => {
+    console.log('[ErrorHandler] Attempting data restoration');
+    
+    try {
+      const latestBackupKey = localStorage.getItem('mindmap-latest-corrupted-backup');
+      if (!latestBackupKey) {
+        throw new Error('No backup found');
+      }
+      
+      const backupContent = localStorage.getItem(latestBackupKey);
+      if (!backupContent) {
+        throw new Error('Backup content not found');
+      }
+      
+      // JSONの修復を試行
+      const repairedContent = this.attemptJsonRepair(backupContent);
+      
+      const store = useAppStore.getState();
+      store.updateContent(repairedContent);
+      
+      store.addNotification({
+        type: 'success',
+        message: 'データの復元に成功しました。内容を確認してください。',
+        autoHide: true,
+        duration: 5000
+      });
+      
+      console.log('[ErrorHandler] Data restoration successful');
+      
+    } catch (error) {
+      console.error('[ErrorHandler] Data restoration failed:', error);
+      
+      const store = useAppStore.getState();
+      store.addNotification({
+        type: 'error',
+        message: 'データの復元に失敗しました。手動でのデータ復旧が必要です。',
+        autoHide: false,
+        duration: 0
+      });
+    }
+  };
+
+  /**
+   * JSON修復を試行
+   */
+  private attemptJsonRepair(content: string): string {
+    // まずそのままパースを試行
+    try {
+      JSON.parse(content);
+      return content; // 問題なし
+    } catch {
+      console.log('[ErrorHandler] JSON parse failed, attempting repair');
+    }
+    
+    // 一般的なJSON破損パターンの修復を試行
+    let repairedContent = content;
+    
+    // 末尾の不完全な構造を削除
+    repairedContent = repairedContent.replace(/,\s*$/, '');
+    repairedContent = repairedContent.replace(/{\s*$/, '');
+    repairedContent = repairedContent.replace(/\[\s*$/, '');
+    
+    // 閉じ括弧の補完
+    const openBraces = (repairedContent.match(/{/g) || []).length;
+    const closeBraces = (repairedContent.match(/}/g) || []).length;
+    const openBrackets = (repairedContent.match(/\[/g) || []).length;
+    const closeBrackets = (repairedContent.match(/\]/g) || []).length;
+    
+    repairedContent += '}' .repeat(Math.max(0, openBraces - closeBraces));
+    repairedContent += ']' .repeat(Math.max(0, openBrackets - closeBrackets));
+    
+    // 修復後の検証
+    try {
+      JSON.parse(repairedContent);
+      return repairedContent;
+    } catch {
+      console.warn('[ErrorHandler] JSON repair failed, using default');
+      return '{"version":"1.0.0","title":"復元されたマインドマップ","root":{"id":"root","title":"ルートノード","children":[]}}';
+    }
   };
 
   private handleValidationError = (): void => {
@@ -505,7 +810,7 @@ export function withErrorHandling<P extends object>(
 export function useErrorHandler(config?: Partial<ErrorHandlerConfig>) {
   // configの安定性を確保するため、JSON文字列で比較
   const configKey = React.useMemo(() => config ? JSON.stringify(config) : null, [config]);
-  const handler = React.useMemo(() => ErrorHandler.getInstance(config), [configKey]);
+  const handler = React.useMemo(() => ErrorHandler.getInstance(config), [config, configKey]);
 
   const handleError = React.useCallback((error: Error | ErrorInfo, context?: Record<string, any>) => {
     return handler.handleError(error, context);

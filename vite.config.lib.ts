@@ -69,7 +69,6 @@ export default defineConfig({
           'd3-selection': 'D3Selection',
           'd3-zoom': 'D3Zoom',
           'd3-hierarchy': 'D3Hierarchy',
-          'd3-tree': 'D3Tree',
           'd3-shape': 'D3Shape',
           'zustand': 'Zustand',
           'ajv': 'Ajv',

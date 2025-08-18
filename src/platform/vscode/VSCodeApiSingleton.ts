@@ -3,6 +3,10 @@
  * VSCode APIは一度しか取得できないため、アプリケーション全体で共有するシングルトン
  */
 
+import React from 'react';
+import { VSCodeMessageValidator } from '../../types/vscode';
+import type { VSCodeMessage } from '../../types/vscode';
+
 export interface VSCodeApi {
   postMessage: (message: unknown) => void;
   setState: (state: unknown) => void;
@@ -11,11 +15,7 @@ export interface VSCodeApi {
 
 declare global {
   interface Window {
-    acquireVsCodeApi?: () => {
-      postMessage: (message: unknown) => void;
-      setState: (state: unknown) => void;
-      getState: () => unknown;
-    };
+    acquireVsCodeApi?: () => VSCodeApi;
     vscodeApiInstance?: VSCodeApi;
     vscode?: VSCodeApi;
   }
@@ -25,8 +25,12 @@ class VSCodeApiSingleton {
   private static instance: VSCodeApiSingleton | null = null;
   private vscodeApi: VSCodeApi | null = null;
   private isInitialized = false;
+  private messageHandlers = new Map<string, (data: any) => void>();
 
-  private constructor() {}
+  private constructor() {
+    // メッセージリスナーを設定
+    this.setupMessageListener();
+  }
 
   static getInstance(): VSCodeApiSingleton {
     if (!VSCodeApiSingleton.instance) {
@@ -93,9 +97,19 @@ class VSCodeApiSingleton {
    */
   postMessage(message: unknown): boolean {
     try {
+      // メッセージをバリデーション
+      if (!VSCodeMessageValidator.validateIncoming(message)) {
+        console.error('[VSCodeApiSingleton] Invalid message rejected:', message);
+        return false;
+      }
+
+      // メッセージをサニタイズ
+      const sanitizedMessage = VSCodeMessageValidator.sanitizeMessage(message as VSCodeMessage);
+
       const api = this.getApi();
       if (api) {
-        api.postMessage(message);
+        api.postMessage(sanitizedMessage);
+        console.debug('[VSCodeApiSingleton] Message sent:', sanitizedMessage.command);
         return true;
       }
       console.warn('[VSCodeApiSingleton] メッセージ送信に失敗: VSCode API が利用できません');
@@ -156,10 +170,94 @@ class VSCodeApiSingleton {
    */
   showInformation(message: string): boolean {
     return this.postMessage({
-      command: 'showInformation',
+      command: 'showInfo',
       message
     });
   }
+
+  /**
+   * メッセージリスナーを設定
+   */
+  private setupMessageListener(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('message', (event) => {
+        this.handleIncomingMessage(event.data);
+      });
+    }
+  }
+
+  /**
+   * 受信メッセージをバリデーションして処理
+   */
+  private handleIncomingMessage(message: any): void {
+    try {
+      // メッセージをバリデーション
+      if (!VSCodeMessageValidator.validateOutgoing(message)) {
+        console.error('[VSCodeApiSingleton] Invalid incoming message rejected:', message);
+        return;
+      }
+
+      // サニタイズ
+      const sanitizedMessage = VSCodeMessageValidator.sanitizeMessage(message);
+
+      console.debug('[VSCodeApiSingleton] Message received:', sanitizedMessage.command);
+
+      // 登録されたハンドラーを呼び出し
+      const handler = this.messageHandlers.get(sanitizedMessage.command);
+      if (handler) {
+        handler(sanitizedMessage.data || sanitizedMessage);
+      }
+    } catch (error) {
+      console.error('[VSCodeApiSingleton] Error handling incoming message:', error);
+    }
+  }
+
+  /**
+   * メッセージハンドラーを登録
+   */
+  addMessageHandler(command: string, handler: (data: any) => void): void {
+    this.messageHandlers.set(command, handler);
+  }
+
+  /**
+   * メッセージハンドラーを削除
+   */
+  removeMessageHandler(command: string): void {
+    this.messageHandlers.delete(command);
+  }
+
+  /**
+   * 全メッセージハンドラーをクリア
+   */
+  clearMessageHandlers(): void {
+    this.messageHandlers.clear();
+  }
+
+  /**
+   * セキュアなメッセージ送信（型安全性チェック付き）
+   */
+  postSecureMessage(command: string, data?: any): boolean {
+    return this.postMessage({
+      command,
+      data,
+      timestamp: new Date().toISOString()
+    });
+  }
 }
+
+/**
+ * VSCodeメッセージハンドリング用のヘルパーフック
+ */
+export function useVSCodeMessageHandler(command: string, handler: (data: any) => void) {
+  const vscodeApi = VSCodeApiSingleton.getInstance();
+  
+  React.useEffect(() => {
+    vscodeApi.addMessageHandler(command, handler);
+    return () => vscodeApi.removeMessageHandler(command);
+  }, [command, handler, vscodeApi]);
+}
+
+// エクスポート
+export { VSCodeMessageValidator } from '../../types/vscode';
 
 export default VSCodeApiSingleton;
