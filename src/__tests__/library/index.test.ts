@@ -42,20 +42,21 @@ describe('Mindmap Library Exports', () => {
     it('ノードヘルパー関数がエクスポートされている', () => {
       expect(MindmapLibrary.findNodeById).toBeDefined();
       expect(MindmapLibrary.findParentNode).toBeDefined();
-      expect(MindmapLibrary.findChildNodes).toBeDefined();
-      expect(MindmapLibrary.findSiblingNodes).toBeDefined();
-      expect(MindmapLibrary.calculateNodeDepth).toBeDefined();
-      expect(MindmapLibrary.countDescendants).toBeDefined();
-      expect(MindmapLibrary.isNodeAncestor).toBeDefined();
-      expect(MindmapLibrary.getNodePath).toBeDefined();
-      expect(MindmapLibrary.visitAllNodes).toBeDefined();
+      expect(MindmapLibrary.createNewNode).toBeDefined();
+      expect(MindmapLibrary.generateNodeId).toBeDefined();
+      expect(MindmapLibrary.findNodeIndex).toBeDefined();
+      expect(MindmapLibrary.addSiblingNode).toBeDefined();
+      expect(MindmapLibrary.addChildNode).toBeDefined();
+      expect(MindmapLibrary.removeNode).toBeDefined();
     });
 
     it('ノードマッピング関数がエクスポートされている', () => {
       expect(MindmapLibrary.mapNodesToHierarchy).toBeDefined();
-      expect(MindmapLibrary.flattenHierarchy).toBeDefined();
-      expect(MindmapLibrary.buildNodeIndex).toBeDefined();
-      expect(MindmapLibrary.rebuildNodeConnections).toBeDefined();
+      expect(MindmapLibrary.createNodeMapping).toBeDefined();
+      expect(MindmapLibrary.getNodeIdAtCursor).toBeDefined();
+      expect(MindmapLibrary.getEditorPositionForNode).toBeDefined();
+      expect(MindmapLibrary.getNodesInRange).toBeDefined();
+      expect(MindmapLibrary.getNodeLevel).toBeDefined();
     });
   });
 
@@ -77,7 +78,9 @@ describe('Mindmap Library Exports', () => {
         'MindmapParser',
         'useAppStore',
         'findNodeById',
-        'mapNodesToHierarchy'
+        'createNewNode',
+        'mapNodesToHierarchy',
+        'createNodeMapping'
       ];
 
       requiredExports.forEach(exportName => {
@@ -97,30 +100,47 @@ describe('Mindmap Library Exports', () => {
         // Store
         'useAppStore',
         
-        // Node helpers
+        // Node helpers from nodeHelpers.ts
+        'generateNodeId',
+        'createNewNode',
         'findNodeById',
         'findParentNode',
-        'findChildNodes',
-        'findSiblingNodes', 
-        'calculateNodeDepth',
-        'countDescendants',
-        'isNodeAncestor',
-        'getNodePath',
-        'visitAllNodes',
-        'deleteNode',
+        'findNodeIndex',
+        'addSiblingNode',
         'addChildNode',
-        'moveNode',
-        'updateNodeContent',
-        'validateNodeStructure',
-        'generateNodeId',
-        'cloneNode',
-        'mergeNodes',
-        
-        // Node mapping
+        'removeNode',
         'mapNodesToHierarchy',
-        'flattenHierarchy', 
-        'buildNodeIndex',
-        'rebuildNodeConnections'
+        
+        // Node mapping from nodeMapping.ts
+        'createNodeMapping',
+        'getNodeIdAtCursor',
+        'getEditorPositionForNode',
+        'getNodesInRange',
+        'getNodeLevel',
+        
+        // All utility exports from utils/index.ts
+        'APP_CONFIG',
+        'DEBOUNCE_DELAY',
+        'STORAGE_KEYS',
+        'ERROR_MESSAGES',
+        'MINDMAP_CONFIG',
+        'deepClone',
+        'generateId',
+        'getFileExtension',
+        'detectFileFormat',
+        'getAllChildNodes',
+        'getNodeDepth',
+        'truncateText',
+        'storage',
+        'getErrorMessage',
+        'performanceDebounce',
+        'performanceThrottle',
+        'PerformanceMonitor',
+        'performanceMonitor',
+        'rafThrottle',
+        'BatchProcessor',
+        'VirtualizationManager',
+        'SpatialIndex'
       ];
 
       const actualExports = Object.keys(MindmapLibrary);
@@ -146,10 +166,16 @@ describe('Mindmap Library Exports', () => {
     it('循環依存がない', async () => {
       // 循環依存があるとモジュールロードで問題が発生するため、
       // 正常にインポートできることで循環依存がないことを確認
-      await expect(async () => {
+      let importError = null;
+      try {
         const module = await import('../../index');
-        return module;
-      }).not.toReject();
+        expect(module).toBeDefined();
+        expect(typeof module).toBe('object');
+      } catch (error) {
+        importError = error;
+      }
+      
+      expect(importError).toBeNull();
     });
   });
 });
