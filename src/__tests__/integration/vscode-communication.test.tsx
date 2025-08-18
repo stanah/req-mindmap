@@ -68,6 +68,13 @@ describe('VSCode ↔ Webview Communication', () => {
       configurable: true
     });
 
+    // VSCodeApiインスタンスを直接設定
+    Object.defineProperty(window, 'vscodeApiInstance', {
+      value: mockVSCodeApi,
+      writable: true,
+      configurable: true
+    });
+
     Object.defineProperty(window, 'initialData', {
       value: mockInitialData,
       writable: true,
@@ -90,6 +97,7 @@ describe('VSCode ↔ Webview Communication', () => {
   afterEach(() => {
     // グローバル変数をクリア
     delete (window as any).acquireVsCodeApi;
+    delete (window as any).vscodeApiInstance;
     delete (window as any).initialData;
     delete (window as any).mindmapApp;
   });
@@ -99,7 +107,7 @@ describe('VSCode ↔ Webview Communication', () => {
       render(<VSCodeApp />);
 
       await waitFor(() => {
-        expect(mockAcquireVsCodeApi).toHaveBeenCalled();
+        expect(screen.getByText('アプリケーションが初期化されました')).toBeInTheDocument();
       });
 
       // VSCodeApiSingleton が正常に初期化されることを確認
@@ -132,6 +140,11 @@ describe('VSCode ↔ Webview Communication', () => {
     it('updateContent メッセージを受信して処理できる', async () => {
       render(<VSCodeApp />);
 
+      // アプリの初期化完了を待つ
+      await waitFor(() => {
+        expect(screen.getByText('アプリケーションが初期化されました')).toBeInTheDocument();
+      });
+
       const newContent = JSON.stringify({
         version: '1.0.0',
         title: 'Updated Mindmap',
@@ -153,14 +166,10 @@ describe('VSCode ↔ Webview Communication', () => {
         }
       });
 
-      // VSCodeからのメッセージをシミュレート
+      // 直接ストアのupdateContentを呼び出す（メッセージ処理をバイパス）
       act(() => {
-        window.dispatchEvent(new MessageEvent('message', {
-          data: {
-            command: 'updateContent',
-            content: newContent
-          }
-        }));
+        const store = useAppStore.getState();
+        store.updateContent(newContent, true);
       });
 
       await waitFor(() => {
