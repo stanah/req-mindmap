@@ -4,6 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import type { Mock } from 'vitest';
 import VSCodeApiSingleton from '../../platform/vscode/VSCodeApiSingleton';
 
 // 通信メッセージの型定義
@@ -36,9 +37,9 @@ const WEBVIEW_TO_VSCODE_COMMANDS = [
 
 // モックAPIの型定義
 interface MockVSCodeApi {
-  postMessage: vi.Mock;
-  setState: vi.Mock;
-  getState: vi.Mock;
+  postMessage: Mock;
+  setState: Mock;
+  getState: Mock;
 }
 
 describe('VSCode Communication Protocol', () => {
