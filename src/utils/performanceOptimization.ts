@@ -85,13 +85,21 @@ export function useDeepCallback<T extends (...args: any[]) => any>(
  */
 export function useStableSelector<T>(
   selector: (state: ReturnType<typeof useAppStore.getState>) => T,
-  equalityFn?: (a: T, b: T) => boolean
+  equalityFn: (a: T, b: T) => boolean = deepEqual
 ): T {
   const store = useAppStore();
+  const [value, setValue] = React.useState(() => selector(store));
   
-  return useMemo(() => {
-    return selector(store);
-  }, [store, selector]);
+  React.useEffect(() => {
+    const unsubscribe = useAppStore.subscribe((state) => {
+      const newValue = selector(state);
+      setValue(prevValue => equalityFn(prevValue, newValue) ? prevValue : newValue);
+    });
+    
+    return unsubscribe;
+  }, [selector, equalityFn]);
+  
+  return value;
 }
 
 /**
@@ -216,24 +224,27 @@ export function useVirtualizedSelection<T>(
   items: T[],
   itemHeight: number,
   containerHeight: number,
+  scrollTop: number = 0,
   overscan: number = 5
 ) {
   return useMemo(() => {
     const visibleCount = Math.ceil(containerHeight / itemHeight);
     const totalCount = items.length;
     
-    // 表示範囲を計算
-    const startIndex = 0;
-    const endIndex = Math.min(visibleCount + overscan, totalCount);
+    // スクロール位置を考慮した表示範囲を計算
+    const scrollIndex = Math.floor(scrollTop / itemHeight);
+    const startIndex = Math.max(0, scrollIndex - overscan);
+    const endIndex = Math.min(scrollIndex + visibleCount + overscan, totalCount);
     
     return {
       visibleItems: items.slice(startIndex, endIndex),
       startIndex,
       endIndex,
       totalCount,
-      offsetY: startIndex * itemHeight
+      offsetY: startIndex * itemHeight,
+      scrollIndex
     };
-  }, [items, itemHeight, containerHeight, overscan]);
+  }, [items, itemHeight, containerHeight, scrollTop, overscan]);
 }
 
 /**
