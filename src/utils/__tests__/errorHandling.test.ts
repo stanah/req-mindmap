@@ -50,7 +50,7 @@ describe('ErrorHandler', () => {
   });
 
   afterEach(() => {
-    consoleSpy.mockRestore();
+    vi.restoreAllMocks(); // すべての spy を元に戻す
     vi.clearAllMocks();
   });
 
