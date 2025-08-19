@@ -13,6 +13,10 @@ export default defineConfig({
   resolve: {
     alias: {
       'monaco-editor': 'monaco-editor/esm/vs/editor/editor.api.js',
+      // D3 modules mock for testing when not available
+      'd3-selection': '/src/test/mocks/d3-selection.ts',
+      'd3-zoom': '/src/test/mocks/d3-zoom.ts',
+      'd3-hierarchy': '/src/test/mocks/d3-hierarchy.ts',
     },
   },
   define: {
