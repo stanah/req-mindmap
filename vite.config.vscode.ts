@@ -34,6 +34,17 @@ export default defineConfig({
         manualChunks: undefined // IIFEモードでは無効
       },
       
+      // 外部モジュールの設定
+      external: [
+        'd3-selection',
+        'd3-zoom',
+        'd3-hierarchy',
+        'd3-shape',
+        'd3-scale',
+        'd3-interpolate',
+        'd3-color'
+      ],
+      
       // tree-shaking最適化設定
       treeshake: {
         moduleSideEffects: false,

@@ -8,7 +8,7 @@ echo "VSCode拡張用のビルドを開始します..."
 
 # 1. Webview用のビルド
 echo "1. Webview用のビルドを実行中..."
-npm run build -- --config vite.config.vscode.ts
+pnpm run build:vscode
 
 # 2. 拡張機能のWebpackビルド（依存関係をバンドル）
 echo "2. 拡張機能のWebpackビルドを実行中..."
@@ -17,20 +17,10 @@ pnpm install
 pnpm run webpack
 cd ..
 
-# 3. スキーマファイルのコピー
-# echo "3. スキーマファイルをコピー中..."
-# mkdir -p extension/schemas
-# cp src/schemas/*.json extension/schemas/
-
-# 4. Webviewファイルのコピー
-echo "4. Webviewファイルをコピー中..."
-mkdir -p extension/webview
-cp -r dist/webview/* extension/webview/
-
-# 5. パッケージの作成
-echo "5. VSCode拡張パッケージを作成中..."
+# 3. パッケージの作成
+echo "3. VSCode拡張パッケージを作成中..."
 cd extension
-npm run package
+pnpm run package
 cd ..
 
 echo "VSCode拡張のビルドが完了しました！"
