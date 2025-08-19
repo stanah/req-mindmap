@@ -10,11 +10,10 @@ echo "VSCode拡張用のビルドを開始します..."
 echo "1. Webview用のビルドを実行中..."
 pnpm run build:vscode
 
-# 2. 拡張機能のWebpackビルド（依存関係をバンドル）
-echo "2. 拡張機能のWebpackビルドを実行中..."
+# 2. 拡張機能のコンパイル
+echo "2. 拡張機能のコンパイルを実行中..."
 cd extension
-pnpm install
-pnpm run webpack
+pnpm run compile
 cd ..
 
 # 3. パッケージの作成
