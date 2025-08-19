@@ -77,6 +77,7 @@ export class ErrorHandler {
   private sessionErrors: ErrorReport[] = [];
   private currentOperations = new Map<string, () => Promise<void>>();
   private retryQueue = new Map<string, ErrorReport>();
+  private corruptedDataBackup: { content: string; timestamp: string; key: string } | null = null;
 
   private constructor(config: Partial<ErrorHandlerConfig> = {}) {
     this.config = {
@@ -560,16 +561,19 @@ export class ErrorHandler {
     console.log('[ErrorHandler] Attempting to recover from parse error');
     const store = useAppStore.getState();
     
-    // 現在の破損データをバックアップとして保存（将来の復旧用）
+    // 現在の破損データをメモリにバックアップ（セッション中のみ有効）
     let backupSaved = false;
     try {
       const currentContent = store.file.fileContent;
       if (currentContent && currentContent.trim()) {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const backupKey = `mindmap-backup-corrupted-${timestamp}`;
-        localStorage.setItem(backupKey, currentContent);
-        localStorage.setItem('mindmap-latest-corrupted-backup', backupKey);
-        console.log('[ErrorHandler] Corrupted data backed up to localStorage with key:', backupKey);
+        // メモリ上にバックアップを保存（永続化なし）
+        this.corruptedDataBackup = {
+          content: currentContent,
+          timestamp,
+          key: `mindmap-backup-corrupted-${timestamp}`
+        };
+        console.log('[ErrorHandler] Corrupted data backed up to memory with key:', this.corruptedDataBackup.key);
         backupSaved = true;
       }
     } catch (error) {
@@ -577,7 +581,7 @@ export class ErrorHandler {
     }
     
     // ユーザーに復元オプションを含む確認ダイアログを表示
-    const hasBackup = Boolean(backupSaved || localStorage.getItem('mindmap-latest-corrupted-backup'));
+    const hasBackup = Boolean(backupSaved || this.corruptedDataBackup);
     const message = hasBackup 
       ? 'データの読み込みに失敗しました。新規マインドマップを作成しますか？\n破損したデータはバックアップされており、後で復元を試行できます。'
       : 'データの読み込みに失敗したため、新規マインドマップを作成します。';
@@ -641,15 +645,12 @@ export class ErrorHandler {
     console.log('[ErrorHandler] Attempting data restoration');
     
     try {
-      const latestBackupKey = localStorage.getItem('mindmap-latest-corrupted-backup');
-      if (!latestBackupKey) {
-        throw new Error('No backup found');
+      // メモリ上のバックアップデータを確認
+      if (!this.corruptedDataBackup) {
+        throw new Error('No backup found in memory');
       }
       
-      const backupContent = localStorage.getItem(latestBackupKey);
-      if (!backupContent) {
-        throw new Error('Backup content not found');
-      }
+      const backupContent = this.corruptedDataBackup.content;
       
       // JSONの修復を試行
       const repairedContent = this.attemptJsonRepair(backupContent);

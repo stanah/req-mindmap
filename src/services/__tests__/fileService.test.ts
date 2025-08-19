@@ -309,19 +309,10 @@ title: "test
     });
   });
 
-  describe('最近使用したファイル', () => {
+  describe('最近使用したファイル（メモリのみ）', () => {
     beforeEach(() => {
-      // localStorageのモック
-      const localStorageMock = {
-        getItem: vi.fn(),
-        setItem: vi.fn(),
-        removeItem: vi.fn(),
-        clear: vi.fn()
-      };
-      Object.defineProperty(global, 'localStorage', {
-        value: localStorageMock,
-        writable: true
-      });
+      // メモリのみなのでlocalStorageモック不要
+      fileService.clearRecentFiles();
     });
 
     it('最近使用したファイルを記録する', () => {
@@ -333,30 +324,39 @@ title: "test
 
       fileService.addToRecentFiles(fileInfo);
 
-      expect(localStorage.setItem).toHaveBeenCalledWith(
-        'mindmap-recent-files',
-        expect.stringContaining('test.json')
-      );
+      // メモリ上に保存されることを確認
+      const recentFiles = fileService.getRecentFiles();
+      expect(recentFiles).toHaveLength(1);
+      expect(recentFiles[0].name).toBe('test.json');
     });
 
     it('最近使用したファイル一覧を取得する', () => {
-      const recentFiles = [
-        { name: 'test1.json', path: '/path/to/test1.json', lastModified: Date.now() },
-        { name: 'test2.yaml', path: '/path/to/test2.yaml', lastModified: Date.now() - 1000 }
-      ];
+      const fileInfo1 = { name: 'test1.json', path: '/path/to/test1.json', lastModified: Date.now() };
+      const fileInfo2 = { name: 'test2.yaml', path: '/path/to/test2.yaml', lastModified: Date.now() - 1000 };
 
-      (localStorage.getItem as jest.MockedFunction<typeof localStorage.getItem>).mockReturnValue(JSON.stringify(recentFiles));
+      // メモリにファイル情報を追加
+      fileService.addToRecentFiles(fileInfo1);
+      fileService.addToRecentFiles(fileInfo2);
 
       const result = fileService.getRecentFiles();
 
       expect(result).toHaveLength(2);
-      expect(result[0].name).toBe('test1.json');
+      expect(result[0].name).toBe('test2.yaml'); // 新しいものが最初に来る
+      expect(result[1].name).toBe('test1.json');
     });
 
     it('最近使用したファイル一覧をクリアする', () => {
+      // ファイルを追加してからクリア
+      fileService.addToRecentFiles({
+        name: 'test.json',
+        path: '/path/to/test.json',
+        lastModified: Date.now()
+      });
+      
       fileService.clearRecentFiles();
 
-      expect(localStorage.removeItem).toHaveBeenCalledWith('mindmap-recent-files');
+      // メモリからクリアされることを確認
+      expect(fileService.getRecentFiles()).toHaveLength(0);
     });
 
     it('最大件数を超えた場合古いファイルを削除する', () => {
@@ -369,12 +369,10 @@ title: "test
         });
       }
 
-      const setItemCalls = (localStorage.setItem as jest.MockedFunction<typeof localStorage.setItem>).mock.calls;
-      const lastCall = setItemCalls[setItemCalls.length - 1];
-      const savedData = JSON.parse(lastCall[1]);
+      const recentFiles = fileService.getRecentFiles();
 
-      expect(savedData).toHaveLength(10); // 最大10個まで
-      expect(savedData[0].name).toBe('test10.json'); // 最新のファイルが先頭
+      expect(recentFiles).toHaveLength(10); // 最大10個まで
+      expect(recentFiles[0].name).toBe('test10.json'); // 最新のファイルが先頭
     });
   });
 

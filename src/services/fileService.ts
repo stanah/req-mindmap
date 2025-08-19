@@ -633,25 +633,17 @@ export class BrowserFileService implements FileService {
       this.recentFiles = this.recentFiles.slice(0, 10);
     }
     
-    // localStorageに保存
-    localStorage.setItem('mindmap-recent-files', JSON.stringify(this.recentFiles));
+    // メモリのみに保持（永続化なし）
   }
 
   getRecentFiles(): FileInfo[] {
-    const stored = localStorage.getItem('mindmap-recent-files');
-    if (stored) {
-      try {
-        this.recentFiles = JSON.parse(stored);
-      } catch {
-        this.recentFiles = [];
-      }
-    }
+    // メモリ上の最近使ったファイル一覧を返す（永続化なし）
     return this.recentFiles;
   }
 
   clearRecentFiles(): void {
     this.recentFiles = [];
-    localStorage.removeItem('mindmap-recent-files');
+    // メモリのみなのでクリアするだけ
   }
 
   /**
