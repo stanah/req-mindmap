@@ -98,8 +98,8 @@ class VSCodeApiSingleton {
   postMessage(message: unknown): boolean {
     try {
       // メッセージをバリデーション
-      if (!VSCodeMessageValidator.validateIncoming(message)) {
-        console.error('[VSCodeApiSingleton] Invalid message rejected:', message);
+      if (!VSCodeMessageValidator.validateOutgoing(message)) {
+        console.error('[VSCodeApiSingleton] Invalid outgoing message rejected:', message);
         return false;
       }
 
@@ -192,7 +192,7 @@ class VSCodeApiSingleton {
   private handleIncomingMessage(message: any): void {
     try {
       // メッセージをバリデーション
-      if (!VSCodeMessageValidator.validateOutgoing(message)) {
+      if (!VSCodeMessageValidator.validateIncoming(message)) {
         console.error('[VSCodeApiSingleton] Invalid incoming message rejected:', message);
         return;
       }

@@ -65,32 +65,9 @@ export const ALLOWED_VSCODE_COMMANDS = {
  */
 export class VSCodeMessageValidator {
   /**
-   * WebViewから拡張機能への送信メッセージを検証
-   */
-  static validateIncoming(message: any): message is VSCodeMessage {
-    if (!message || typeof message !== 'object') {
-      console.warn('[VSCode] Invalid message format: not an object');
-      return false;
-    }
-
-    if (!message.command || typeof message.command !== 'string') {
-      console.warn('[VSCode] Invalid message: missing or invalid command');
-      return false;
-    }
-
-    const allowedCommands = Object.values(ALLOWED_VSCODE_COMMANDS.IN);
-    if (!allowedCommands.includes(message.command as any)) {
-      console.warn('[VSCode] Invalid message: command not allowed:', message.command);
-      return false;
-    }
-
-    return true;
-  }
-
-  /**
    * 拡張機能からWebViewへの受信メッセージを検証
    */
-  static validateOutgoing(message: any): message is VSCodeWebViewMessage {
+  static validateIncoming(message: any): message is VSCodeWebViewMessage {
     if (!message || typeof message !== 'object') {
       console.warn('[VSCode] Invalid message format: not an object');
       return false;
@@ -102,6 +79,29 @@ export class VSCodeMessageValidator {
     }
 
     const allowedCommands = Object.values(ALLOWED_VSCODE_COMMANDS.OUT);
+    if (!allowedCommands.includes(message.command as any)) {
+      console.warn('[VSCode] Invalid message: command not allowed:', message.command);
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * WebViewから拡張機能への送信メッセージを検証
+   */
+  static validateOutgoing(message: any): message is VSCodeMessage {
+    if (!message || typeof message !== 'object') {
+      console.warn('[VSCode] Invalid message format: not an object');
+      return false;
+    }
+
+    if (!message.command || typeof message.command !== 'string') {
+      console.warn('[VSCode] Invalid message: missing or invalid command');
+      return false;
+    }
+
+    const allowedCommands = Object.values(ALLOWED_VSCODE_COMMANDS.IN);
     if (!allowedCommands.includes(message.command as any)) {
       console.warn('[VSCode] Invalid message: command not allowed:', message.command);
       return false;
