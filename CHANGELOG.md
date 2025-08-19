@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0](https://github.com/stanah/req-mindmap/compare/req-mindmap-v0.4.0...req-mindmap-v0.5.0) (2025-08-19)
+
+
+### Features
+
+* add GitHub Actions CI workflow ([63f8899](https://github.com/stanah/req-mindmap/commit/63f8899e058dd55e658724187e0ec91645ef5f7b))
+
+
+### Bug Fixes
+
+* d3-shapeのインポートをd3に統合してエラーを修正 ([6bcf05d](https://github.com/stanah/req-mindmap/commit/6bcf05d3ba581dea65999994405681b7e8c66d2f))
+* remove d3 mock files and keep existing setup ([e0ef94f](https://github.com/stanah/req-mindmap/commit/e0ef94f7f6f4b67af853cbae8b09296de48dd10a))
+* remove pnpm version specification from GitHub Actions ([3a97d18](https://github.com/stanah/req-mindmap/commit/3a97d18f5a4a0bab610966dd591d51a98d9aa9bb))
+* VSCode Webviewでd3モジュール未定義エラーを修正 ([8c6dfc2](https://github.com/stanah/req-mindmap/commit/8c6dfc22c140554c90658afd4f9577be79152c48))
+
 ## [0.4.0](https://github.com/stanah/req-mindmap/compare/req-mindmap-v0.3.0...req-mindmap-v0.4.0) (2025-08-19)
 
 
