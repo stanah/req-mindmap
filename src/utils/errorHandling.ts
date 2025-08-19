@@ -461,7 +461,7 @@ export class ErrorHandler {
    */
   private calculateRetryDelay(retryCount: number, baseDelay: number): number {
     // 指数バックオフ + ジッター
-    const exponentialDelay = baseDelay * Math.pow(2, retryCount - 1);
+    const exponentialDelay = baseDelay * Math.pow(2, retryCount);
     const jitter = Math.random() * 200; // 0-200msのランダムジッター
     return Math.min(exponentialDelay + jitter, 30000); // 最大30秒
   }
