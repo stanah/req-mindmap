@@ -60,7 +60,6 @@ export default defineConfig({
       'd3-selection',
       'd3-zoom',
       'd3-hierarchy',
-      'd3-tree',
       'd3-shape',
       'd3-scale',
       'd3-interpolate',
