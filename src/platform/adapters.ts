@@ -156,11 +156,6 @@ export class PlatformError extends Error {
   ) {
     super(message);
     this.name = 'PlatformError';
-    
-    // Error.causeのサポート
-    if (cause && 'cause' in Error.prototype) {
-      (this as any).cause = cause;
-    }
   }
 }
 
