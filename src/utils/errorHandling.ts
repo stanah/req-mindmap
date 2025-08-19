@@ -77,6 +77,7 @@ export class ErrorHandler {
   private sessionErrors: ErrorReport[] = [];
   private currentOperations = new Map<string, () => Promise<void>>();
   private retryQueue = new Map<string, ErrorReport>();
+  private retryTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
   private corruptedDataBackup: { content: string; timestamp: string; key: string } | null = null;
 
   private constructor(config: Partial<ErrorHandlerConfig> = {}) {
@@ -378,7 +379,7 @@ export class ErrorHandler {
 
     const delay = this.calculateRetryDelay(errorReport.retryCount, strategy.delay || 1000);
     
-    setTimeout(async () => {
+    const timeoutId = setTimeout(async () => {
       errorReport.retryCount++;
       console.log(`[ErrorHandler] Retrying operation for error ${errorReport.id} (attempt ${errorReport.retryCount}/${maxRetries})`);
       
@@ -415,7 +416,11 @@ export class ErrorHandler {
         // 同じエラーの場合は再帰的にリトライを継続
         this.executeRetryStrategy(errorReport, strategy);
       }
+      
+      // 実行完了後はタイマー登録を解放
+      this.retryTimeouts.delete(errorReport.id);
     }, delay);
+    this.retryTimeouts.set(errorReport.id, timeoutId);
   }
 
   /**
@@ -529,10 +534,15 @@ export class ErrorHandler {
   public cancelRetries(errorId?: string): void {
     if (errorId) {
       this.retryQueue.delete(errorId);
+      const t = this.retryTimeouts.get(errorId);
+      if (t) clearTimeout(t);
+      this.retryTimeouts.delete(errorId);
       console.log(`[ErrorHandler] Cancelled retry for error ${errorId}`);
     } else {
       const count = this.retryQueue.size;
+      for (const t of this.retryTimeouts.values()) clearTimeout(t);
       this.retryQueue.clear();
+      this.retryTimeouts.clear();
       console.log(`[ErrorHandler] Cancelled ${count} pending retries`);
     }
   }
@@ -757,6 +767,7 @@ export class ErrorHandler {
   public reset(): void {
     this.errorCounts.clear();
     this.sessionErrors.length = 0;
+    this.cancelRetries();
   }
 }
 
