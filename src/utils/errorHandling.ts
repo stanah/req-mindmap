@@ -10,7 +10,7 @@ import VSCodeApiSingleton from '../platform/vscode/VSCodeApiSingleton';
 /**
  * エラーの種類を定義
  */
-export enum ErrorType {
+export enum ErrorCategory {
   PARSE_ERROR = 'PARSE_ERROR',
   NETWORK_ERROR = 'NETWORK_ERROR',
   VALIDATION_ERROR = 'VALIDATION_ERROR',
@@ -24,7 +24,7 @@ export enum ErrorType {
  * エラー情報の詳細
  */
 export interface ErrorInfo {
-  type: ErrorType;
+  type: ErrorCategory;
   message: string;
   stack?: string;
   code?: string;
@@ -64,7 +64,7 @@ export interface ErrorHandlerConfig {
   enableVSCodeReporting: boolean;
   enableUserNotification: boolean;
   maxErrorsPerSession: number;
-  recoveryStrategies: Map<ErrorType, RecoveryStrategy>;
+  recoveryStrategies: Map<ErrorCategory, RecoveryStrategy>;
 }
 
 /**
@@ -73,7 +73,7 @@ export interface ErrorHandlerConfig {
 export class ErrorHandler {
   private static instance: ErrorHandler | null = null;
   private config: ErrorHandlerConfig;
-  private errorCounts = new Map<ErrorType, number>();
+  private errorCounts = new Map<ErrorCategory, number>();
   private sessionErrors: ErrorReport[] = [];
   private currentOperations = new Map<string, () => Promise<void>>();
   private retryQueue = new Map<string, ErrorReport>();
@@ -87,13 +87,13 @@ export class ErrorHandler {
       enableUserNotification: true,
       maxErrorsPerSession: 100,
       recoveryStrategies: new Map([
-        [ErrorType.PARSE_ERROR, { type: 'fallback', fallbackAction: this.handleParseError }],
-        [ErrorType.NETWORK_ERROR, { type: 'retry', maxRetries: 3, delay: 1000 }],
-        [ErrorType.VALIDATION_ERROR, { type: 'fallback', fallbackAction: this.handleValidationError }],
-        [ErrorType.PLATFORM_ERROR, { type: 'fallback', fallbackAction: this.handlePlatformError }],
-        [ErrorType.COMPONENT_ERROR, { type: 'reset', resetAction: this.handleComponentError }],
-        [ErrorType.FILE_ERROR, { type: 'retry', maxRetries: 2, delay: 500 }],
-        [ErrorType.UNKNOWN_ERROR, { type: 'ignore' }]
+        [ErrorCategory.PARSE_ERROR, { type: 'fallback', fallbackAction: this.handleParseError }],
+        [ErrorCategory.NETWORK_ERROR, { type: 'retry', maxRetries: 3, delay: 1000 }],
+        [ErrorCategory.VALIDATION_ERROR, { type: 'fallback', fallbackAction: this.handleValidationError }],
+        [ErrorCategory.PLATFORM_ERROR, { type: 'fallback', fallbackAction: this.handlePlatformError }],
+        [ErrorCategory.COMPONENT_ERROR, { type: 'reset', resetAction: this.handleComponentError }],
+        [ErrorCategory.FILE_ERROR, { type: 'retry', maxRetries: 2, delay: 500 }],
+        [ErrorCategory.UNKNOWN_ERROR, { type: 'ignore' }]
       ]),
       ...config
     };
@@ -170,35 +170,35 @@ export class ErrorHandler {
   /**
    * エラーを分類
    */
-  private classifyError(error: Error): ErrorType {
+  private classifyError(error: Error): ErrorCategory {
     const message = error.message.toLowerCase();
     const stack = error.stack?.toLowerCase() || '';
 
     if (message.includes('parse') || message.includes('json') || message.includes('yaml')) {
-      return ErrorType.PARSE_ERROR;
+      return ErrorCategory.PARSE_ERROR;
     }
 
     if (message.includes('network') || message.includes('fetch') || message.includes('connection')) {
-      return ErrorType.NETWORK_ERROR;
+      return ErrorCategory.NETWORK_ERROR;
     }
 
     if (message.includes('validation') || message.includes('invalid') || message.includes('schema')) {
-      return ErrorType.VALIDATION_ERROR;
+      return ErrorCategory.VALIDATION_ERROR;
     }
 
     if (message.includes('platform') || message.includes('vscode') || message.includes('adapter')) {
-      return ErrorType.PLATFORM_ERROR;
+      return ErrorCategory.PLATFORM_ERROR;
     }
 
     if (message.includes('file') || message.includes('filesystem') || message.includes('read') || message.includes('write')) {
-      return ErrorType.FILE_ERROR;
+      return ErrorCategory.FILE_ERROR;
     }
 
     if (stack.includes('react') || stack.includes('component')) {
-      return ErrorType.COMPONENT_ERROR;
+      return ErrorCategory.COMPONENT_ERROR;
     }
 
-    return ErrorType.UNKNOWN_ERROR;
+    return ErrorCategory.UNKNOWN_ERROR;
   }
 
   /**
@@ -222,14 +222,14 @@ export class ErrorHandler {
    */
   private determineSeverity(errorInfo: ErrorInfo): 'low' | 'medium' | 'high' | 'critical' {
     switch (errorInfo.type) {
-      case ErrorType.COMPONENT_ERROR:
-      case ErrorType.PLATFORM_ERROR:
+      case ErrorCategory.COMPONENT_ERROR:
+      case ErrorCategory.PLATFORM_ERROR:
         return 'critical';
-      case ErrorType.PARSE_ERROR:
-      case ErrorType.VALIDATION_ERROR:
-      case ErrorType.FILE_ERROR:
+      case ErrorCategory.PARSE_ERROR:
+      case ErrorCategory.VALIDATION_ERROR:
+      case ErrorCategory.FILE_ERROR:
         return 'high';
-      case ErrorType.NETWORK_ERROR:
+      case ErrorCategory.NETWORK_ERROR:
         return 'medium';
       default:
         return 'low';
@@ -239,7 +239,7 @@ export class ErrorHandler {
   /**
    * エラーがリカバリー可能かどうか判定
    */
-  private isRecoverable(errorType: ErrorType): boolean {
+  private isRecoverable(errorType: ErrorCategory): boolean {
     const strategy = this.config.recoveryStrategies.get(errorType);
     return strategy?.type !== 'ignore';
   }
@@ -254,7 +254,7 @@ export class ErrorHandler {
   /**
    * エラーカウントを増やす
    */
-  private incrementErrorCount(errorType: ErrorType): void {
+  private incrementErrorCount(errorType: ErrorCategory): void {
     const current = this.errorCounts.get(errorType) || 0;
     this.errorCounts.set(errorType, current + 1);
   }
@@ -322,17 +322,17 @@ export class ErrorHandler {
    */
   private getUserFriendlyMessage(errorReport: ErrorReport): string {
     switch (errorReport.type) {
-      case ErrorType.PARSE_ERROR:
+      case ErrorCategory.PARSE_ERROR:
         return 'ファイルの形式が正しくありません。JSONまたはYAML形式を確認してください。';
-      case ErrorType.NETWORK_ERROR:
+      case ErrorCategory.NETWORK_ERROR:
         return 'ネットワーク接続に問題があります。しばらく後に再試行してください。';
-      case ErrorType.VALIDATION_ERROR:
+      case ErrorCategory.VALIDATION_ERROR:
         return 'データの形式が正しくありません。内容を確認してください。';
-      case ErrorType.PLATFORM_ERROR:
+      case ErrorCategory.PLATFORM_ERROR:
         return 'プラットフォームエラーが発生しました。VSCode拡張を再起動してください。';
-      case ErrorType.COMPONENT_ERROR:
+      case ErrorCategory.COMPONENT_ERROR:
         return 'アプリケーションエラーが発生しました。ページを再読み込みしてください。';
-      case ErrorType.FILE_ERROR:
+      case ErrorCategory.FILE_ERROR:
         return 'ファイル操作でエラーが発生しました。ファイルの読み書き権限を確認してください。';
       default:
         return '予期しないエラーが発生しました。しばらく後に再試行してください。';
@@ -445,11 +445,11 @@ export class ErrorHandler {
     
     // エラータイプから推測
     switch (errorReport.type) {
-      case ErrorType.NETWORK_ERROR:
+      case ErrorCategory.NETWORK_ERROR:
         return context.url || 'network-operation';
-      case ErrorType.FILE_ERROR:
+      case ErrorCategory.FILE_ERROR:
         return context.filepath || 'file-operation';
-      case ErrorType.PARSE_ERROR:
+      case ErrorCategory.PARSE_ERROR:
         return 'parse-operation';
       default:
         return null;
@@ -552,7 +552,7 @@ export class ErrorHandler {
    */
   public getRetryStatistics(): {
     pendingRetries: number;
-    retryQueue: { errorId: string; retryCount: number; type: ErrorType }[];
+    retryQueue: { errorId: string; retryCount: number; type: ErrorCategory }[];
   } {
     const retryQueue = Array.from(this.retryQueue.values()).map(error => ({
       errorId: error.id,
@@ -751,7 +751,7 @@ export class ErrorHandler {
    */
   public getErrorStatistics(): {
     total: number;
-    byType: Map<ErrorType, number>;
+    byType: Map<ErrorCategory, number>;
     sessionErrors: ErrorReport[];
   } {
     return {

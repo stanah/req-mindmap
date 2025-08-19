@@ -7,7 +7,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 
 import ErrorHandler, {
-  ErrorType,
+  ErrorCategory,
   withErrorHandling,
   useErrorHandler,
   withErrorHandlingDecorator
@@ -79,35 +79,35 @@ describe('ErrorHandler', () => {
       const error = new Error('JSON parse error');
       const report = errorHandler.handleError(error);
       
-      expect(report.type).toBe(ErrorType.PARSE_ERROR);
+      expect(report.type).toBe(ErrorCategory.PARSE_ERROR);
     });
 
     it('ネットワークエラーを正しく分類する', () => {
       const error = new Error('Network connection failed');
       const report = errorHandler.handleError(error);
       
-      expect(report.type).toBe(ErrorType.NETWORK_ERROR);
+      expect(report.type).toBe(ErrorCategory.NETWORK_ERROR);
     });
 
     it('バリデーションエラーを正しく分類する', () => {
       const error = new Error('Invalid schema validation');
       const report = errorHandler.handleError(error);
       
-      expect(report.type).toBe(ErrorType.VALIDATION_ERROR);
+      expect(report.type).toBe(ErrorCategory.VALIDATION_ERROR);
     });
 
     it('プラットフォームエラーを正しく分類する', () => {
       const error = new Error('VSCode platform adapter failed');
       const report = errorHandler.handleError(error);
       
-      expect(report.type).toBe(ErrorType.PLATFORM_ERROR);
+      expect(report.type).toBe(ErrorCategory.PLATFORM_ERROR);
     });
 
     it('ファイルエラーを正しく分類する', () => {
       const error = new Error('File read permission denied');
       const report = errorHandler.handleError(error);
       
-      expect(report.type).toBe(ErrorType.FILE_ERROR);
+      expect(report.type).toBe(ErrorCategory.FILE_ERROR);
     });
 
     it('React コンポーネントエラーを正しく分類する', () => {
@@ -115,14 +115,14 @@ describe('ErrorHandler', () => {
       error.stack = 'Error at Component.render (react.js:123)';
       
       const report = errorHandler.handleError(error);
-      expect(report.type).toBe(ErrorType.COMPONENT_ERROR);
+      expect(report.type).toBe(ErrorCategory.COMPONENT_ERROR);
     });
 
     it('不明なエラーを正しく分類する', () => {
       const error = new Error('Some unknown error occurred');
       const report = errorHandler.handleError(error);
       
-      expect(report.type).toBe(ErrorType.UNKNOWN_ERROR);
+      expect(report.type).toBe(ErrorCategory.UNKNOWN_ERROR);
     });
   });
 
@@ -170,8 +170,8 @@ describe('ErrorHandler', () => {
       const stats = errorHandler.getErrorStatistics();
       
       expect(stats.total).toBe(3);
-      expect(stats.byType.get(ErrorType.PARSE_ERROR)).toBe(2);
-      expect(stats.byType.get(ErrorType.NETWORK_ERROR)).toBe(1);
+      expect(stats.byType.get(ErrorCategory.PARSE_ERROR)).toBe(2);
+      expect(stats.byType.get(ErrorCategory.NETWORK_ERROR)).toBe(1);
       expect(stats.sessionErrors).toHaveLength(3);
     });
 
@@ -286,7 +286,7 @@ describe('ErrorHandler', () => {
   describe('ErrorInfo 直接処理', () => {
     it('ErrorInfo オブジェクトを直接処理できる', () => {
       const errorInfo = {
-        type: ErrorType.VALIDATION_ERROR,
+        type: ErrorCategory.VALIDATION_ERROR,
         message: 'Direct error info',
         timestamp: new Date(),
         context: { source: 'test' }
@@ -294,7 +294,7 @@ describe('ErrorHandler', () => {
       
       const report = errorHandler.handleError(errorInfo);
       
-      expect(report.type).toBe(ErrorType.VALIDATION_ERROR);
+      expect(report.type).toBe(ErrorCategory.VALIDATION_ERROR);
       expect(report.message).toBe('Direct error info');
       expect(report.context).toEqual({ source: 'test' });
     });
