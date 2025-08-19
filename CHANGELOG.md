@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0](https://github.com/stanah/req-mindmap/compare/req-mindmap-v0.3.0...req-mindmap-v0.4.0) (2025-08-19)
+
+
+### Features
+
+* GitHub Pages デプロイワークフローを削除 ([23cc486](https://github.com/stanah/req-mindmap/commit/23cc486199ce4a4e30633737b1b60022e012b564))
+
+
+### Bug Fixes
+
+* VSCode拡張ビルドエラーを修正 ([af384cd](https://github.com/stanah/req-mindmap/commit/af384cdbdeab71c9f007f4b9f60eecbe80aca42b))
+
 ## [0.3.0](https://github.com/stanah/req-mindmap/compare/req-mindmap-v0.2.1...req-mindmap-v0.3.0) (2025-08-19)
 
 
