@@ -847,7 +847,20 @@ export function withErrorHandlingDecorator<T extends (...args: any[]) => any>(
 
   return ((...args: Parameters<T>) => {
     try {
-      return fn(...args);
+      const result = fn(...args);
+      
+      // Promiseかどうかチェックして非同期エラーもハンドル
+      if (result && typeof result.catch === 'function') {
+        return result.catch((err: any) => {
+          handler.handleError(err as Error, {
+            function: fn.name,
+            arguments: args
+          });
+          throw err;
+        });
+      }
+      
+      return result;
     } catch (error) {
       handler.handleError(error as Error, {
         function: fn.name,
