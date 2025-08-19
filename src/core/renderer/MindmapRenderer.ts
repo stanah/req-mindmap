@@ -4,7 +4,11 @@
  * MindmapCoreLogicと連携してデータ管理とレンダリングを分離
  */
 
-import * as d3 from 'd3';
+// D3の個別モジュールインポート（tree-shaking最適化）
+import { select } from 'd3-selection';
+import { zoom, zoomIdentity } from 'd3-zoom';
+import { tree, hierarchy, cluster } from 'd3-hierarchy';
+import { linkHorizontal, linkRadial } from 'd3-shape';
 import type {
   MindmapData,
   MindmapNode,
@@ -17,7 +21,7 @@ import type {
 /**
  * D3.js用の拡張ノードデータ
  */
-export interface D3Node extends d3.HierarchyPointNode<MindmapNode> {
+export interface D3Node extends ReturnType<typeof hierarchy<MindmapNode>> {
   width: number;
   height: number;
   _children?: D3Node[];
@@ -28,9 +32,9 @@ export interface D3Node extends d3.HierarchyPointNode<MindmapNode> {
  * データ管理機能を排除し、純粋な描画機能のみを提供
  */
 export class MindmapRenderer {
-  private svg!: d3.Selection<SVGSVGElement, unknown, null, undefined>;
-  private container!: d3.Selection<SVGGElement, unknown, null, undefined>;
-  private zoom!: d3.ZoomBehavior<SVGSVGElement, unknown>;
+  private svg!: ReturnType<typeof select<SVGSVGElement, unknown>>;
+  private container!: ReturnType<typeof select<SVGGElement, unknown>>;
+  private zoom!: ReturnType<typeof zoom<SVGSVGElement, unknown>>;
   private root: D3Node | null = null;
   private settings: MindmapSettings;
   private eventHandlers: RendererEventHandlers = {};
@@ -63,7 +67,7 @@ export class MindmapRenderer {
    * SVGの初期化
    */
   private initializeSVG(svgElement: SVGSVGElement): void {
-    this.svg = d3.select(svgElement);
+    this.svg = select(svgElement);
     
     // メインコンテナ
     this.container = this.svg
@@ -71,7 +75,7 @@ export class MindmapRenderer {
       .attr('class', 'mindmap-container');
 
     // ズーム機能
-    this.zoom = d3.zoom<SVGSVGElement, unknown>()
+    this.zoom = zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 3])
       .on('zoom', (event) => {
         this.container.attr('transform', event.transform);
@@ -116,7 +120,7 @@ export class MindmapRenderer {
     this.customSchema = data.schema || null;
 
     // D3.js階層データの作成（折りたたみ状態を考慮）
-    this.root = d3.hierarchy(data.root, (d: MindmapNode) => {
+    this.root = hierarchy(data.root, (d: MindmapNode) => {
       // 折りたたまれたノードの子は表示しない
       const isCollapsed = collapsedNodes?.has(d.id) || d.collapsed;
       return isCollapsed ? null : d.children;
@@ -198,7 +202,7 @@ export class MindmapRenderer {
 
     this.svg.transition()
       .duration(500)
-      .call(this.zoom.transform, d3.zoomIdentity.translate(x, y).scale(scale));
+      .call(this.zoom.transform, zoomIdentity.translate(x, y).scale(scale));
   }
 
   /**
@@ -250,7 +254,7 @@ export class MindmapRenderer {
     
     this.svg.transition()
       .duration(500)
-      .call(this.zoom.transform, d3.zoomIdentity.translate(x, y).scale(scale));
+      .call(this.zoom.transform, zoomIdentity.translate(x, y).scale(scale));
   }
 
   /**
@@ -291,7 +295,7 @@ export class MindmapRenderer {
     if (layout === 'tree') {
       const dynamicLevelSpacing = this.calculateDynamicLevelSpacing(this.root);
       
-      const treeLayout = d3.tree<MindmapNode>()
+      const treeLayout = tree<MindmapNode>()
         .nodeSize([this.NODE_SPACING, dynamicLevelSpacing])
         .separation((a, b) => {
           return this.calculateDynamicSeparation(a as D3Node, b as D3Node);
@@ -325,13 +329,13 @@ export class MindmapRenderer {
   private applyRadialLayout(): void {
     if (!this.root) return;
 
-    const cluster = d3.cluster<MindmapNode>()
+    const clusterLayout = cluster<MindmapNode>()
       .size([2 * Math.PI, 200])
       .separation((a, b) => {
         return this.calculateRadialSeparation(a as D3Node, b as D3Node);
       });
 
-    cluster(this.root);
+    clusterLayout(this.root);
 
     this.root.each((node: D3Node) => {
       const angle = node.x as number;
@@ -384,10 +388,10 @@ export class MindmapRenderer {
     const linkUpdate = linkEnter.merge(linkSelection);
 
     const linkPath = this.settings.layout === 'radial' 
-      ? d3.linkRadial<d3.HierarchyLink<MindmapNode>, d3.HierarchyPointNode<MindmapNode>>()
+      ? linkRadial<d3.HierarchyLink<MindmapNode>, d3.HierarchyPointNode<MindmapNode>>()
           .angle(d => d.x as number)
           .radius(d => d.y as number)
-      : d3.linkHorizontal<d3.HierarchyLink<MindmapNode>, d3.HierarchyPointNode<MindmapNode>>()
+      : linkHorizontal<d3.HierarchyLink<MindmapNode>, d3.HierarchyPointNode<MindmapNode>>()
           .x(d => d.y as number)
           .y(d => d.x as number);
 
@@ -489,7 +493,7 @@ export class MindmapRenderer {
 
     nodeUpdate.select('.mindmap-node-text')
       .each((d: D3Node, i, nodes) => {
-        const textElement = d3.select(nodes[i] as SVGTextElement);
+        const textElement = select(nodes[i] as SVGTextElement);
         
         const actualLines = this.countActualLines(d.data.title, d.width - this.NODE_PADDING * 2);
         const requiredHeight = actualLines * 16.8 + this.NODE_PADDING * 2;
@@ -601,7 +605,7 @@ export class MindmapRenderer {
       const badgeInfo = this.getPriorityBadgeInfo(d.data);
       if (!badgeInfo) return;
 
-      const nodeGroup = d3.select(nodes[i] as SVGGElement);
+      const nodeGroup = select(nodes[i] as SVGGElement);
       const badgeHeight = 16;
       const badgeWidth = badgeInfo.text.length * 6 + 8;
       const badgeX = d.width / 2 - badgeWidth - 4;
@@ -642,7 +646,7 @@ export class MindmapRenderer {
       const badgeInfo = this.getStatusBadgeInfo(d.data);
       if (!badgeInfo) return;
 
-      const nodeGroup = d3.select(nodes[i] as SVGGElement);
+      const nodeGroup = select(nodes[i] as SVGGElement);
       
       const priorityBadgeInfo = this.getPriorityBadgeInfo(d.data);
       const priorityBadgeWidth = priorityBadgeInfo ? priorityBadgeInfo.text.length * 6 + 8 : 0;

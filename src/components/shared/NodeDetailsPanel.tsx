@@ -330,6 +330,64 @@ export const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({
                       <span className="value deadline">{new Date(node.deadline).toLocaleString('ja-JP')}</span>
                     </div>
                   )}
+
+                  {/* 優先度 */}
+                  <div className="details-item">
+                    <label>優先度:</label>
+                    {onNodeUpdate ? (
+                      <select
+                        key={`priority-${node.id}`}
+                        className="edit-select always-editable"
+                        defaultValue={node.priority || ''}
+                        onChange={(e) => handleFieldChange('priority', e.target.value || undefined)}
+                      >
+                        <option value="">未設定</option>
+                        <option value="critical">緊急</option>
+                        <option value="high">高</option>
+                        <option value="medium">中</option>
+                        <option value="low">低</option>
+                      </select>
+                    ) : (
+                      <span className={`value priority ${node.priority || ''}`}>
+                        {node.priority === 'critical' ? '緊急' : 
+                         node.priority === 'high' ? '高' :
+                         node.priority === 'medium' ? '中' :
+                         node.priority === 'low' ? '低' : '未設定'}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* ステータス */}
+                  <div className="details-item">
+                    <label>ステータス:</label>
+                    {onNodeUpdate ? (
+                      <select
+                        key={`status-${node.id}`}
+                        className="edit-select always-editable"
+                        defaultValue={node.status || ''}
+                        onChange={(e) => handleFieldChange('status', e.target.value || undefined)}
+                      >
+                        <option value="">未設定</option>
+                        <option value="draft">下書き</option>
+                        <option value="pending">保留</option>
+                        <option value="in-progress">進行中</option>
+                        <option value="review">レビュー</option>
+                        <option value="done">完了</option>
+                        <option value="cancelled">キャンセル</option>
+                        <option value="deferred">延期</option>
+                      </select>
+                    ) : (
+                      <span className={`value status ${node.status || ''}`}>
+                        {node.status === 'draft' ? '下書き' :
+                         node.status === 'pending' ? '保留' :
+                         node.status === 'in-progress' ? '進行中' :
+                         node.status === 'review' ? 'レビュー' :
+                         node.status === 'done' ? '完了' :
+                         node.status === 'cancelled' ? 'キャンセル' :
+                         node.status === 'deferred' ? '延期' : '未設定'}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
 

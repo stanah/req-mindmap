@@ -13,9 +13,6 @@
 # 開発サーバー起動
 pnpm dev
 
-# Webアプリビルド
-pnpm build:web
-
 # VSCode拡張ビルド（webview含む）
 pnpm build:vscode
 
@@ -28,11 +25,14 @@ pnpm build:vscode-package
 # ESLint実行
 pnpm lint
 
-# Webアプリテスト実行（watch mode）
+# 全テスト実行（ライブラリ + VSCode拡張）
 pnpm test
 
-# Webアプリテスト一回実行
+# ライブラリテスト一回実行
 pnpm test:run
+
+# テストカバレッジレポート生成
+pnpm test:coverage
 
 # VSCode拡張テスト実行（watch mode）
 pnpm test:vscode
@@ -42,12 +42,6 @@ pnpm test:vscode:run
 
 # VSCode拡張テスト（UI mode）
 pnpm test:vscode:ui
-
-# 全テスト実行（Web + VSCode拡張）
-pnpm test:all
-
-# プレビュー（ビルド後確認）
-pnpm preview
 ```
 
 #### パッケージ管理
@@ -67,18 +61,15 @@ pnpm add -D <package-name>
 # 1. 開発開始時
 pnpm install
 
-# 2. 開発中（Web版）
-pnpm dev
-
-# 3. 開発中（VSCode拡張）
+# 2. 開発中（VSCode拡張）
 pnpm build:vscode
 
-# 4. テスト実行
-pnpm test:all
+# 3. テスト実行
+pnpm test
 
-# 5. 品質チェック
+# 4. 品質チェック
 pnpm lint
 
-# 6. 最終ビルド確認
-pnpm build:web && pnpm build:vscode
+# 5. 最終ビルド確認
+pnpm build:vscode
 ```

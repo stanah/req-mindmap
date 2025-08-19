@@ -1,44 +1,63 @@
 {
   "name": "req-mindmap",
-  "private": true,
+  "private": false,
   "version": "0.2.1",
   "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
   "author": "stanah",
   "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "src/**/*.css",
+    "src/test/setup.ts"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "pnpm run build:web",
-    "build:web": "tsc -b && vite build",
+    "build": "pnpm run build:vscode",
+    "build:lib": "vite build --config vite.config.lib.ts",
+    "prepublishOnly": "pnpm run build:lib",
     "build:vscode": "vite build --config vite.config.vscode.ts && rm -rf extension/webview && mkdir -p extension/webview && cp -r dist/webview/* extension/webview/ && cd extension && pnpm run compile",
     "build:vscode-package": "./scripts/build-vscode.sh",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "test": "vitest",
+    "test": "pnpm test:run && pnpm test:vscode:run",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:vscode": "cd extension && pnpm test",
     "test:vscode:run": "cd extension && pnpm test:run",
-    "test:vscode:coverage": "cd extension && pnpm test:run --coverage",
-    "test:vscode:ui": "cd extension && pnpm test:ui",
-    "test:all": "pnpm test:run && pnpm test:vscode:run",
-    "coverage": "vitest run --coverage",
-    "coverage:vscode": "cd extension && pnpm coverage",
-    "coverage:all": "echo '=== Web App Coverage ===' && pnpm coverage && echo '\n=== VSCode Extension Coverage ===' && pnpm coverage:vscode"
+    "test:vscode:ui": "cd extension && pnpm test:ui"
   },
   "dependencies": {
-    "@monaco-editor/react": "^4.7.0",
+    "react-icons": "^5.5.0"
+  },
+  "peerDependencies": {
+    "react": ">=18 <20",
+    "react-dom": ">=18 <20",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "d3": "^7.9.0",
     "js-yaml": "^4.1.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-icons": "^5.5.0",
     "yaml": "^2.8.0",
     "zod": "^4.0.17",
     "zustand": "^5.0.7"
   },
   "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "d3": "^7.9.0",
+    "js-yaml": "^4.1.0",
+    "yaml": "^2.8.0",
+    "zod": "^4.0.17",
+    "zustand": "^5.0.7",
     "@eslint/js": "^9.30.1",
     "@testing-library/jest-dom": "^6.6.4",
     "@testing-library/react": "^16.3.0",
@@ -48,6 +67,8 @@
     "@types/node": "^24.1.0",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^4.6.0",
     "@vitest/coverage-v8": "3.2.4",
     "eslint": "^9.30.1",
@@ -64,6 +85,7 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
     "vite": "^7.0.4",
+    "vite-plugin-dts": "^4.5.4",
     "vitest": "^3.2.4"
   },
   "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748"

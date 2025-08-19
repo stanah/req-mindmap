@@ -31,16 +31,15 @@ export const VSCodeThemeToggle: React.FC<VSCodeThemeToggleProps> = ({ className 
 
   // 初期化（一度だけ実行）
   useEffect(() => {
-    // localStorageから設定を読み込み（VSCode拡張専用のキー）
-    const savedTheme = localStorage.getItem('vscode-mindmap-theme') as Theme | null;
-    const initialTheme = savedTheme || 'auto';
+    // デフォルトテーマを使用（将来的にはVSCode設定から読み込み）
+    const initialTheme: Theme = 'auto';
     setTheme(initialTheme);
   }, []);
 
   // テーマ変更時の処理
   useEffect(() => {
     applyTheme(theme);
-    localStorage.setItem('vscode-mindmap-theme', theme);
+    // 将来的にはVSCode設定に保存
   }, [theme]);
 
   // システム設定の変更を監視（一度だけ設定）

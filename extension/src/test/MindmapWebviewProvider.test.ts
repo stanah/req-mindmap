@@ -881,7 +881,7 @@ describe('MindmapWebviewProvider', () => {
 
     it('should handle deeply nested mindmap structures', async () => {
       // 深いネスト構造を作成
-      let deepData: any = { root: { id: 'root', title: 'Root', children: [] } };
+      const deepData: any = { root: { id: 'root', title: 'Root', children: [] } };
       let current = deepData.root;
       
       for (let i = 0; i < 100; i++) {

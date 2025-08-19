@@ -28,6 +28,12 @@ export class VSCodeUIAdapter implements UIAdapter {
       window.addEventListener('message', (event) => {
         const message = event.data;
         
+        // メッセージのnullチェック
+        if (!message) {
+          console.warn('[VSCodeApp] Invalid message received:', message);
+          return;
+        }
+        
         if (message.requestId && this.messageHandlers.has(message.requestId)) {
           const handler = this.messageHandlers.get(message.requestId);
           if (handler) {

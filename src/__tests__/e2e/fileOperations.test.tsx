@@ -56,8 +56,7 @@ vi.mock('../../App', () => ({
   default: MockApp
 }));
 
-// localStorageMockを取得
-const localStorageMock = (global as { localStorageMock?: Storage }).localStorageMock;
+// localStorage機能は削除済み
 
 describe('ファイル操作ワークフローのE2Eテスト', () => {
   const _testMindmapData: MindmapData = {
@@ -95,7 +94,6 @@ describe('ファイル操作ワークフローのE2Eテスト', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    localStorageMock.getItem.mockReturnValue(null);
   });
 
   describe('基本的なファイル操作', () => {
@@ -133,7 +131,6 @@ describe('ファイル操作ワークフローのE2Eテスト', () => {
       const settingsButton = screen.getByLabelText('設定');
       
       expect(settingsButton).toBeInTheDocument();
-      expect(localStorageMock).toBeDefined();
     });
 
     it('履歴機能の基本操作', () => {
@@ -143,7 +140,6 @@ describe('ファイル操作ワークフローのE2Eテスト', () => {
       const recentButton = screen.getByLabelText('最近使用');
       
       expect(recentButton).toBeInTheDocument();
-      expect(localStorageMock).toBeDefined();
     });
 
     it('UI要素の存在確認', () => {

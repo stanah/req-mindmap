@@ -5,13 +5,13 @@
 
 import React from 'react';
 import { MdAdd, MdDelete, MdExpandMore, MdExpandLess } from 'react-icons/md';
-import type { MindmapNode, MindmapData } from '../../types';
+import type { MindmapData } from '../../types';
 import { findNodeById, findParentNode } from '../../utils/nodeHelpers';
 import './NodeActionButtons.css';
 
 interface NodeActionButtonsProps {
   selectedNodeId: string | null;
-  data: MindmapNode | null;
+  data: MindmapData | null;
   onAddChild: (parentNodeId: string) => void;
   onAddSibling: (siblingNodeId: string) => void;
   onDeleteNode: (nodeId: string) => void;
@@ -55,8 +55,7 @@ export const NodeActionButtons: React.FC<NodeActionButtonsProps> = ({
   }
 
   // YAMLの構造を確認 - ルートノードはdata.rootにある
-  const mindmapData = data as unknown as MindmapData;
-  const rootNode = mindmapData.root;
+  const rootNode = data.root;
   
   if (!rootNode) {
     return null;

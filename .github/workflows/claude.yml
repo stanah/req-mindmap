@@ -96,6 +96,7 @@ jobs:
             Grep
             Glob
             LS
+            TodoWrite
 
           custom_instructions: |
             ## セキュリティガイドライン

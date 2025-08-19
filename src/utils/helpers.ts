@@ -64,13 +64,7 @@ export function getFileExtension(filename: string): string {
   return filename.split('.').pop()?.toLowerCase() || '';
 }
 
-// ファイル形式の判定
-export function detectFileFormat(filename: string): 'json' | 'yaml' | 'unknown' {
-  const ext = getFileExtension(filename);
-  if (ext === 'json') return 'json';
-  if (ext === 'yaml' || ext === 'yml') return 'yaml';
-  return 'unknown';
-}
+// detectFileFormat関数は utils/fileUtils.ts に移動されました
 
 // マインドマップノードの検索
 export function findNodeById(root: MindmapNode, id: string): MindmapNode | null {
@@ -147,33 +141,7 @@ export function truncateText(text: string, maxLength: number): string {
   return text.substring(0, maxLength - 3) + '...';
 }
 
-// ローカルストレージのヘルパー
-export const storage = {
-  get<T>(key: string, defaultValue: T): T {
-    try {
-      const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : defaultValue;
-    } catch {
-      return defaultValue;
-    }
-  },
-  
-  set<T>(key: string, value: T): void {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch (error) {
-      console.warn('Failed to save to localStorage:', error);
-    }
-  },
-  
-  remove(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch (error) {
-      console.warn('Failed to remove from localStorage:', error);
-    }
-  },
-};
+// localStorage機能は削除済み（メモリのみの状態管理に移行）
 
 // エラーメッセージの日本語化
 export function getErrorMessage(error: unknown): string {

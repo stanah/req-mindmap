@@ -29,6 +29,11 @@ export class VSCodeSettingsAdapter implements SettingsAdapter {
       window.addEventListener('message', (event) => {
         const message = event.data;
         
+        // メッセージが不正な場合は無視
+        if (!message || typeof message !== 'object') {
+          return;
+        }
+        
         if (message.requestId && this.messageHandlers.has(message.requestId)) {
           const handler = this.messageHandlers.get(message.requestId);
           if (handler) {

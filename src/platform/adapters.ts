@@ -1,5 +1,4 @@
 import type { PlatformAdapter } from './interfaces';
-import { BrowserPlatformAdapter } from './browser';
 import { VSCodePlatformAdapter } from './vscode';
 
 /**
@@ -30,11 +29,27 @@ export class PlatformAdapterFactory {
       return new VSCodePlatformAdapter();
     }
 
-    // デフォルトはブラウザ環境
-    if (process.env.NODE_ENV !== 'test') {
-      console.log('[PlatformAdapterFactory] ブラウザ環境、BrowserPlatformAdapterを作成');
+    // テスト環境では制限モードでVSCodePlatformAdapterを作成
+    if (process.env.NODE_ENV === 'test') {
+      console.log('[PlatformAdapterFactory] テスト環境: VSCodePlatformAdapter（制限モード）を作成');
+      return new VSCodePlatformAdapter();
     }
-    return new BrowserPlatformAdapter();
+
+    // サポートされていないプラットフォーム
+    const platformName: 'browser' | 'vscode' | 'unknown' = typeof window !== 'undefined' ? 'browser' : 'unknown';
+    const context = {
+      hasWindow: typeof window !== 'undefined',
+      hasAcquireVsCodeApi: typeof window !== 'undefined' && 'acquireVsCodeApi' in window,
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+      nodeEnv: process.env.NODE_ENV
+    };
+    
+    throw new PlatformError(
+      'サポートされていないプラットフォーム: VSCode環境のみサポート',
+      platformName,
+      'UNSUPPORTED_PLATFORM',
+      context
+    );
   }
 
   /**
@@ -106,10 +121,23 @@ export function getPlatformType(): 'browser' | 'vscode' {
 export function isPlatformCapabilityAvailable(capability: string): boolean {
   const adapter = getPlatformAdapter();
   
-  // ブラウザアダプターの場合
-  if (adapter instanceof BrowserPlatformAdapter) {
-    const capabilities = adapter.getCapabilities();
-    return capabilities[capability as keyof typeof capabilities] || false;
+  // VSCodeアダプターのみサポート
+  if (adapter instanceof VSCodePlatformAdapter) {
+    // VSCodeアダプターの機能チェック
+    switch (capability) {
+      case 'fileSystem':
+        return true; // ファイルシステムは常に利用可能
+      case 'editor':
+        return adapter.editor !== undefined;
+      case 'ui':
+        return adapter.ui !== undefined;
+      case 'settings':
+        return adapter.settings !== undefined;
+      case 'vscodeApi':
+        return adapter.getPlatformType() === 'vscode';
+      default:
+        return false;
+    }
   }
 
   return false;
@@ -121,8 +149,10 @@ export function isPlatformCapabilityAvailable(capability: string): boolean {
 export class PlatformError extends Error {
   constructor(
     message: string,
-    public readonly platform: 'browser' | 'vscode',
-    public readonly code?: string
+    public readonly platform: 'browser' | 'vscode' | 'unknown',
+    public readonly code?: string,
+    public readonly context?: Record<string, unknown>,
+    public readonly cause?: Error
   ) {
     super(message);
     this.name = 'PlatformError';
@@ -133,12 +163,23 @@ export class PlatformError extends Error {
  * プラットフォーム固有のエラーを処理
  */
 export function handlePlatformError(error: Error): void {
-  const adapter = getPlatformAdapter();
-  
-  if (error instanceof PlatformError) {
-    adapter.ui.showErrorMessage(`プラットフォームエラー: ${error.message}`);
-  } else {
-    adapter.ui.showErrorMessage(`予期しないエラーが発生しました: ${error.message}`);
+  try {
+    const adapter = getPlatformAdapter();
+    
+    if (error instanceof PlatformError) {
+      adapter.ui.showErrorMessage(`プラットフォームエラー: ${error.message}`);
+    } else {
+      adapter.ui.showErrorMessage(`予期しないエラーが発生しました: ${error.message}`);
+    }
+  } catch (handlerError) {
+    // アダプター取得やUI表示に失敗した場合のフォールバック
+    console.error('プラットフォームエラーハンドラーでエラーが発生:', handlerError);
+    console.error('元のエラー:', error);
+    
+    // ブラウザのアラートでフォールバック表示
+    if (typeof window !== 'undefined' && window.alert) {
+      window.alert(`エラーが発生しました: ${error.message}`);
+    }
   }
   
   console.error('プラットフォームエラー:', error);

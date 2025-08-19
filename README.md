@@ -122,18 +122,6 @@ A powerful web-based application that transforms JSON/YAML requirement specifica
 
 ## 🛠️ Development Commands
 
-### Web Development
-```bash
-# 開発サーバー起動
-pnpm dev
-
-# Webアプリビルド  
-pnpm build:web
-
-# プレビュー（ビルド後確認）
-pnpm preview
-```
-
 ### VSCode Extension
 ```bash
 # VSCode拡張ビルド（webview含む）
@@ -148,11 +136,17 @@ pnpm build:vscode-package
 # ESLint実行
 pnpm lint
 
-# テスト実行（watch mode）
+# 全テスト実行（ライブラリ + VSCode拡張）
 pnpm test
 
-# テスト一回実行  
+# ライブラリテスト一回実行  
 pnpm test:run
+
+# テストカバレッジレポート生成
+pnpm test:coverage
+
+# VSCode拡張テスト実行
+pnpm test:vscode
 ```
 
 ---

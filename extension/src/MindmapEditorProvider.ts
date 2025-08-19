@@ -208,6 +208,7 @@ export class MindmapEditorProvider implements vscode.CustomTextEditorProvider {
     private setupWebviewMessageHandling(webviewPanel: vscode.WebviewPanel, document: vscode.TextDocument): void {
         webviewPanel.webview.onDidReceiveMessage(
             async (message) => {
+                console.log('[MindmapEditorProvider] メッセージ受信:', message?.command || 'unknown command', message);
                 try {
                     // 既存のメッセージハンドリング
                     await this.handleWebviewMessage(message, document, webviewPanel);
@@ -304,9 +305,9 @@ export class MindmapEditorProvider implements vscode.CustomTextEditorProvider {
                 }
 
                 case 'saveFile':
-                    // ファイル保存
-                    await document.save();
-                    result = { success: true };
+                    // ファイル保存 - MindmapWebviewProviderの処理を使用
+                    console.log('saveFile要求を受信 (MindmapEditorProvider):', message);
+                    result = await this.webviewProvider.handleSaveFile(webviewPanel.webview, document, message);
                     break;
 
                 // ファイルシステムアダプター関連

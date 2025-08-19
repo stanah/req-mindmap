@@ -17,6 +17,43 @@ declare global {
     }
   }
 }
+
+// DOM環境の基本的な設定
+if (typeof document === 'undefined') {
+  // @ts-expect-error jsdom環境でのグローバル設定
+  global.document = {
+    createElement: vi.fn(() => ({})),
+    documentElement: {},
+    body: {},
+  };
+}
+
+if (typeof window === 'undefined') {
+  // @ts-expect-error jsdom環境でのグローバル設定
+  global.window = {
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    setTimeout: global.setTimeout,
+    clearTimeout: global.clearTimeout,
+    location: {
+      href: 'http://localhost:3000',
+      origin: 'http://localhost:3000',
+    },
+    navigator: {
+      userAgent: 'test',
+    },
+    showOpenFilePicker: vi.fn(),
+    showSaveFilePicker: vi.fn(),
+  };
+} else {
+  // jsdom環境でwindowが既に存在する場合、欠落しているプロパティを追加
+  if (!window.showOpenFilePicker) {
+    window.showOpenFilePicker = vi.fn();
+  }
+  if (!window.showSaveFilePicker) {
+    window.showSaveFilePicker = vi.fn();
+  }
+}
 import { vi } from 'vitest';
 import React from 'react';
 
@@ -47,6 +84,111 @@ vi.mock('@monaco-editor/react', () => {
     Editor: MockEditor,
   };
 });
+
+// D3の個別モジュールモック
+vi.mock('d3-selection', () => {
+  const mockSelection = {
+    selectAll: vi.fn(() => mockSelection),
+    select: vi.fn(() => mockSelection),
+    data: vi.fn(() => mockSelection),
+    enter: vi.fn(() => mockSelection),
+    exit: vi.fn(() => mockSelection),
+    append: vi.fn(() => mockSelection),
+    attr: vi.fn(() => mockSelection),
+    style: vi.fn(() => mockSelection),
+    text: vi.fn(() => mockSelection),
+    on: vi.fn(() => mockSelection),
+    remove: vi.fn(() => mockSelection),
+    classed: vi.fn(() => mockSelection),
+    call: vi.fn(() => mockSelection),
+    filter: vi.fn(() => mockSelection),
+    merge: vi.fn(() => mockSelection),
+    transition: vi.fn(() => mockSelection),
+    duration: vi.fn(() => mockSelection),
+    each: vi.fn((fn) => {
+      // 空のモック実装
+      return mockSelection;
+    }),
+    node: vi.fn(() => ({ 
+      getBBox: vi.fn(() => ({ x: 0, y: 0, width: 100, height: 50 })),
+      getBoundingClientRect: vi.fn(() => ({ x: 0, y: 0, width: 100, height: 50, top: 0, left: 0, right: 100, bottom: 50 }))
+    })),
+    nodes: vi.fn(() => []),
+  };
+
+  return {
+    select: vi.fn(() => mockSelection),
+    selectAll: vi.fn(() => mockSelection),
+  };
+});
+
+vi.mock('d3-zoom', () => ({
+  zoom: vi.fn(() => ({
+    scaleExtent: vi.fn().mockReturnThis(),
+    on: vi.fn().mockReturnThis(),
+    transform: vi.fn(),
+    scaleBy: vi.fn(),
+  })),
+  zoomIdentity: {
+    translate: vi.fn().mockReturnThis(),
+    scale: vi.fn().mockReturnThis(),
+  },
+}));
+
+vi.mock('d3-hierarchy', () => {
+  const mockTreeLayout = vi.fn(() => {
+    // 空のモック実装（実際のD3では変換された階層データを返す）
+  });
+  mockTreeLayout.nodeSize = vi.fn().mockReturnValue(mockTreeLayout);
+  mockTreeLayout.separation = vi.fn().mockReturnValue(mockTreeLayout);
+
+  const mockClusterLayout = vi.fn(() => {
+    // 空のモック実装
+  });
+  mockClusterLayout.size = vi.fn().mockReturnValue(mockClusterLayout);
+  mockClusterLayout.separation = vi.fn().mockReturnValue(mockClusterLayout);
+
+  return {
+    tree: vi.fn(() => mockTreeLayout),
+    cluster: vi.fn(() => mockClusterLayout),
+    hierarchy: vi.fn(() => ({
+      descendants: vi.fn(() => []),
+      links: vi.fn(() => []),
+      each: vi.fn(),
+      x: 0,
+      y: 0,
+      data: { id: 'test', title: 'Test', children: [] },
+      depth: 0,
+    })),
+  };
+});
+
+vi.mock('d3-shape', () => {
+  const mockLinkHorizontal = vi.fn(() => "mock-path");
+  mockLinkHorizontal.x = vi.fn().mockReturnValue(mockLinkHorizontal);
+  mockLinkHorizontal.y = vi.fn().mockReturnValue(mockLinkHorizontal);
+
+  const mockLinkRadial = vi.fn(() => "mock-path");
+  mockLinkRadial.angle = vi.fn().mockReturnValue(mockLinkRadial);
+  mockLinkRadial.radius = vi.fn().mockReturnValue(mockLinkRadial);
+
+  return {
+    linkHorizontal: vi.fn(() => mockLinkHorizontal),
+    linkRadial: vi.fn(() => mockLinkRadial),
+  };
+});
+
+vi.mock('d3-interpolate', () => ({
+  interpolate: vi.fn((a, b) => (t) => `interpolated-${t}`),
+}));
+
+vi.mock('d3-scale', () => ({
+  scaleOrdinal: vi.fn(() => vi.fn()),
+}));
+
+vi.mock('d3-scale-chromatic', () => ({
+  schemeCategory10: ['#1f77b4', '#ff7f0e', '#2ca02c'],
+}));
 
 // D3.jsのモック（最小限）
 vi.mock('d3', () => {
@@ -87,22 +229,11 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 global.confirm = vi.fn(() => true);
 global.alert = vi.fn();
 
-// File System Access APIのモック
+// File System Access APIのモック（テスト互換性のため残存）
 global.showOpenFilePicker = vi.fn();
 global.showSaveFilePicker = vi.fn();
 
-// localStorageのモック
-const localStorageMock = {
-  getItem: vi.fn(() => null),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-};
-Object.defineProperty(global, 'localStorage', { value: localStorageMock });
-
-// localStorageMockをグローバルで利用可能にする
-(global as unknown as { localStorageMock: typeof localStorageMock }).localStorageMock = localStorageMock;
-Object.defineProperty(global, 'localStorage', { value: localStorageMock });
+// localStorageは削除済み（settingsServiceで直接デフォルト値を使用）
 
 // テスト中のコンソールログを制御（成功テストでは非表示にする）
 const originalConsole = { ...console };
@@ -186,6 +317,44 @@ if (typeof window !== 'undefined') {
 Object.defineProperty(global.SVGElement.prototype, 'getBBox', {
   value: vi.fn().mockReturnValue({ x: 0, y: 0, width: 100, height: 50 }),
 });
+
+// SVGとHTMLElementの属性取得をモック
+Object.defineProperty(global.SVGElement.prototype, 'getBoundingClientRect', {
+  value: vi.fn().mockReturnValue({ x: 0, y: 0, width: 100, height: 50, top: 0, left: 0, right: 100, bottom: 50 }),
+});
+
+// SVG transform 属性モック
+Object.defineProperty(global.SVGElement.prototype, 'transform', {
+  value: {
+    baseVal: {
+      numberOfItems: 0,
+      getItem: vi.fn(),
+      createSVGTransformFromMatrix: vi.fn(),
+      appendItem: vi.fn(),
+      replaceItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    },
+    animVal: {
+      numberOfItems: 0,
+    }
+  },
+  writable: true,
+});
+
+// D3のtransformパースエラー対策
+global.SVGAnimatedTransformList = global.SVGAnimatedTransformList || class {
+  baseVal = {
+    numberOfItems: 0,
+    getItem: vi.fn(),
+    createSVGTransformFromMatrix: vi.fn(),
+    appendItem: vi.fn(),
+    replaceItem: vi.fn(),
+    removeItem: vi.fn(),
+    clear: vi.fn(),
+  };
+  animVal = { numberOfItems: 0 };
+};
 
 // HTMLElementのモック
 global.HTMLElement.prototype.scrollIntoView = vi.fn();

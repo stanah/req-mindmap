@@ -27,7 +27,8 @@ import type {
   MindmapNode
 } from '../types';
 import { DEBOUNCE_DELAY } from '../utils/constants';
-import { generateId, detectFileFormat, deepClone, findNodeById } from '../utils/helpers';
+import { generateId, deepClone, findNodeById } from '../utils/helpers';
+import { detectFileFormat } from '../utils/fileUtils';
 import { createNodeMapping, getNodeIdAtCursor, getEditorPositionForNode, type NodeMappingResult } from '../utils/nodeMapping';
 import { settingsService } from '../services/settingsService';
 import { performanceMonitor } from '../utils/performanceMonitor';
@@ -133,7 +134,7 @@ export const useAppStore = create<AppStore>()(
           }));
 
           try {
-            // TODO: 実際のファイル読み込み処理を実装（FileServiceと連携）
+            // TODO: 実際のファイル読み込み処理を実装（VSCode APIと連携）
             // 現在はプレースホルダー
             console.log('Loading file:', path);
             
@@ -144,8 +145,6 @@ export const useAppStore = create<AppStore>()(
             settingsService.addRecentFile({
               path,
               name: fileName,
-              size: 0, // TODO: 実際のファイルサイズを取得
-              format: format as 'json' | 'yaml',
             });
             const updatedRecentFiles = settingsService.getRecentFiles().map(f => f.path);
             
@@ -208,7 +207,7 @@ export const useAppStore = create<AppStore>()(
           }));
 
           try {
-            // TODO: 実際のファイル保存処理を実装（FileServiceと連携）
+            // TODO: 実際のファイル保存処理を実装（VSCode APIと連携）
             console.log('Saving file:', file.currentFile);
             
             set((state) => ({
@@ -908,8 +907,8 @@ export const useAppStore = create<AppStore>()(
         reset: () => {
           set(initialState);
           
-          // settingsServiceを使ってローカルストレージをクリア
-          settingsService.clearAllData();
+          // settingsServiceにはclearAllDataメソッドがないので削除済み
+          // 必要に応じて将来的にVSCode設定APIでクリア処理を実装
         },
 
         // ===== 内部ヘルパーメソッド =====

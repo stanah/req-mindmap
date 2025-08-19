@@ -18,7 +18,7 @@ export function useEditorSync() {
   const parseErrors = useAppStore(state => state.parse.parseErrors);
   const isParsing = useAppStore(state => state.parse.isParsing);
   
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /**
    * デバウンス付きでコンテンツを更新
@@ -112,7 +112,7 @@ export function useFileSync() {
   /**
    * 自動保存機能
    */
-  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const editorSettings = useAppStore(state => state.ui.editorSettings);
 
   useEffect(() => {
@@ -161,7 +161,7 @@ export function useUISync() {
    * 通知の自動削除を管理
    */
   useEffect(() => {
-    const timers: NodeJS.Timeout[] = [];
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
     notifications.forEach(notification => {
       if (notification.autoHide && notification.duration) {
@@ -271,11 +271,16 @@ export function useAppSync() {
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    // document が存在することを確認してからイベントリスナーを追加
+    if (typeof document !== 'undefined') {
+      document.addEventListener('keydown', handleKeyDown);
+      
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+      };
+    }
     
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
+    return undefined;
   }, [toggleDebugMode]);
 
   return {

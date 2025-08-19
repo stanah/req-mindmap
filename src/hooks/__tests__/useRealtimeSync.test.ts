@@ -345,7 +345,9 @@ describe('useRealtimeSync', () => {
 
       // 設定を変更
       syncDelay = 500;
-      rerender();
+      act(() => {
+        rerender();
+      });
       
       // 既存のタイマーをクリア
       act(() => {

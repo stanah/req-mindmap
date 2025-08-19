@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { MindmapViewer } from './components/MindmapViewer';
-import { AlertComponent } from '../web/components/ui/AlertComponent';
+import { AlertComponent } from '../components/shared/AlertComponent';
+import ErrorBoundary from '../components/shared/ErrorBoundary';
 import { useAppStore } from '../stores/appStore';
 import { PlatformAdapterFactory } from '../platform';
 import VSCodeApiSingleton from '../platform/vscode/VSCodeApiSingleton';
-import '../web/App.css';
+import '../index.css';
 
 /**
  * VSCode拡張用のアプリケーションコンポーネント
@@ -26,6 +27,12 @@ function VSCodeApp() {
   // VSCode側との通信処理
   const handleVSCodeMessage = useCallback((event: MessageEvent) => {
     const message = event.data;
+    
+    // メッセージが不正な場合は無視
+    if (!message || typeof message !== 'object' || !message.command) {
+      console.warn('[VSCodeApp] Invalid message received:', message);
+      return;
+    }
     
     switch (message.command) {
       case 'updateContent':
@@ -185,7 +192,28 @@ function VSCodeApp() {
       
       {/* メインのマインドマップビュー */}
       <div className="vscode-content">
-        <MindmapViewer />
+        <ErrorBoundary
+          fallback={
+            <div className="mindmap-error">
+              <h3>🗺️ マインドマップの表示でエラーが発生しました</h3>
+              <p>マインドマップのレンダリング中にエラーが発生しました。</p>
+              <button onClick={() => window.location.reload()}>
+                リロード
+              </button>
+            </div>
+          }
+          onError={(error, errorInfo) => {
+            console.error('MindmapViewer error:', error, errorInfo);
+            addNotification({
+              type: 'error',
+              message: `マインドマップエラー: ${error.message}`,
+              duration: 5000,
+              autoHide: true
+            });
+          }}
+        >
+          <MindmapViewer />
+        </ErrorBoundary>
       </div>
       
       {/* VSCode用のステータス表示 */}
