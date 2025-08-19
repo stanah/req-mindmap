@@ -36,7 +36,7 @@ export class PlatformAdapterFactory {
     }
 
     // サポートされていないプラットフォーム
-    const platformName = typeof window !== 'undefined' ? 'browser' : 'unknown';
+    const platformName: 'browser' | 'vscode' | 'unknown' = typeof window !== 'undefined' ? 'browser' : 'unknown';
     const context = {
       hasWindow: typeof window !== 'undefined',
       hasAcquireVsCodeApi: typeof window !== 'undefined' && 'acquireVsCodeApi' in window,
@@ -46,7 +46,7 @@ export class PlatformAdapterFactory {
     
     throw new PlatformError(
       'サポートされていないプラットフォーム: VSCode環境のみサポート',
-      platformName as 'browser' | 'vscode',
+      platformName,
       'UNSUPPORTED_PLATFORM',
       context
     );
@@ -149,7 +149,7 @@ export function isPlatformCapabilityAvailable(capability: string): boolean {
 export class PlatformError extends Error {
   constructor(
     message: string,
-    public readonly platform: 'browser' | 'vscode',
+    public readonly platform: 'browser' | 'vscode' | 'unknown',
     public readonly code?: string,
     public readonly context?: Record<string, unknown>,
     public readonly cause?: Error
