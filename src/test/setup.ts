@@ -45,6 +45,14 @@ if (typeof window === 'undefined') {
     showOpenFilePicker: vi.fn(),
     showSaveFilePicker: vi.fn(),
   };
+} else {
+  // jsdom環境でwindowが既に存在する場合、欠落しているプロパティを追加
+  if (!window.showOpenFilePicker) {
+    window.showOpenFilePicker = vi.fn();
+  }
+  if (!window.showSaveFilePicker) {
+    window.showSaveFilePicker = vi.fn();
+  }
 }
 import { vi } from 'vitest';
 import React from 'react';
