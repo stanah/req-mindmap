@@ -8,7 +8,7 @@
 import { select } from 'd3-selection';
 import { zoom, zoomIdentity } from 'd3-zoom';
 import { tree, hierarchy, cluster } from 'd3-hierarchy';
-import { linkHorizontal, linkRadial } from 'd3';
+import { linkHorizontal, linkRadial } from 'd3-shape';
 import type {
   MindmapData,
   MindmapNode,

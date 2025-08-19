@@ -34,16 +34,8 @@ export default defineConfig({
         manualChunks: undefined // IIFEモードでは無効
       },
       
-      // 外部モジュールの設定
-      external: [
-        'd3-selection',
-        'd3-zoom',
-        'd3-hierarchy',
-        'd3-shape',
-        'd3-scale',
-        'd3-interpolate',
-        'd3-color'
-      ],
+      // VSCode Webviewでは全てバンドルに含める必要がある
+      // external: [], // 外部モジュールは使用しない
       
       // tree-shaking最適化設定
       treeshake: {
