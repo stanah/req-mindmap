@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0](https://github.com/stanah/req-mindmap/compare/req-mindmap-v0.5.0...req-mindmap-v0.6.0) (2025-08-19)
+
+
+### Features
+
+* pnpm workspace統合でCI/CDを簡素化 ([9f30107](https://github.com/stanah/req-mindmap/commit/9f30107654719ebfa2c0353d9945f7083c35fe17))
+
+
+### Bug Fixes
+
+* GitHub Actions release workflow でのextension依存関係エラーを修正 ([45d463a](https://github.com/stanah/req-mindmap/commit/45d463a8e62f02eadd4c771f2b12dfc0b955a9a4))
+
 ## [0.5.0](https://github.com/stanah/req-mindmap/compare/req-mindmap-v0.4.0...req-mindmap-v0.5.0) (2025-08-19)
 
 
