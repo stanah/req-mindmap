@@ -2,4 +2,3 @@
 export * from './interfaces';
 export * from './vscode';
 export * from './adapters';
-export * from './adapters/FileServiceAdapter';

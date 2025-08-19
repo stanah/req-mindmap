@@ -133,7 +133,7 @@ export const useAppStore = create<AppStore>()(
           }));
 
           try {
-            // TODO: 実際のファイル読み込み処理を実装（FileServiceと連携）
+            // TODO: 実際のファイル読み込み処理を実装（VSCode APIと連携）
             // 現在はプレースホルダー
             console.log('Loading file:', path);
             
@@ -206,7 +206,7 @@ export const useAppStore = create<AppStore>()(
           }));
 
           try {
-            // TODO: 実際のファイル保存処理を実装（FileServiceと連携）
+            // TODO: 実際のファイル保存処理を実装（VSCode APIと連携）
             console.log('Saving file:', file.currentFile);
             
             set((state) => ({

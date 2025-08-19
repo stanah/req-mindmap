@@ -229,7 +229,7 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 global.confirm = vi.fn(() => true);
 global.alert = vi.fn();
 
-// File System Access APIのモック
+// File System Access APIのモック（テスト互換性のため残存）
 global.showOpenFilePicker = vi.fn();
 global.showSaveFilePicker = vi.fn();
 

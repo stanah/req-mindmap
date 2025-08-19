@@ -7,58 +7,7 @@
 
 import type { MindmapData, ParseError, ValidationResult, FileError } from './index';
 
-/**
- * ファイルサービスインターフェース
- * ファイルの読み書きを抽象化
- */
-export interface FileService {
-  /**
-   * ファイルを読み込む
-   * @param path ファイルパス
-   * @returns ファイル内容
-   */
-  loadFile(path: string): Promise<string>;
-
-  /**
-   * ファイルに保存する
-   * @param pathOrData ファイルパスまたはデータ
-   * @param contentOrFormat ファイル内容またはフォーマット
-   */
-  saveFile(pathOrData: string | MindmapData, contentOrFormat?: string | 'json' | 'yaml'): Promise<void | { success: boolean; error?: string }>;
-
-  /**
-   * ファイルの変更を監視する
-   * @param pathOrFile ファイルパスまたはFileオブジェクト
-   * @param callback 変更時のコールバック
-   */
-  watchFile(pathOrFile: string | File, callback: (content: string | File) => void): void;
-
-  /**
-   * ファイルが存在するかチェック
-   * @param path ファイルパス
-   * @returns 存在する場合true
-   */
-  exists(path: string): Promise<boolean>;
-
-  /**
-   * ファイルを削除する
-   * @param path ファイルパス
-   */
-  deleteFile(path: string): Promise<void>;
-
-  /**
-   * ディレクトリを作成する
-   * @param path ディレクトリパス
-   */
-  createDirectory(path: string): Promise<void>;
-
-  /**
-   * ディレクトリ内のファイル一覧を取得
-   * @param path ディレクトリパス
-   * @returns ファイル名の配列
-   */
-  listFiles(path: string): Promise<string[]>;
-}
+// FileService は削除されました（VSCode専用になったため）
 
 /**
  * パーサーサービスインターフェース
