@@ -632,8 +632,9 @@ export class ErrorHandler {
           message,
           options: showCancel ? ['新規作成', 'キャンセル'] : ['OK']
         });
-        // VSCodeからの応答は非同期なので、とりあえずtrueを返す
-        return true;
+        // VSCodeからの応答は非同期なので、破壊的なアクションを防ぐためfalseを返す
+        // 実際の確認決定は既存のVSCodeメッセージハンドラーで処理される
+        return false;
       }
     } catch (error) {
       console.warn('[ErrorHandler] VSCode confirmation failed:', error);
