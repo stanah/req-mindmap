@@ -49,6 +49,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+        
+      - name: Install extension dependencies
+        run: cd extension && pnpm install --frozen-lockfile
 
       - name: Build VSCode Extension Package
         run: pnpm build:vscode-package
