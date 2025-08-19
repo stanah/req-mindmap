@@ -26,9 +26,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         
-      - name: Install extension dependencies
-        run: cd extension && pnpm install --frozen-lockfile
-        
       - name: Lint
         run: pnpm lint
         
@@ -74,9 +71,6 @@ jobs:
           
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        
-      - name: Install extension dependencies
-        run: cd extension && pnpm install --frozen-lockfile
         
       - name: Build VSCode package
         run: pnpm build:vscode-package
