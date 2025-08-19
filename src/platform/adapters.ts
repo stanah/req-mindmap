@@ -29,11 +29,27 @@ export class PlatformAdapterFactory {
       return new VSCodePlatformAdapter();
     }
 
-    // VSCode環境以外でもVSCodePlatformAdapterを作成（スタンドアローンモード）
-    if (process.env.NODE_ENV !== 'test') {
-      console.log('[PlatformAdapterFactory] スタンドアローン環境を検出、VSCodePlatformAdapter（制限モード）を作成');
+    // テスト環境では制限モードでVSCodePlatformAdapterを作成
+    if (process.env.NODE_ENV === 'test') {
+      console.log('[PlatformAdapterFactory] テスト環境: VSCodePlatformAdapter（制限モード）を作成');
+      return new VSCodePlatformAdapter();
     }
-    return new VSCodePlatformAdapter();
+
+    // サポートされていないプラットフォーム
+    const platformName = typeof window !== 'undefined' ? 'browser' : 'unknown';
+    const context = {
+      hasWindow: typeof window !== 'undefined',
+      hasAcquireVsCodeApi: typeof window !== 'undefined' && 'acquireVsCodeApi' in window,
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+      nodeEnv: process.env.NODE_ENV
+    };
+    
+    throw new PlatformError(
+      'サポートされていないプラットフォーム: VSCode環境のみサポート',
+      platformName as 'browser' | 'vscode',
+      'UNSUPPORTED_PLATFORM',
+      context
+    );
   }
 
   /**
@@ -134,10 +150,17 @@ export class PlatformError extends Error {
   constructor(
     message: string,
     public readonly platform: 'browser' | 'vscode',
-    public readonly code?: string
+    public readonly code?: string,
+    public readonly context?: Record<string, unknown>,
+    public readonly cause?: Error
   ) {
     super(message);
     this.name = 'PlatformError';
+    
+    // Error.causeのサポート
+    if (cause && 'cause' in Error.prototype) {
+      (this as any).cause = cause;
+    }
   }
 }
 
