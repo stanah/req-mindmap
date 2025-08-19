@@ -205,7 +205,7 @@ class VSCodeApiSingleton {
       // 登録されたハンドラーを呼び出し
       const handler = this.messageHandlers.get(sanitizedMessage.command);
       if (handler) {
-        handler(sanitizedMessage.data || sanitizedMessage);
+        handler(sanitizedMessage.data !== undefined ? sanitizedMessage.data : sanitizedMessage);
       }
     } catch (error) {
       console.error('[VSCodeApiSingleton] Error handling incoming message:', error);
