@@ -18,6 +18,10 @@
   "files": [
     "dist"
   ],
+  "sideEffects": [
+    "src/**/*.css",
+    "src/test/setup.ts"
+  ],
   "scripts": {
     "build": "pnpm run build:vscode",
     "build:lib": "vite build --config vite.config.lib.ts",
