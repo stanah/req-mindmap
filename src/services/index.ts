@@ -1,3 +1,3 @@
 // サービスのエクスポート
 export * from './parserService';
-export * from './fileService';
+// fileServiceは削除されました（VSCode専用になったため）

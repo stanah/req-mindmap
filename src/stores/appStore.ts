@@ -27,7 +27,8 @@ import type {
   MindmapNode
 } from '../types';
 import { DEBOUNCE_DELAY } from '../utils/constants';
-import { generateId, detectFileFormat, deepClone, findNodeById } from '../utils/helpers';
+import { generateId, deepClone, findNodeById } from '../utils/helpers';
+import { detectFileFormat } from '../utils/fileUtils';
 import { createNodeMapping, getNodeIdAtCursor, getEditorPositionForNode, type NodeMappingResult } from '../utils/nodeMapping';
 import { settingsService } from '../services/settingsService';
 import { performanceMonitor } from '../utils/performanceMonitor';

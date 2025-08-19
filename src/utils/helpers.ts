@@ -64,13 +64,7 @@ export function getFileExtension(filename: string): string {
   return filename.split('.').pop()?.toLowerCase() || '';
 }
 
-// ファイル形式の判定
-export function detectFileFormat(filename: string): 'json' | 'yaml' | 'unknown' {
-  const ext = getFileExtension(filename);
-  if (ext === 'json') return 'json';
-  if (ext === 'yaml' || ext === 'yml') return 'yaml';
-  return 'unknown';
-}
+// detectFileFormat関数は utils/fileUtils.ts に移動されました
 
 // マインドマップノードの検索
 export function findNodeById(root: MindmapNode, id: string): MindmapNode | null {
