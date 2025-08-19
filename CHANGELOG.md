@@ -5,6 +5,77 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0](https://github.com/stanah/req-mindmap/compare/req-mindmap-v0.2.1...req-mindmap-v0.3.0) (2025-08-19)
+
+
+### Features
+
+* add priority and status selection to NodeDetailsPanel and update tests ([aad6843](https://github.com/stanah/req-mindmap/commit/aad6843bb8f719d340e689e1fd2d89e898b3313d))
+* add test improvement plan to address priority and status update issues in NodeDetailsPanel ([2530ded](https://github.com/stanah/req-mindmap/commit/2530ded4f1485967028c6927829748931df673f1))
+* complete schema definition and validation system (task 12) ([b32c742](https://github.com/stanah/req-mindmap/commit/b32c742d7b94f363df2b7378ce429c221663b974))
+* complete VSCode adapter integration (task 10.2) ([983cf32](https://github.com/stanah/req-mindmap/commit/983cf32a7526ca19839e4650c6f804dd7a38345a))
+* enhance message handling and logging in MindmapEditorProvider and MindmapWebviewProvider ([e2dfcfc](https://github.com/stanah/req-mindmap/commit/e2dfcfcb7d2d54e99b7e62e23d89734def3640ad))
+* improve VSCode API message handling and validation; add retry strategy in error handling ([a8b9236](https://github.com/stanah/req-mindmap/commit/a8b92365122f330cf710e6716cf93f28e4b4b0b5))
+* localStorage機能を完全削除してメモリのみの状態管理に移行 ([5b31fb7](https://github.com/stanah/req-mindmap/commit/5b31fb7b18c755e432dbbf3129c94ae21b1a84c3))
+* Monaco Editor関連の不要なテストファイルを削除してテストスイートをクリーン化 ([bcceb81](https://github.com/stanah/req-mindmap/commit/bcceb816b03b5fbb7c4eb120c9bb9b8141447c94))
+* remove web app and focus on VSCode extension with component library ([5fa1525](https://github.com/stanah/req-mindmap/commit/5fa15254fd5cad971fd7346531844aacfcd214eb))
+* update task status to 'done' for bidirectional sync implementation and enhance details ([75fd9a2](https://github.com/stanah/req-mindmap/commit/75fd9a24d190fe8daec225212c4f3604f0c7133b))
+* update task statuses to 'done' and 'in-progress' in comprehensive requirements ([c0c5cc0](https://github.com/stanah/req-mindmap/commit/c0c5cc00b1d52304af3e7428e0134493f5c13442))
+* VSCode拡張対応とパフォーマンス最適化の実装完了によりタスク10をdoneに更新 ([a43da42](https://github.com/stanah/req-mindmap/commit/a43da420678416bd445412111f575f3e31ac8fcb))
+* VSCode版ノード操作機能の実装完了に基づきタスク14,15をdoneに更新 ([cb393cd](https://github.com/stanah/req-mindmap/commit/cb393cdd31c88c900597f1cebbe0a3b8928e1cab))
+* ノード状態インジケーター表示機能の実装完了によりタスク22をdoneに更新 ([051f064](https://github.com/stanah/req-mindmap/commit/051f0641e5d2f336c67e118dad49a528e7c73e54))
+* 高優先度PR対応完了 - ライブラリテスト、パフォーマンス最適化、VSCode通信、エラーハンドリング ([131362d](https://github.com/stanah/req-mindmap/commit/131362d7b4edbe49a2723b0e44a31173bf7a71e8))
+* 高優先度問題の修正 - エラーバウンダリ、プラットフォームアダプター、メモリリーク対策 ([61fca73](https://github.com/stanah/req-mindmap/commit/61fca738ee9b91669836020cf30ac4888aae162e))
+
+
+### Bug Fixes
+
+* add window.showOpenFilePicker/showSaveFilePicker mocks for jsdom environments ([01839f6](https://github.com/stanah/req-mindmap/commit/01839f681255db8ec7c8233973204373a037616f))
+* addRecentFileの呼び出しで余分なプロパティを削除してTypeScript型エラーを修正 ([3cfe454](https://github.com/stanah/req-mindmap/commit/3cfe454b49d08626c3bea8a57f8b08304daf941c))
+* clean up remaining FileService imports and fix build errors ([1bc85ea](https://github.com/stanah/req-mindmap/commit/1bc85eaba71e12519b977cf960aeff3e0ca57807))
+* CommonJS対応修正とprepublishOnly追加 ([2928029](https://github.com/stanah/req-mindmap/commit/2928029daf041707ec372731a72ee78766158d84))
+* consoleスパイ復元不完全修正 - vi.restoreAllMocksを使用 ([02196af](https://github.com/stanah/req-mindmap/commit/02196aff304465f88af87c48dcb661e905e14e6e))
+* deepEqual関数の循環参照脆弱性を修正 ([586de6c](https://github.com/stanah/req-mindmap/commit/586de6c8071a7d91b9e4e1888d0fd2c1d65483dc))
+* Disposableメモリリーク修正 - webviewMsgSubscriptionの適切な解放 ([13889f4](https://github.com/stanah/req-mindmap/commit/13889f4da09e94e5e98ffebb01cbde8d788f3086))
+* editorMindmapSyncテストのsettingsServiceメソッド不足エラーを修正 ([95679cc](https://github.com/stanah/req-mindmap/commit/95679cc1e5f07a5f227c4d27e68230c068cfe51f))
+* errorHandling.tsのデコレーターで非同期エラーハンドリングを追加 ([7949bc0](https://github.com/stanah/req-mindmap/commit/7949bc074fde2976d47ff15e884112f41827dc83))
+* ErrorTypeの名前衝突を解決するためenumをErrorCategoryにリネーム ([04382fb](https://github.com/stanah/req-mindmap/commit/04382fb588512926a28baab4859acb9dd1b8fe95))
+* handleParseErrorでデータバックアップ機能を追加 ([f020229](https://github.com/stanah/req-mindmap/commit/f0202296e147fdc61b10a34d529ea43e246d7257))
+* improve PlatformError type safety by adding 'unknown' to platform union type ([1743838](https://github.com/stanah/req-mindmap/commit/174383875950d087196ddafe09ff53bc8e967279))
+* lintエラーとテストエラーの大幅修正 ([78554a1](https://github.com/stanah/req-mindmap/commit/78554a19447ef7176c4750d8e8e3afae9bad9fd6))
+* NodeActionButtons.test.tsxの型エラーを修正 ([c3ec8c0](https://github.com/stanah/req-mindmap/commit/c3ec8c082105e7932a3837f28f78fbf16dd2225c))
+* NotificationType型の使用でDRY原則に従うよう修正 ([76f87cb](https://github.com/stanah/req-mindmap/commit/76f87cb80f4fbd9d18b2e81f702299203e1ca2e1))
+* package.jsonにsideEffectsフィールドを追加してtreeshake問題を解決 ([e05297e](https://github.com/stanah/req-mindmap/commit/e05297e846fbd9ec1b09ef62cbff3bb1f1e6fa01))
+* saveFileの結果を正しく返すよう修正 ([54a02c7](https://github.com/stanah/req-mindmap/commit/54a02c7955fc54a88804ae732191c4a767c61d85))
+* showOpenFilePicker未定義対応とリトライロジック実装 ([54c5645](https://github.com/stanah/req-mindmap/commit/54c56452ae733812cceae8ece3de293e4cbb9e08))
+* strict-mode.test.tsのテストエラーを修正 ([fed07a0](https://github.com/stanah/req-mindmap/commit/fed07a05746fd9c507f363fd4fe57359f4903686))
+* TypeScriptの型エラーを修正 - rest parameterをunknown[]に変更 ([ae11402](https://github.com/stanah/req-mindmap/commit/ae114023e37b697e4f3a11dc8ee6e4eca33faf6c))
+* useStableSelector等価性関数の実装 ([80fc429](https://github.com/stanah/req-mindmap/commit/80fc429feffab9dd7e8f25027581fe266d171b09))
+* vi.Mock型注釈修正 - vitestのMock型を使用 ([3a8c828](https://github.com/stanah/req-mindmap/commit/3a8c828f234f9ea88d78f39fdbea09f0a8806292))
+* vite.config.vscode.tsのoptimizeDepsからd3-treeを削除 ([9335c0c](https://github.com/stanah/req-mindmap/commit/9335c0c029b9ced9d847215934ba442dcee8ce99))
+* VSCode Communication テストのエラーを修正 ([ad686ed](https://github.com/stanah/req-mindmap/commit/ad686ed6b7f748f0937a397bb19f1e3a8f2b73e1))
+* VSCodeメッセージバリデーションの修正 ([8406eb3](https://github.com/stanah/req-mindmap/commit/8406eb3fac5da21cb917fd5f93a0800966cd52cc))
+* VSCodeメッセージハンドリングでfalsy値でも有効な値を保持するよう修正 ([670a223](https://github.com/stanah/req-mindmap/commit/670a223294b5e93578202cb3be54fbf25c0e8968))
+* VSCode環境でのユーザー確認ダイアログの非同期処理を修正 ([51d23a4](https://github.com/stanah/req-mindmap/commit/51d23a4004276a87e6f4c121d262a3e2c7c3c432))
+* Webviewメッセージリスナーのメモリリーク修正 ([6925232](https://github.com/stanah/req-mindmap/commit/69252321585f8fe0da486085357d804e67aa1ea5))
+* エラーハンドリングでタイムアウト管理機能を追加してメモリリーク防止 ([96c99b8](https://github.com/stanah/req-mindmap/commit/96c99b8e4a0e5c8a94730c95d43a8ad4a99c7fb9))
+* テストのインポートエラーとReact Testing Library警告を修正 ([4ced0be](https://github.com/stanah/req-mindmap/commit/4ced0be724ca3545f4bca165afcb9f49828c04af))
+* テスト環境のDOMとモナコエディタの依存関係を修正 ([754fbd0](https://github.com/stanah/req-mindmap/commit/754fbd0f69cd80021bc127feeb7ab10c077939b7))
+* 指数バックオフの計算を修正 ([b632b59](https://github.com/stanah/req-mindmap/commit/b632b59b9b4cba68c5793fa40cb943907799a549))
+* 統合テストとライブラリテストのエラーを修正 ([57e63b9](https://github.com/stanah/req-mindmap/commit/57e63b9da841dec9a733a6c68c5b72cc185ecec9))
+
+
+### Code Refactoring
+
+* localStorage関連機能を削除してVSCode設定管理へ移行準備 ([d0e7256](https://github.com/stanah/req-mindmap/commit/d0e7256411a9a7dd25d72d0b672d342a1b227618))
+* PlatformErrorのcause処理から冗長な条件チェックを削除 ([7439dbf](https://github.com/stanah/req-mindmap/commit/7439dbf239c83e461fdd9a4dd1b48dde2e1bebfd))
+* ReactをpeerDependenciesに移動 ([8b142af](https://github.com/stanah/req-mindmap/commit/8b142aff830f18390a0835e921ff69283c84f302))
+* remove FileService and replace with minimal file utilities ([98b8c6b](https://github.com/stanah/req-mindmap/commit/98b8c6beea719648dbcb0f8fa171f6ca6b4754cc))
+* replace generic Error with PlatformError for unified error handling ([7e747e9](https://github.com/stanah/req-mindmap/commit/7e747e90005cf4d05e941781c7e59c94b20151aa))
+* VSCode拡張メイン・Webアプリ読み取り専用方針に基づき不要タスクをcancelledに変更 ([29ea323](https://github.com/stanah/req-mindmap/commit/29ea3233af7fbeae62acf7b0abc80de1123b7aef))
+* テストスクリプトを整理してWebアプリの残骸を削除 ([acaf9ad](https://github.com/stanah/req-mindmap/commit/acaf9ad987c6342120f96fdfac36accb67e77608))
+* 外部依存関係をpeerDependenciesに移動してバンドル最適化 ([069d018](https://github.com/stanah/req-mindmap/commit/069d018b76383ef56e95006be823ab258486a4aa))
+
 ## [0.2.1](https://github.com/stanah/req-mindmap/compare/req-mindmap-v0.2.0...req-mindmap-v0.2.1) (2025-08-17)
 
 
